@@ -97,7 +97,7 @@
 }
 
 .tableItem:hover {
-  background: var(--accent);
+  background: var(--hover);
   color: var(--foreground);
 }
 
@@ -165,8 +165,8 @@
 }
 
 .refreshButton:hover {
-  background: var(--accent);
-  border-color: var(--accent-foreground);
+  background: var(--hover);
+  border-color: var(--border);
 }
 
 /* Toolbar Controls */
@@ -201,7 +201,7 @@
 
 .tabButton:hover {
   color: var(--foreground);
-  background: var(--accent);
+  background: var(--hover);
 }
 
 .tabButtonActive {
@@ -352,7 +352,7 @@
 }
 
 .sortableHeader:hover {
-  background: var(--accent);
+  background: var(--hover);
 }
 
 .headerInner {
@@ -375,11 +375,11 @@
 }
 
 .dataTable tr:hover td {
-  background: var(--accent);
+  background: var(--hover);
 }
 
 .dataTable tr:hover .actionCell {
-  background: var(--accent);
+  background: var(--hover);
 }
 
 .viewRowButton {
@@ -446,8 +446,8 @@
 .schemaBadgeType {
   font-family: monospace;
   font-size: 0.75rem;
-  background: var(--accent);
-  color: var(--accent-foreground);
+  background: var(--muted);
+  color: var(--muted-foreground);
   padding: 0.125rem 0.375rem;
   border-radius: 3px;
 }
@@ -522,7 +522,7 @@
 }
 
 .pageButton:hover:not(:disabled) {
-  background: var(--accent);
+  background: var(--hover);
 }
 
 .pageButton:disabled {
@@ -631,8 +631,8 @@
 }
 
 .copyButton:hover {
-  background: var(--accent);
-  border-color: var(--accent-foreground);
+  background: var(--hover);
+  border-color: var(--border);
 }
 
 .closeButton {
@@ -650,7 +650,7 @@
 }
 
 .closeButton:hover {
-  background: var(--accent);
+  background: var(--hover);
   color: var(--foreground);
 }
 

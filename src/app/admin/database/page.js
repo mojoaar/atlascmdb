@@ -141,7 +141,7 @@ export default function AdminDatabaseExplorer() {
         <div className={styles.sidebarHeader}>
           <div className={styles.sidebarTitle}>
             <Database size={18} />
-            <span>Database Tables</span>
+            <span>Tables</span>
           </div>
           <div className={styles.searchWrapper}>
             <Search size={14} className={styles.searchIcon} />
@@ -397,7 +397,7 @@ export default function AdminDatabaseExplorer() {
         ) : (
           <div className={styles.noTableSelected}>
             <Database size={64} className={styles.noTableSelectedIcon} />
-            <h2>No Database Table Selected</h2>
+            <h2>No Table Selected</h2>
             <p>Select a table from the sidebar to inspect its structure and records.</p>
           </div>
         )}

@@ -70,7 +70,7 @@ const ADMIN_NAV = [
     items: [
       { label: 'Imports', href: '/admin/imports', icon: Upload },
       { label: 'Integrations', href: '/admin/integrations', icon: Plug2 },
-      { label: 'Database', href: '/admin/database', icon: Database },
+      { label: 'Table Explorer', href: '/admin/database', icon: Database },
       { label: 'Themes', href: '/admin/themes', icon: Palette },
       { label: 'Settings', href: '/admin/settings', icon: Settings },
     ],
