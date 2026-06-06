@@ -109,10 +109,10 @@ export default function DocsPage() {
           <>
             <h1>Atlas CMDB Documentation</h1>
             <p>
-              Atlas is an enterprise Configuration Management Database (CMDB) built on
-              Next.js 16 and React 19. It provides a centralized system for managing
-              IT infrastructure data — services, applications, configuration items,
-              assets, teams, locations, and their relationships.
+              Atlas is an open-source CMDB built for modern IT teams.
+              It provides a centralized system for managing IT infrastructure —
+              services, applications, configuration items (CIs), assets, teams,
+              locations, and their relationships — built on Next.js 16 and React 19.
             </p>
 
             <h2>Getting Started</h2>

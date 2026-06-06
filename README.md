@@ -1,6 +1,6 @@
 # Atlas CMDB
 
-Open-source CMDB for IT teams — services, applications, CIs, assets, and relationships in one place.
+Open-source CMDB for modern IT teams — services, applications, CIs, assets, and relationships in one place.
 
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
 
