@@ -1,0 +1,29 @@
+.field {
+  font-size: 0.875rem;
+}
+
+.fieldLabel {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  margin-bottom: 0.125rem;
+}
+
+.fieldValue {
+  color: var(--foreground);
+}
+
+.textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  font-size: 0.875rem;
+  font-family: inherit;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+}

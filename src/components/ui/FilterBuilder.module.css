@@ -1,0 +1,73 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+.field {
+  width: 150px;
+}
+
+.op {
+  width: 130px;
+}
+
+.val {
+  flex: 1;
+}
+
+.remove {
+  display: flex;
+  align-items: center;
+}
+
+.removeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--background);
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+
+.removeBtn:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.addBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.8125rem;
+  color: var(--primary);
+  background: none;
+  border: 1px dashed var(--border);
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  width: fit-content;
+}
+
+.addBtn:hover {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 5%, transparent);
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}

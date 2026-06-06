@@ -1,0 +1,13 @@
+.loading {
+  padding: 2rem;
+  text-align: center;
+  color: var(--muted-foreground);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}

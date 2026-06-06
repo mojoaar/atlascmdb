@@ -1,0 +1,43 @@
+.wrapper {
+  position: relative;
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--muted);
+  color: var(--muted-foreground);
+  font-size: 10px;
+  font-weight: 600;
+  cursor: help;
+  user-select: none;
+  margin-left: 4px;
+}
+
+.icon:hover {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.tooltip {
+  position: fixed;
+  transform: translate(-50%, -100%);
+  background: var(--foreground);
+  color: var(--background);
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius);
+  font-size: 0.75rem;
+  line-height: 1.6;
+  whiteSpace: pre-line;
+  max-width: 280px;
+  width: max-content;
+  z-index: 10000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}

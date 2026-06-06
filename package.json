@@ -1,0 +1,48 @@
+{
+  "name": "atlas",
+  "version": "0.1.0",
+  "private": true,
+  "license": "AGPL-3.0-or-later",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "migrate": "knex migrate:latest --knexfile db/knexfile.js",
+    "migrate:rollback": "knex migrate:rollback --knexfile db/knexfile.js",
+    "seed": "knex seed:run --knexfile db/knexfile.js",
+    "db:setup": "node db/setup.js",
+    "db:init": "node db/init.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@dagrejs/dagre": "^3.0.0",
+    "@xyflow/react": "^12.11.0",
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^12.10.0",
+    "jsonwebtoken": "^9.0.2",
+    "knex": "^3.1.0",
+    "leaflet": "^1.9.4",
+    "lucide-react": "^1.17.0",
+    "next": "^16.2.7",
+    "openid-client": "^6.8.4",
+    "otpauth": "^9.5.1",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-leaflet": "^5.0.0",
+    "recharts": "^3.8.1",
+    "uuid": "^14.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.0",
+    "@testing-library/react": "^16.0.0",
+    "@types/leaflet": "^1.9.21",
+    "@vitejs/plugin-react": "^6.0.2",
+    "jsdom": "^29.1.1",
+    "vitest": "^4.1.8"
+  },
+  "overrides": {
+    "postcss": "^8.5.10"
+  }
+}

@@ -1,0 +1,47 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: var(--card);
+  color: var(--card-foreground);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  min-width: 400px;
+  max-width: 90vw;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.title {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.close {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  padding: 0.25rem;
+  line-height: 1;
+}
+
+.close:hover {
+  color: var(--foreground);
+}

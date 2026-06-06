@@ -1,0 +1,97 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #0f1823;
+  --primary: #003d7a;
+  --primary-foreground: #ffffff;
+  --secondary: #e8edf3;
+  --secondary-foreground: #003d7a;
+  --accent: #c8102e;
+  --accent-foreground: #ffffff;
+  --muted: #f4f6f9;
+  --muted-foreground: #5d6f83;
+  --border: #d4dbe4;
+  --card: #ffffff;
+  --card-foreground: #0f1823;
+  --success: #2e7d32;
+  --warning: #ed6c02;
+  --danger: #c8102e;
+  --info: #003d7a;
+  --sidebar: #f0f3f7;
+  --sidebar-foreground: #0f1823;
+  --sidebar-active: #003d7a;
+  --sidebar-active-foreground: #ffffff;
+  --hover: #f0f3f7;
+  --radius: 6px;
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+[data-theme="dark"] {
+  --hover: #1c2733;
+  --background: #0f1823;
+  --foreground: #e8edf3;
+  --primary: #4d8cc7;
+  --primary-foreground: #ffffff;
+  --secondary: #1c2733;
+  --secondary-foreground: #d4dbe4;
+  --accent: #e0556b;
+  --accent-foreground: #ffffff;
+  --muted: #1c2733;
+  --muted-foreground: #8fa3b8;
+  --border: #2a3847;
+  --card: #162030;
+  --card-foreground: #e8edf3;
+  --success: #4caf50;
+  --warning: #ff9800;
+  --danger: #e0556b;
+  --info: #4d8cc7;
+  --sidebar: #0a1219;
+  --sidebar-foreground: #d4dbe4;
+  --sidebar-active: #4d8cc7;
+  --sidebar-active-foreground: #ffffff;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--background);
+  color: var(--foreground);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

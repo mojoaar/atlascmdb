@@ -1,0 +1,387 @@
+.explorer {
+  display: flex;
+  height: calc(100vh - 52px);
+  overflow: hidden;
+}
+
+/* ── Sidebar ────────────────────────────────────────────── */
+
+.sidebar {
+  width: 300px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  background: var(--sidebar);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebarHeader {
+  padding: 1rem 1rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebarTitle {
+  font-size: 0.875rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--sidebar-foreground);
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.themeToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--background);
+  color: var(--foreground);
+  cursor: pointer;
+}
+
+.themeToggle:hover {
+  background: var(--muted);
+}
+
+.baseUrlWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.baseUrlLabel {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted-foreground);
+}
+
+.baseUrlInput {
+  padding: 0.375rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 0.75rem;
+  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+}
+
+.baseUrlInput:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.sidebarNav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem 0;
+}
+
+/* ── Category ───────────────────────────────────────────── */
+
+.categoryGroup {
+  border-bottom: 1px solid var(--border);
+}
+
+.categoryGroup:last-child {
+  border-bottom: none;
+}
+
+.categoryButton {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  background: none;
+  border: none;
+  color: var(--sidebar-foreground);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.categoryButton:hover {
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+}
+
+.categoryCount {
+  margin-left: auto;
+  font-size: 0.6875rem;
+  color: var(--muted-foreground);
+  background: color-mix(in srgb, var(--primary) 15%, transparent);
+  padding: 0.0625rem 0.375rem;
+  border-radius: 999px;
+}
+
+.endpointList {
+  padding: 0 0 0.25rem;
+}
+
+.endpointItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.375rem 1rem 0.375rem 1.75rem;
+  background: none;
+  border: none;
+  color: var(--sidebar-foreground);
+  font-size: 0.75rem;
+  cursor: pointer;
+  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+}
+
+.endpointItem:hover {
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+}
+
+.endpointItemActive {
+  background: var(--sidebar-active);
+  color: var(--sidebar-active-foreground);
+}
+
+.methodTag {
+  font-size: 0.5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  min-width: 36px;
+  flex-shrink: 0;
+}
+
+.endpointPath {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Main Panel ──────────────────────────────────────────── */
+
+.main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem 2rem;
+  background: var(--background);
+}
+
+.placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  color: var(--muted-foreground);
+}
+
+.placeholder h3 {
+  font-size: 1.25rem;
+  margin: 0 0 0.5rem;
+  color: var(--foreground);
+}
+
+.placeholder p {
+  margin: 0.25rem 0;
+  max-width: 480px;
+  line-height: 1.5;
+}
+
+.placeholderHint {
+  margin-top: 1rem !important;
+  font-size: 0.8125rem;
+  background: var(--card);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.placeholderHint code {
+  font-size: 0.75rem;
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  padding: 0.0625rem 0.25rem;
+  border-radius: 3px;
+}
+
+/* ── Endpoint Header ──────────────────────────────────────── */
+
+.endpointHeader {
+  margin-bottom: 1.5rem;
+}
+
+.endpointTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.methodBadge {
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: #fff;
+  padding: 0.1875rem 0.5rem;
+  border-radius: var(--radius);
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.endpointTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--foreground);
+  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+}
+
+.endpointDesc {
+  margin: 0 0 0.5rem;
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.75rem;
+}
+
+.metaItem {
+  color: var(--muted-foreground);
+}
+
+.tryLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--primary);
+  font-size: 0.75rem;
+}
+
+/* ── Sections ─────────────────────────────────────────────── */
+
+.section {
+  margin-bottom: 1.5rem;
+}
+
+.sectionTitle {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+  color: var(--foreground);
+}
+
+.sectionTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.sectionTitleRow .sectionTitle {
+  margin: 0;
+}
+
+/* ── Code Block ───────────────────────────────────────────── */
+
+.codeBlockWrapper {
+  position: relative;
+}
+
+.codeBlock {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin: 0;
+  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--foreground);
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.codeBlock code {
+  font: inherit;
+}
+
+.copyBtn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--background);
+  color: var(--muted-foreground);
+  font-size: 0.6875rem;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.copyBtn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* ── Language Tabs ────────────────────────────────────────── */
+
+.langTabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  width: fit-content;
+}
+
+.langTab {
+  padding: 0.375rem 0.75rem;
+  border: none;
+  background: var(--card);
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  cursor: pointer;
+  border-right: 1px solid var(--border);
+}
+
+.langTab:last-child {
+  border-right: none;
+}
+
+.langTab:hover {
+  background: var(--hover);
+}
+
+.langTabActive {
+  background: var(--primary);
+  color: #fff;
+}
+
+.langTabActive:hover {
+  background: var(--primary);
+}
+
+/* ── Method colors in sidebar ──────────────────────────────── */
+
+.methodTag[data-method="GET"] { color: var(--success); }
+.methodTag[data-method="POST"] { color: var(--info); }
+.methodTag[data-method="PATCH"] { color: var(--warning); }
+.methodTag[data-method="PUT"] { color: var(--warning); }
+.methodTag[data-method="DELETE"] { color: var(--danger); }

@@ -1,0 +1,42 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.statCard {
+  cursor: default;
+}
+
+.recent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.recentItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  color: var(--foreground);
+}
+
+.recentItem:hover {
+  background: var(--muted);
+  text-decoration: none;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.125rem 0.375rem;
+  background: var(--muted);
+  border-radius: var(--radius);
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--muted-foreground);
+}

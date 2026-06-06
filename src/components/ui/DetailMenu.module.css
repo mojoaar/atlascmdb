@@ -1,0 +1,57 @@
+.container {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  color: var(--muted-foreground);
+  transition: background 0.15s, color 0.15s;
+}
+
+.trigger:hover {
+  background: var(--muted);
+  color: var(--foreground);
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  min-width: 160px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  padding: 0.25rem;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  background: none;
+  border-radius: 4px;
+  font-size: 0.8125rem;
+  color: var(--foreground);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.item:hover {
+  background: var(--muted);
+}

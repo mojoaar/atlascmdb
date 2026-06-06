@@ -1,0 +1,109 @@
+.container {
+  width: 100%;
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border, #e0e0e0);
+  background: var(--card, #fff);
+}
+
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--muted-foreground, #888);
+  font-size: 0.875rem;
+  border: 1px solid var(--border, #e0e0e0);
+  border-radius: 8px;
+  background: var(--card, #fff);
+}
+
+.node {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 2px solid;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease;
+  min-width: 140px;
+  max-width: 200px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.node:hover {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+}
+
+.nodeCenter {
+  padding: 12px 18px;
+  min-width: 180px;
+  max-width: 240px;
+  border-width: 3px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.12);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.nodeDim {
+  opacity: 0.6;
+  border-style: dashed;
+  font-size: 0.7rem;
+  min-width: 110px;
+  max-width: 160px;
+  padding: 6px 10px;
+}
+
+.nodeType {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.7;
+}
+
+.nodeLabel {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.legend {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: var(--card, #fff);
+  border: 1px solid var(--border, #e0e0e0);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.75rem;
+  z-index: 10;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+}
+
+.legendTitle {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--foreground, #111);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  text-transform: capitalize;
+  color: var(--foreground, #333);
+}
+
+.legendColor {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}

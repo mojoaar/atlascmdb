@@ -1,0 +1,105 @@
+.toastContainer {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 1100;
+}
+
+.toast {
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--card-foreground);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-left: 4px solid var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  animation: slideIn 0.2s ease-out;
+  border: 1px solid var(--border);
+  border-left-width: 4px;
+}
+
+.toastSuccess {
+  border-left-color: var(--success);
+}
+
+.toastError {
+  border-left-color: var(--danger);
+}
+
+.toastInfo {
+  border-left-color: var(--info);
+}
+
+.toastWarning {
+  border-left-color: var(--warning);
+}
+
+.dialogOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.dialog {
+  background: var(--card);
+  color: var(--card-foreground);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border);
+}
+
+.dialogHeader {
+  margin-bottom: 1rem;
+}
+
+.dialogTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.dialogBody {
+  font-size: 0.95rem;
+  color: var(--foreground);
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.dialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(1rem);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
