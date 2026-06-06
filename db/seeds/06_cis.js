@@ -32,16 +32,21 @@ exports.seed = async function (knex) {
   cIs.push({ baseId: uuidv4(), childId: uuidv4(), name: 'cache-prod-01', desc: 'Redis cache cluster', type: 'Server', serial: 'SN-2024-0011' });
   cIs.push({ baseId: uuidv4(), childId: uuidv4(), name: 'mq-prod-01', desc: 'RabbitMQ message queue', type: 'Server', serial: 'SN-2024-0012' });
 
+  // Racks
+  cIs.push({ baseId: uuidv4(), childId: uuidv4(), name: 'RACK-A-01', desc: 'Primary rack — web + core infra', type: 'rack', serial: 'RK-2024-0001' });
+  cIs.push({ baseId: uuidv4(), childId: uuidv4(), name: 'RACK-B-02', desc: 'Primary rack — shop + database', type: 'rack', serial: 'RK-2024-0002' });
+  cIs.push({ baseId: uuidv4(), childId: uuidv4(), name: 'RACK-C-01', desc: 'DR rack at Secondary Data Center', type: 'rack', serial: 'RK-2024-0003' });
+
   await knex('ci_base').insert(
     cIs.map((c, i) => ({
       id: c.baseId,
       name: c.name,
       description: c.desc,
       ownerTeamId: i >= 8 ? devopsTeam?.id : platformTeam?.id,
-      locationId: c.name.includes('warehouse') ? secondaryDc?.id : dcLocation?.id,
-      lifecycleStatus: 'production',
-      environment: 'production',
-      classification: c.name.includes('shop') || c.name.includes('web') ? 'critical' : 'internal',
+      locationId: c.name === 'RACK-C-01' ? secondaryDc?.id : c.name.includes('warehouse') ? secondaryDc?.id : dcLocation?.id,
+      lifecycleStatus: c.type === 'rack' ? 'active' : 'production',
+      environment: c.type === 'rack' ? 'production' : 'production',
+      classification: c.type === 'rack' ? 'infrastructure' : c.name.includes('shop') || c.name.includes('web') ? 'critical' : 'internal',
       externalRef: `SRV-${String(i + 1).padStart(3, '0')}`,
     }))
   );
@@ -53,6 +58,10 @@ exports.seed = async function (knex) {
       ciType: c.type,
       serialNumber: c.serial,
       assetTag: `AT-${String(1001 + i).padStart(4, '0')}`,
+      ...(c.type === 'rack' ? {
+        rackSize: c.name === 'RACK-B-02' ? 48 : 42,
+        rackModel: c.name === 'RACK-B-02' ? 'APC NetShelter SV 48U' : 'APC NetShelter SX 42U',
+      } : {}),
     }))
   );
 };

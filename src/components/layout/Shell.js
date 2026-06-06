@@ -53,6 +53,7 @@ const ADMIN_NAV = [
       { label: 'Services', href: '/admin/services', icon: Server },
       { label: 'Applications', href: '/admin/applications', icon: Layers },
       { label: 'CIs', href: '/admin/cis', icon: Database },
+      { label: 'Racks', href: '/admin/racks', icon: LayoutGrid },
       { label: 'Assets', href: '/admin/assets', icon: Monitor },
       { label: 'Relationships', href: '/admin/relationships', icon: GitBranch },
       { label: 'Locations', href: '/admin/locations', icon: MapPin },

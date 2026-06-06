@@ -2,8 +2,11 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { Copy, Check, ChevronRight, ChevronDown, ExternalLink, Sun, Moon } from 'lucide-react';
+import CodeBlock from '@/components/ui/CodeBlock';
 import endpoints from './endpoints';
 import styles from './page.module.css';
+
+const LANG_TO_PRISM = { curl: 'bash', javascript: 'javascript', python: 'python' };
 
 const CATEGORIES = [...new Set(endpoints.map(e => e.category))];
 
@@ -322,12 +325,7 @@ export default function DocsPage() {
                   </button>
                 ))}
               </div>
-              <div className={styles.codeBlockWrapper}>
-                <button className={styles.copyBtn} onClick={copyCode}>
-                  {copiedKey === 'code' ? <><Check size={14} /> Copied</> : <><Copy size={14} /> Copy</>}
-                </button>
-                <pre className={styles.codeBlock}><code>{code}</code></pre>
-              </div>
+              <CodeBlock language={LANG_TO_PRISM[activeLang] || activeLang}>{code}</CodeBlock>
             </div>
           </>
         )}

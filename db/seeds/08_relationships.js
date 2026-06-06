@@ -76,6 +76,19 @@ exports.seed = async function (knex) {
     ['ci', ci('core-sw-01'), 'ci', ci('lb-prod-01'), 'connects_to', 'outbound', 'Core switch uplinks to load balancer'],
     ['ci', ci('core-sw-01'), 'ci', ci('lb-web-01'), 'connects_to', 'outbound', 'Core switch uplinks to web load balancer'],
 
+    // Rack placements
+    ['ci', ci('prod-web-01'),   'ci', ci('RACK-A-01'), 'hosted_on', 'outbound', 'Web server in primary rack A'],
+    ['ci', ci('prod-web-02'),   'ci', ci('RACK-A-01'), 'hosted_on', 'outbound', 'Web server in primary rack A'],
+    ['ci', ci('core-sw-01'),    'ci', ci('RACK-A-01'), 'hosted_on', 'outbound', 'Core switch in primary rack A'],
+    ['ci', ci('lb-prod-01'),    'ci', ci('RACK-A-01'), 'hosted_on', 'outbound', 'Load balancer in primary rack A'],
+    ['ci', ci('cache-prod-01'), 'ci', ci('RACK-A-01'), 'hosted_on', 'outbound', 'Cache cluster in primary rack A'],
+    ['ci', ci('web-shop-01'),   'ci', ci('RACK-B-02'), 'hosted_on', 'outbound', 'Shop server in rack B'],
+    ['ci', ci('web-shop-02'),   'ci', ci('RACK-B-02'), 'hosted_on', 'outbound', 'Shop server in rack B'],
+    ['ci', ci('lb-web-01'),     'ci', ci('RACK-B-02'), 'hosted_on', 'outbound', 'Web LB in rack B'],
+    ['ci', ci('mq-prod-01'),    'ci', ci('RACK-B-02'), 'hosted_on', 'outbound', 'Message queue in rack B'],
+    ['ci', ci('db-prod-01'),    'ci', ci('RACK-B-02'), 'hosted_on', 'outbound', 'Database in rack B'],
+    ['ci', ci('db-warehouse-01'), 'ci', ci('RACK-C-01'), 'hosted_on', 'outbound', 'Warehouse DB at DR rack C'],
+
     ['ci', ci('prod-web-01'), 'location', loc('Primary Data Center'), 'part_of', 'outbound', 'Server physically in Primary DC'],
     ['ci', ci('prod-web-02'), 'location', loc('Primary Data Center'), 'part_of', 'outbound', 'Server physically in Primary DC'],
     ['ci', ci('db-prod-01'), 'location', loc('Primary Data Center'), 'part_of', 'outbound', 'Database in Primary DC'],

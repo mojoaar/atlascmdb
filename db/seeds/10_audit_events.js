@@ -24,6 +24,9 @@ exports.seed = async function (knex) {
   const ciDbProd              = await knex('ci_base').where({ name: 'db-prod-01' }).first();
   const ciLbProd              = await knex('ci_base').where({ name: 'lb-prod-01' }).first();
   const ciK8s                 = await knex('ci_base').where({ name: 'k8s-prod-01' }).first();
+  const rackA                 = await knex('ci_base').where({ name: 'RACK-A-01' }).first();
+  const rackB                 = await knex('ci_base').where({ name: 'RACK-B-02' }).first();
+  const rackC                 = await knex('ci_base').where({ name: 'RACK-C-01' }).first();
   const teamPlatform          = await knex('teams').where({ name: 'Platform Engineering' }).first();
   const teamIT                = await knex('teams').where({ name: 'IT Support' }).first();
   const teamSecurity          = await knex('teams').where({ name: 'Security Team' }).first();
@@ -69,6 +72,9 @@ exports.seed = async function (knex) {
   if (ciDbProd)            e('created',  'ci', ciDbProd.id,    bob?.id,   18);
   if (ciLbProd)            e('created',  'ci', ciLbProd.id,    diana?.id, 11);
   if (ciK8s)               e('created',  'ci', ciK8s.id,       alice?.id,  8);
+  if (rackA)                e('created',  'ci', rackA.id,         alice?.id, 21);
+  if (rackB)                e('created',  'ci', rackB.id,         bob?.id,   17);
+  if (rackC)                e('created',  'ci', rackC.id,         diana?.id,  7);
 
   // Teams
   if (teamPlatform)         e('created',  'team', teamPlatform.id,   alice?.id, 30);

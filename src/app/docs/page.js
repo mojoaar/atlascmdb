@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Sun, Moon } from 'lucide-react';
+import CodeBlock from '@/components/ui/CodeBlock';
 import { getEntityFields } from '@/lib/form-fields';
 import styles from './page.module.css';
 
@@ -13,6 +15,9 @@ const ENTITY_LABELS = {
 
 const SECTIONS = [
   { id: 'overview', label: 'Overview' },
+  { id: 'features', label: 'Features' },
+  { id: 'auth', label: 'Auth & RBAC' },
+  { id: 'sso', label: 'SSO Integration' },
   { id: 'entities', label: 'Entity Types' },
   { id: 'service', label: 'Services', indent: true },
   { id: 'application', label: 'Applications', indent: true },
@@ -20,9 +25,6 @@ const SECTIONS = [
   { id: 'asset', label: 'Assets', indent: true },
   { id: 'data-model', label: 'Data Model' },
   { id: 'relationships', label: 'Relationships' },
-  { id: 'auth', label: 'Auth & RBAC' },
-  { id: 'sso', label: 'SSO Integration' },
-  { id: 'features', label: 'Features' },
   { id: 'deployment', label: 'Deployment' },
 ];
 
@@ -64,11 +66,28 @@ function FieldTable({ entityType }) {
 
 export default function DocsPage() {
   const [active, setActive] = useState('overview');
+  const [theme, setTheme] = useState('light');
+
+  useEffect(() => {
+    const current = document.documentElement.getAttribute('data-theme') || 'light';
+    setTheme(current);
+  }, []);
+
+  function toggleTheme() {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    setTheme(next);
+  }
 
   return (
     <div className={styles.docs}>
       <div className={styles.sidebar}>
-        <div className={styles.sidebarTitle}>Contents</div>
+        <div className={styles.sidebarHeader}>
+          <div className={styles.sidebarTitle}>Contents</div>
+          <button className={styles.themeToggle} onClick={toggleTheme} aria-label="Toggle theme">
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
+        </div>
         {SECTIONS.map((s) => (
           <button
             key={s.id}
@@ -97,8 +116,8 @@ export default function DocsPage() {
             <p>
               After deployment, log in with the default admin account:
             </p>
-            <pre><code>Email: alice@atlas.local
-Password: password123</code></pre>
+            <CodeBlock language="text">{`Email: alice@atlas.local
+Password: password123`}</CodeBlock>
             <p>
               The application has two interfaces:
             </p>
@@ -108,11 +127,11 @@ Password: password123</code></pre>
             </ul>
 
             <h2>Command Reference</h2>
-            <pre><code>{`npm run dev      — Start dev server (Turbopack)
+            <CodeBlock language="bash">{`npm run dev      — Start dev server (Turbopack)
 npm run build    — Production build
 npm run test     — Run test suite (vitest)
 npm run db:setup — Reset DB: drop → migrate → seed
-npm run lint     — Run linter`}</code></pre>
+npm run lint     — Run linter`}</CodeBlock>
           </>
         )}
 
@@ -152,7 +171,7 @@ npm run lint     — Run linter`}</code></pre>
                   <td><strong>Configuration Items</strong></td>
                   <td><code>/api/cis</code></td>
                   <td>Yes — 11 fields</td>
-                  <td style={{ color: 'var(--muted-foreground)' }}>Physical or virtual IT assets — servers, network devices, databases, containers</td>
+                  <td style={{ color: 'var(--muted-foreground)' }}>Physical or virtual IT assets — servers, network devices, databases, containers, racks</td>
                 </tr>
                 <tr>
                   <td><strong>Assets</strong></td>
@@ -396,7 +415,23 @@ npm run lint     — Run linter`}</code></pre>
               <li><strong>Access token:</strong> 15 minutes (configurable via <code>JWT_EXPIRES_IN</code>)</li>
               <li><strong>Refresh token:</strong> 7 days (configurable via <code>JWT_REFRESH_EXPIRES_IN</code>)</li>
               <li><strong>MFA:</strong> TOTP-based (otpauth) with QR code setup and confirm flow</li>
-              <li><strong>Impersonation:</strong> Admins can impersonate other users (audit logs track the real actor)</li>
+            </ul>
+
+            <h3>Impersonation</h3>
+            <p>
+              Administrators can impersonate other users to troubleshoot or verify
+              permission configurations. When impersonating:
+            </p>
+            <ul>
+              <li>The admin's real identity is preserved — all audit events are tagged
+              with the <strong>actual</strong> actor, not the impersonated user</li>
+              <li>A banner appears at the top of the UI indicating the impersonation
+              session is active</li>
+              <li>Self-attribute updates (avatar colour, background, formatting prefs)
+              apply to the impersonated user, not the admin</li>
+              <li>Sessions can be ended via the "Un-impersonate" button in the user menu</li>
+              <li>This is not a privilege escalation mechanism — the admin already has
+              full access; impersonation provides testing context</li>
             </ul>
 
             <h2>Authorization (RBAC)</h2>
@@ -443,10 +478,10 @@ npm run lint     — Run linter`}</code></pre>
             <p>
               Protected API routes use guard closures from <code>src/lib/rbac.js</code>:
             </p>
-            <pre><code>{`// RBAC guards (must be called to get the closure, then invoked with request)
+            <CodeBlock language="javascript">{`// RBAC guards (must be called to get the closure, then invoked with request)
 const auth = await requireAuth()(request);      // any authenticated user
 const auth = await requireAdmin()(request);     // admin only
-const auth = await requireEditor()(request);    // editor or admin`}</code></pre>
+const auth = await requireEditor()(request);    // editor or admin`}</CodeBlock>
 
             <h2>SCIM</h2>
             <p>
@@ -527,6 +562,57 @@ const auth = await requireEditor()(request);    // editor or admin`}</code></pre
               <li>Toggleable built-in sections for Relationships and Audit Trail</li>
               <li>Reset to default layout per entity type</li>
               <li>Layouts persist via <code>/api/config</code> with key <code>form_layout_*</code></li>
+            </ul>
+
+            <h3>Per-Class CI Layouts</h3>
+            <p>
+              Each CI class (server, database, network device, storage, container,
+              rack, other) can have its own independently saved form layout.
+              Config keys follow the pattern <code>form_layout_ci:{`{ciType}`}</code> —
+              e.g. <code>form_layout_ci:server</code>, <code>form_layout_ci:database</code>.
+              The generic <code>form_layout_ci</code> key serves as the fallback for any
+              CI class that has not been explicitly customized. This means:
+            </p>
+            <ul>
+              <li>Change the CI type on a new record and the form layout switches to
+              match that class's saved layout (fields reorder, sections reorganize)</li>
+              <li>Each class can expose different fields — a database server may show
+              lifecycle status and classification front-and-centre, while a container
+              CI keeps those in a secondary section</li>
+              <li>The Form Designer button always edits the layout for the
+              <strong>current CI's class</strong>, not the generic layout</li>
+            </ul>
+
+            <h2>Rack Layout</h2>
+            <p>
+              Datacenter racks (CI type <code>rack</code>) feature a visual rack viewer
+              with their own dedicated admin section at <code>/admin/racks</code>:
+            </p>
+            <ul>
+              <li>Visual U-slot grid (42U or 48U, configurable rack size)</li>
+              <li>Front/back toggle for dual-sided rack mounting</li>
+              <li>Place any CI from <code>ci_base</code> into rack slots (single or multi-U)</li>
+              <li>Auto-detection of occupied slots with overlap prevention</li>
+              <li>Color-coded CI type badges (server, network, storage, database, container)</li>
+              <li>Relationship auto-creation: placing a CI in a rack creates a <code>hosted_on</code> relationship</li>
+              <li>Manage placements via <code>/api/cis/{'{id}'}/rack-placements</code></li>
+            </ul>
+
+            <h3>Rack Form Editor</h3>
+            <p>
+              The rack detail page uses the same Form Designer system but includes a
+              dedicated <strong>Rack Layout</strong> component section:
+            </p>
+            <ul>
+              <li>The rack form shows rack-specific fields (size, model) alongside
+              standard CI fields (name, location, lifecycle status)</li>
+              <li>The Rack Layout section appears as a toggleable component in the
+              Form Designer — it can be shown, hidden, or reordered just like
+              Relationships and Audit Trail</li>
+              <li>Clicking an empty U-slot in the grid opens a modal to assign a CI;
+              clicking an occupied slot opens the edit modal to adjust the placement</li>
+              <li>Rack placements auto-create <code>hosted_on</code> relationships that
+              appear in both the rack's graph and the placed CI's graph</li>
             </ul>
 
             <h2>Relationship Graph</h2>
@@ -640,7 +726,7 @@ const auth = await requireEditor()(request);    // editor or admin`}</code></pre
             </table>
 
             <h2>Docker Compose</h2>
-            <pre><code>{`version: '3.8'
+            <CodeBlock language="yaml">{`version: '3.8'
 services:
   atlas:
     image: atlas-cmdb:latest
@@ -656,10 +742,10 @@ services:
     restart: unless-stopped
 
 volumes:
-  atlas-data:`}</code></pre>
+  atlas-data:`}</CodeBlock>
 
             <h2>Kubernetes</h2>
-            <pre><code>{`apiVersion: apps/v1
+            <CodeBlock language="yaml">{`apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: atlas-cmdb
@@ -702,10 +788,10 @@ spec:
       volumes:
         - name: data
           persistentVolumeClaim:
-            claimName: atlas-data-pvc`}</code></pre>
+            claimName: atlas-data-pvc`}</CodeBlock>
 
             <h2>Standalone (Node.js)</h2>
-            <pre><code>{`# Install dependencies
+            <CodeBlock language="bash">{`# Install dependencies
 npm install
 
 # Option A — Blank install (no demo data)
@@ -724,7 +810,7 @@ npm run build
 npm start
 
 # The app runs on http://localhost:3000
-# Default login (both options): alice@atlas.local / password123`}</code></pre>
+# Default login (both options): alice@atlas.local / password123`}</CodeBlock>
           </>
         )}
       </div>

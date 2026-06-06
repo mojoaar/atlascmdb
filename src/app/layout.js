@@ -1,4 +1,5 @@
 import '@/styles/globals.css';
+import '@/styles/prism-theme.css';
 
 export const metadata = {
   title: 'Atlas',

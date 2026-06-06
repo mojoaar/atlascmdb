@@ -53,6 +53,7 @@ const CI_TYPE_OPTIONS = [
   { value: 'storage', label: 'Storage' },
   { value: 'database', label: 'Database' },
   { value: 'container', label: 'Container' },
+  { value: 'rack', label: 'Rack' },
   { value: 'other', label: 'Other' },
 ];
 
@@ -103,9 +104,11 @@ export const ENTITY_FIELDS = {
     { id: 'environment', label: 'Environment', type: 'select', options: CI_ENV_OPTIONS, description: 'Deployment environment (development, staging, production)' },
     { id: 'classification', label: 'Classification', type: 'select', options: CLASSIFICATION_OPTIONS, description: 'Data sensitivity classification level' },
     { id: 'externalRef', label: 'External Reference', type: 'text', description: 'External reference ID from source systems (e.g., ServiceNow CMDB ID)' },
-    { id: 'ciType', label: 'CI Type', type: 'select', options: CI_TYPE_OPTIONS, description: 'Type of CI — server, network device, storage, database, container, or other' },
+    { id: 'ciType', label: 'CI Type', type: 'select', options: CI_TYPE_OPTIONS, description: 'Type of CI — server, network device, storage, database, container, rack, or other' },
     { id: 'serialNumber', label: 'Serial Number', type: 'text', description: 'Manufacturer serial number' },
     { id: 'assetTag', label: 'Asset Tag', type: 'text', description: 'Organization-assigned asset tracking tag' },
+    { id: 'rackSize', label: 'Rack Size', type: 'select', options: [{ value: 42, label: '42U' }, { value: 48, label: '48U' }], description: 'Number of rack units (visible when CI type is Rack)' },
+    { id: 'rackModel', label: 'Rack Model', type: 'text', description: 'Rack model or manufacturer designation (visible when CI type is Rack)' },
   ],
 
   service: [
@@ -171,6 +174,30 @@ export const DEFAULT_LAYOUTS = {
       },
     ],
     componentSections: [
+      { id: 'relationships', title: 'Relationships', visible: true },
+      { id: 'audit_trail', title: 'Audit Trail', visible: true },
+    ],
+  },
+
+  rack: {
+    sections: [
+      {
+        id: 'general',
+        title: 'General',
+        columns: 1,
+        visible: true,
+        fields: ['name', 'description', 'rackSize', 'rackModel', 'ownerTeamId', 'locationId', 'lifecycleStatus', 'environment', 'classification', 'externalRef'],
+      },
+      {
+        id: 'identifiers',
+        title: 'Identifiers',
+        columns: 1,
+        visible: true,
+        fields: ['serialNumber', 'assetTag'],
+      },
+    ],
+    componentSections: [
+      { id: 'rack_layout', title: 'Rack Layout', visible: true },
       { id: 'relationships', title: 'Relationships', visible: true },
       { id: 'audit_trail', title: 'Audit Trail', visible: true },
     ],

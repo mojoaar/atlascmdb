@@ -59,6 +59,13 @@ export default function AdminSettingsPage() {
       { key: 'createdByName', header: 'Created By', default: false }, { key: 'updatedByName', header: 'Updated By', default: false },
       { key: 'createdAt', header: 'Created', default: false }, { key: 'updatedAt', header: 'Updated', default: false },
     ],
+    racks: [
+      { key: 'name', header: 'Name', always: true }, { key: 'rackModel', header: 'Model' },
+      { key: 'rackSize', header: 'Size' }, { key: 'lifecycleStatus', header: 'Status' },
+      { key: 'locationName', header: 'Location' }, { key: 'environment', header: 'Environment', default: false },
+      { key: 'createdByName', header: 'Created By', default: false }, { key: 'updatedByName', header: 'Updated By', default: false },
+      { key: 'createdAt', header: 'Created', default: false }, { key: 'updatedAt', header: 'Updated', default: false },
+    ],
     assets: [
       { key: 'name', header: 'Name', always: true }, { key: 'assetTag', header: 'Tag' },
       { key: 'ciName', header: 'CI' }, { key: 'category', header: 'Category' },

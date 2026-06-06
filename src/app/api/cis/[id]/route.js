@@ -14,7 +14,7 @@ async function getFullCi(id) {
       'ci_base.*',
       'teams.name as ownerTeamName',
       'locations.name as locationName',
-      'cis.id as childId', 'cis.ciType', 'cis.serialNumber', 'cis.assetTag'
+      'cis.id as childId', 'cis.ciType', 'cis.serialNumber', 'cis.assetTag', 'cis.rackSize', 'cis.rackModel'
     )
     .where('ci_base.id', id)
     .first();
@@ -30,6 +30,7 @@ async function getFullCi(id) {
     createdAt: row.createdAt, updatedAt: row.updatedAt, archivedAt: row.archivedAt,
     createdBy: row.createdBy, updatedBy: row.updatedBy,
     ciType: row.ciType, serialNumber: row.serialNumber, assetTag: row.assetTag,
+    rackSize: row.rackSize, rackModel: row.rackModel,
   };
 }
 
@@ -71,6 +72,8 @@ export async function PATCH(request, { params }) {
     if (body.ciType) ciUpdates.ciType = body.ciType;
     if (body.serialNumber) ciUpdates.serialNumber = body.serialNumber;
     if (body.assetTag) ciUpdates.assetTag = body.assetTag;
+    if (body.rackSize !== undefined) ciUpdates.rackSize = body.rackSize || null;
+    if (body.rackModel !== undefined) ciUpdates.rackModel = body.rackModel || null;
     if (Object.keys(ciUpdates).length) {
       await db('cis').where({ ciBaseId: (await params).id }).update(ciUpdates);
     }

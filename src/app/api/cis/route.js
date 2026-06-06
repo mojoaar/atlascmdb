@@ -34,7 +34,7 @@ export async function GET(request) {
         'locations.name as locationName',
         'creator.displayName as createdByName',
         'updater.displayName as updatedByName',
-        'cis.id as childId', 'cis.ciType', 'cis.serialNumber', 'cis.assetTag'
+        'cis.id as childId', 'cis.ciType', 'cis.serialNumber', 'cis.assetTag', 'cis.rackSize', 'cis.rackModel'
       );
 
     if (lifecycleStatus) query = query.where('ci_base.lifecycleStatus', lifecycleStatus);
@@ -48,12 +48,12 @@ export async function GET(request) {
       });
     }
 
-    const ALLOWED_SORT = { name:'ci_base.name', ciType:'cis.ciType', lifecycleStatus:'ci_base.lifecycleStatus', environment:'ci_base.environment', updatedAt:'ci_base.updatedAt', locationName:'locations.name', createdByName:'creator.displayName', updatedByName:'updater.displayName' };
+    const ALLOWED_SORT = { name:'ci_base.name', ciType:'cis.ciType', lifecycleStatus:'ci_base.lifecycleStatus', environment:'ci_base.environment', updatedAt:'ci_base.updatedAt', locationName:'locations.name', createdByName:'creator.displayName', updatedByName:'updater.displayName', rackSize:'cis.rackSize' };
     const DEFAULT_SORT = ALLOWED_SORT.name;
 
     if (filterJson) {
       try {
-        const ALLOWED_FIELDS = new Set(['name', 'description', 'lifecycleStatus', 'environment', 'classification', 'ciType', 'serialNumber', 'assetTag', 'locationId', 'locationName', 'id', 'createdAt', 'updatedAt', 'createdByName', 'updatedByName']);
+        const ALLOWED_FIELDS = new Set(['name', 'description', 'lifecycleStatus', 'environment', 'classification', 'ciType', 'serialNumber', 'assetTag', 'rackSize', 'rackModel', 'locationId', 'locationName', 'id', 'createdAt', 'updatedAt', 'createdByName', 'updatedByName']);
         const VALID_OPS = new Set(['eq', 'neq', 'contains', 'startsWith', 'isEmpty']);
         const FIELD_COL = {
           name: 'ci_base.name',
@@ -64,6 +64,8 @@ export async function GET(request) {
           ciType: 'cis.ciType',
           serialNumber: 'cis.serialNumber',
           assetTag: 'cis.assetTag',
+          rackSize: 'cis.rackSize',
+          rackModel: 'cis.rackModel',
           locationId: 'ci_base.locationId',
           locationName: 'locations.name',
           id: 'ci_base.id',
@@ -113,6 +115,8 @@ export async function GET(request) {
       ciType: r.ciType,
       serialNumber: r.serialNumber,
       assetTag: r.assetTag,
+      rackSize: r.rackSize,
+      rackModel: r.rackModel,
     }));
 
     return success({ data: cis, total: countResult.total, limit, offset });
@@ -127,7 +131,7 @@ export async function POST(request) {
     if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
 
     const db = getDb();
-    const { name, description, ownerTeamId, locationId, lifecycleStatus, environment, classification, externalRef, ciType, serialNumber, assetTag } = await request.json();
+    const { name, description, ownerTeamId, locationId, lifecycleStatus, environment, classification, externalRef, ciType, serialNumber, assetTag, rackSize, rackModel } = await request.json();
 
     if (!name) return NextResponse.json({ error: 'name required' }, { status: 400 });
 
@@ -140,6 +144,8 @@ export async function POST(request) {
       });
       await trx('cis').insert({
         id: uuidv4(), ciBaseId: baseId, ciType, serialNumber, assetTag,
+        rackSize: rackSize || null,
+        rackModel: rackModel || null,
       });
     });
 
@@ -150,7 +156,7 @@ export async function POST(request) {
       action: 'created', afterData: ci,
     });
 
-    return created({ ...ci, ciType, serialNumber, assetTag });
+    return created({ ...ci, ciType, serialNumber, assetTag, rackSize, rackModel });
   } catch (error) {
     return handleApiError(error, 'Failed to create CI');
   }

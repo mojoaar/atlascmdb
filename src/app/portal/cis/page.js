@@ -11,5 +11,5 @@ const columns = [
 ];
 
 export default function CisPage() {
-  return <EntityList title="Configuration Items" apiPath="/api/cis" detailPath="/portal/cis" columns={columns} searchPlaceholder="Search CIs..." />;
+  return     <EntityList title="Configuration Items" apiPath="/api/cis" detailPath={(row) => row.ciType === 'rack' ? `/admin/racks/${row.id}` : `/portal/cis/${row.id}`} columns={columns} searchPlaceholder="Search CIs..." />;
 }

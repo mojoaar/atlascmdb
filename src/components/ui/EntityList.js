@@ -26,6 +26,7 @@ export default function EntityList({
   allColumns,
   columnEntityType,
   selectable = !!bulkEntityType,
+  apiParams,
 }) {
   const router = useRouter();
   const { user } = useAuth();
@@ -136,7 +137,10 @@ export default function EntityList({
 
       if (advFilter) params.set('filter', JSON.stringify(advFilter));
 
-      const res = await fetch(`${apiPath}?${params}`);
+      let url = `${apiPath}?${params}`;
+      if (apiParams) url += '&' + apiParams;
+
+      const res = await fetch(url);
       if (res.ok) {
         const result = await res.json();
         setData(unwrap(result));
@@ -146,12 +150,13 @@ export default function EntityList({
     }
     load();
     setSelectedIds(new Set());
-  }, [apiPath, page, search, sort, order, filterVersion, advFilter, rowLimit]);
+  }, [apiPath, page, search, sort, order, filterVersion, advFilter, rowLimit, apiParams]);
 
   const totalPages = Math.ceil(total / rowLimit);
 
   function handleRowClick(row) {
-    router.push(`${detailPath}/${row.id}`);
+    const path = typeof detailPath === 'function' ? detailPath(row) : `${detailPath}/${row.id}`;
+    router.push(path);
   }
 
   function handleSelect(row) {

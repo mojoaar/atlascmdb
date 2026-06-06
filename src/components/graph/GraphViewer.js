@@ -175,7 +175,7 @@ export default function GraphViewer({ data, onNodeClick, compact }) {
         fitView
         fitViewOptions={{ padding: 0.3 }}
         minZoom={0.2}
-        maxZoom={2}
+        maxZoom={4}
         attributionPosition="bottom-left"
         proOptions={{ hideAttribution: true }}
       >

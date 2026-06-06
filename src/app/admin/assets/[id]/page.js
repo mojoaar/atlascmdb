@@ -78,7 +78,7 @@ export default function AdminAssetDetail() {
   }, [id, isNew]);
 
   useEffect(() => {
-    if (isNew || loading) return;
+    if (loading) return;
     async function loadLayout() {
       const res = await fetch('/api/config');
       if (!res.ok) return;

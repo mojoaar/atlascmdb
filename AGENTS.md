@@ -14,6 +14,10 @@ npm run lint          # Run linter
 
 Always run `npm run build` after making changes across multiple files.
 
+## Releases & Git Tags
+
+Never create git tags or GitHub releases autonomously. The maintainer decides when to cut releases and assigns version numbers and tag names. Commit and push work when asked, but do not tag.
+
 ## Architecture
 
 Next.js 16.2.7 App Router with better-sqlite3 (dev) and PostgreSQL (production via Knex).
@@ -184,7 +188,7 @@ Settings pages call `refresh()` after saving to sync formatting preferences acro
 
 CSS Modules only. Design tokens in `src/styles/globals.css` as custom properties. Dark mode via `[data-theme="dark"]` on `<html>`.
 
-Shared entity page styles at `src/app/admin/entity.module.css` and `src/app/portal/entity.module.css` (currently identical — deduplication deferred).
+Shared entity page styles at `src/styles/entity.module.css`, imported as `@/styles/entity.module.css`. Both admin and portal pages share this single file.
 
 Key classes: `.fieldGrid` (auto-fill grid for form fields), `.toolbar` (flex row for search/filter/actions), `.section`/.`sectionTitle` (grouped form sections).
 
@@ -207,7 +211,9 @@ Graph API (`/api/entities/[type]/[id]/graph`) supports `?depth=1-6` (default 3).
 
 Admin detail pages (services, applications, CIs, assets) use dynamic form layouts stored as JSON in the `app_config` table via `/api/config`:
 
-- Config keys: `form_layout_ci`, `form_layout_service`, `form_layout_application`, `form_layout_asset`
+- Config keys: `form_layout_service`, `form_layout_application`, `form_layout_ci`, `form_layout_asset`, `form_layout_rack`
+- Per-class CI keys: `form_layout_ci:server`, `form_layout_ci:network_device`, `form_layout_ci:storage`, `form_layout_ci:database`, `form_layout_ci:container`, `form_layout_ci:rack`, `form_layout_ci:other`
+- Each CI class can have its own saved layout; `form_layout_ci` is the generic fallback
 - Fall back to `DEFAULT_LAYOUTS[entityType]` from `src/lib/form-fields.js` if no config key exists
 - Layout has `sections` (field groupings) + `componentSections` (Relationships, Audit Trail, Attachments)
 - Per-section `columns` (1-3) controls grid via `.gridCols1`/`.gridCols2`/`.gridCols3` CSS classes
@@ -255,5 +261,5 @@ Test auth helpers use `requireAuth()()(request)` — double parentheses (closure
  13. **Impersonation `isSelf` vs `targetUserId`**: Under user impersonation, `extractUserFromRequest` sets the actor's ID to `auth.user.id` and the impersonated user's ID to `auth.user.targetUserId`. When updating self-attributes (like avatar color or background) on behalf of the impersonated user, the endpoint permission check must allow updates when either condition is met: `const isSelf = auth.user.id === id || auth.user.targetUserId === id`.
  14. **Vitest concurrency/pool configuration**: To avoid SQLite locking and synchronization issues on the shared `test.db`, keep sequential execution enabled in `vitest.config.js` via `fileParallelism: false`.
  15. **Bcrypt Hash compatibility**: The database seed uses different salt versions (`$2a$` or `$2b$`) depending on the execution environment. Assertions in tests must be flexible (e.g., verifying `startsWith('$2a$') || startsWith('$2b$')`).
- 16. **`/api/config` ALLOWED_KEYS allowlist**: Any new `app_config` key written via `PUT /api/config` must be added to the `ALLOWED_KEYS` set in `src/app/api/config/route.js` or the request returns a 400. Current keys include `form_layout_*`, `column_default_*` (per-entity), SSO, SCIM, `row_limit_default`, and `attachment_allowed_types`.
+ 16. **`/api/config` ALLOWED_KEYS allowlist**: Any new `app_config` key written via `PUT /api/config` must be added to the `ALLOWED_KEYS` set in `src/app/api/config/route.js` or the request returns a 400. Current keys include `form_layout_*` (incl. per-Class `form_layout_ci:{ciType}`), `column_default_*` (per-entity), SSO, SCIM, `row_limit_default`, and `attachment_allowed_types`.
  17. **`serverExternalPackages` in `next.config.js`**: Only native-binding packages need listing (`better-sqlite3`, `knex`, `bcryptjs`). Do not add pure-JS packages here.

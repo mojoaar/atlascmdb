@@ -3,21 +3,29 @@
 import { useRouter } from 'next/navigation';
 import AdminEntityList from '../EntityList';
 
+const ciTypeLabels = {
+  server: 'Server', network_device: 'Network Device',
+  storage: 'Storage', database: 'Database',
+  container: 'Container', rack: 'Rack', other: 'Other',
+};
+const renderCiType = (r) => ciTypeLabels[r.ciType] || r.ciType;
+const cap = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+
 const columns = [
   { key: 'name', header: 'Name', always: true },
-  { key: 'ciType', header: 'Class' },
-  { key: 'lifecycleStatus', header: 'Status' },
+  { key: 'ciType', header: 'Class', render: renderCiType },
+  { key: 'lifecycleStatus', header: 'Status', render: (r) => cap(r.lifecycleStatus) },
   { key: 'locationName', header: 'Location' },
 ];
 
 const allColumns = [
   { key: 'name', header: 'Name', always: true },
-  { key: 'ciType', header: 'Class' },
+  { key: 'ciType', header: 'Class', render: renderCiType },
   { key: 'description', header: 'Description', default: false },
   { key: 'serialNumber', header: 'Serial #', default: false, sortKey: 'serialNumber' },
-  { key: 'lifecycleStatus', header: 'Status' },
+  { key: 'lifecycleStatus', header: 'Status', render: (r) => cap(r.lifecycleStatus) },
   { key: 'locationName', header: 'Location' },
-  { key: 'environment', header: 'Environment', default: false },
+  { key: 'environment', header: 'Environment', default: false, render: (r) => cap(r.environment) },
   { key: 'classification', header: 'Classification', default: false },
   { key: 'externalRef', header: 'Ext. Ref', default: false },
   { key: 'createdAt', header: 'Created', default: false, render: (r) => r.createdAt ? new Date(r.createdAt).toLocaleDateString() : '—' },
@@ -50,7 +58,7 @@ export default function AdminCIsPage() {
     <AdminEntityList
       title="Configuration Items"
       apiPath="/api/cis"
-      detailPath="/admin/cis"
+      detailPath={(row) => row.ciType === 'rack' ? `/admin/racks/${row.id}` : `/admin/cis/${row.id}`}
       columns={columns}
       searchPlaceholder="Search CIs..."
       onCreate={() => router.push('/admin/cis/new')}

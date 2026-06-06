@@ -3,22 +3,24 @@
 import { useRouter } from 'next/navigation';
 import AdminEntityList from '../EntityList';
 
+const cap = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+
 const columns = [
   { key: 'name', header: 'Name', always: true },
-  { key: 'applicationType', header: 'Type', sortKey: 'appType' },
-  { key: 'lifecycleStatus', header: 'Status' },
+  { key: 'appType', header: 'Type' },
+  { key: 'lifecycleStatus', header: 'Status', render: (r) => cap(r.lifecycleStatus) },
   { key: 'ownerTeamName', header: 'Team' },
 ];
 
 const allColumns = [
   { key: 'name', header: 'Name', always: true },
-  { key: 'applicationType', header: 'Type', sortKey: 'appType' },
+  { key: 'appType', header: 'Type' },
   { key: 'description', header: 'Description', default: false },
   { key: 'vendor', header: 'Vendor', default: false },
   { key: 'version', header: 'Version', default: false },
-  { key: 'lifecycleStatus', header: 'Status' },
+  { key: 'lifecycleStatus', header: 'Status', render: (r) => cap(r.lifecycleStatus) },
   { key: 'ownerTeamName', header: 'Team' },
-  { key: 'environment', header: 'Environment', default: false },
+  { key: 'environment', header: 'Environment', render: (r) => cap(r.environment), default: false },
   { key: 'classification', header: 'Classification', default: false },
   { key: 'createdAt', header: 'Created', default: false, render: (r) => r.createdAt ? new Date(r.createdAt).toLocaleDateString() : '—' },
   { key: 'updatedAt', header: 'Updated', default: false, render: (r) => r.updatedAt ? new Date(r.updatedAt).toLocaleDateString() : '—' },

@@ -6,6 +6,7 @@ import { Layout } from 'lucide-react';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import InlineGraph from '@/components/graph/InlineGraph';
+import RackViewer from '@/components/graph/RackViewer';
 import RelationshipEditor from '@/components/ui/RelationshipEditor';
 import AuditTrail from '@/components/ui/AuditTrail';
 import DetailMenu from '@/components/ui/DetailMenu';
@@ -27,7 +28,7 @@ const CI_TYPE_OPTIONS = [
   { value: 'other', label: 'Other' },
 ];
 
-export default function AdminCiDetail() {
+export default function AdminRackDetail() {
   const { id } = useParams();
   const router = useRouter();
   const { alert, confirm, toast } = useFeedback();
@@ -37,7 +38,7 @@ export default function AdminCiDetail() {
   const [form, setForm] = useState({
     name: '', description: '', ownerTeamId: '', ownerTeamName: '', locationId: '', locationName: '',
     lifecycleStatus: '', environment: '', classification: '', externalRef: '',
-    ciType: '', serialNumber: '', assetTag: '',
+    ciType: 'rack', serialNumber: '', assetTag: '', rackSize: 42, rackModel: '',
   });
   const [teams, setTeams] = useState([]);
   const [locations, setLocations] = useState([]);
@@ -66,9 +67,11 @@ export default function AdminCiDetail() {
             environment: c.environment || '',
             classification: c.classification || '',
             externalRef: c.externalRef || '',
-            ciType: c.ciType || '',
+            ciType: c.ciType || 'rack',
             serialNumber: c.serialNumber || '',
             assetTag: c.assetTag || '',
+            rackSize: c.rackSize || 42,
+            rackModel: c.rackModel || '',
           });
         }
         setLoading(false);
@@ -83,21 +86,20 @@ export default function AdminCiDetail() {
       if (!res.ok) return;
       const config = await res.json();
       if (!config) return;
-      const key = form.ciType ? `form_layout_ci:${form.ciType}` : 'form_layout_ci';
-      const raw = config[key] || config.form_layout_ci;
+      const raw = config.form_layout_rack || config.form_layout_ci;
       if (raw) {
         try { setFormLayout(JSON.parse(raw)); } catch {}
       }
     }
     loadLayout();
-  }, [loading, form.ciType]);
+  }, [isNew, loading]);
 
   function update(key, value) { setForm(f => ({ ...f, [key]: value })); }
 
   async function handleSave() {
     setSaving(true);
     setMessage(null);
-    const body = { ...form };
+    const body = { ...form, ciType: 'rack' };
     const url = isNew ? '/api/cis' : `/api/cis/${id}`;
     const method = isNew ? 'POST' : 'PATCH';
 
@@ -106,26 +108,25 @@ export default function AdminCiDetail() {
     setSaving(false);
 
     if (res.ok) {
-      if (isNew) router.push(`/admin/cis/${data.id}`);
-      else { setMessage({ type: 'success', text: 'CI saved' }); setViewMode(true); }
+      if (isNew) router.push(`/admin/racks/${data.id}`);
+      else { setMessage({ type: 'success', text: 'Rack saved' }); setViewMode(true); }
     } else {
       setMessage({ type: 'error', text: data.error || 'Save failed' });
     }
   }
 
   async function handleDelete() {
-    if (!await confirm('Delete this CI?')) return;
+    if (!await confirm('Delete this rack?')) return;
     const res = await fetch(`/api/cis/${id}`, { method: 'DELETE' });
-    if (res.ok) router.push('/admin/cis');
+    if (res.ok) router.push('/admin/racks');
     else await alert('Delete failed');
   }
 
   async function handleLayoutSave(layout) {
-    const key = form.ciType ? `form_layout_ci:${form.ciType}` : 'form_layout_ci';
     const res = await fetch('/api/config', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ [key]: JSON.stringify(layout) }),
+      body: JSON.stringify({ form_layout_rack: JSON.stringify(layout) }),
     });
     if (res.ok) {
       setFormLayout(layout);
@@ -141,7 +142,12 @@ export default function AdminCiDetail() {
   for (const f of allFields) fieldMap[f.id] = f;
 
   function getEffectiveLayout() {
-    return formLayout || getDefaultLayout('ci');
+    if (!formLayout) return getDefaultLayout('rack');
+    const dl = getDefaultLayout('rack');
+    const savedMap = {};
+    (formLayout.componentSections || []).forEach(s => { savedMap[s.id] = s; });
+    const merged = (dl.componentSections || []).map(ds => savedMap[ds.id] || ds);
+    return { ...formLayout, componentSections: merged };
   }
 
   const teamOptions = [ ...(teams || []).map(t => ({ value: t.id, label: t.name }))];
@@ -186,6 +192,17 @@ export default function AdminCiDetail() {
         {compSecs.map(sec => {
           if (sec.visible === false) return null;
 
+          if (sec.id === 'rack_layout' && !isNew) {
+            return (
+              <div key={sec.id} className={styles.section}>
+                <div className={styles.sectionTitle}>Rack Layout</div>
+                <Card>
+                  <RackViewer rackId={id} rackSize={form.rackSize || 42} rackName={form.name} locationName={form.locationName} />
+                </Card>
+              </div>
+            );
+          }
+
           if (sec.id === 'relationships' && !isNew) {
             return (
               <div key={sec.id} className={styles.section}>
@@ -220,7 +237,7 @@ export default function AdminCiDetail() {
   return (
     <div className={styles.detailPage}>
       <div className={styles.back}>
-        <a href="/admin/cis" onClick={(e) => { e.preventDefault(); router.push('/admin/cis'); }}>&larr; Back to CIs</a>
+        <a href="/admin/racks" onClick={(e) => { e.preventDefault(); router.push('/admin/racks'); }}>&larr; Back to Racks</a>
       </div>
       <div className={styles.detailHeader} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
@@ -235,9 +252,9 @@ export default function AdminCiDetail() {
                 ]}
               />
             )}
-            <h1 className={styles.detailTitle}>{isNew ? 'New CI' : form.name}</h1>
+            <h1 className={styles.detailTitle}>{isNew ? 'New Rack' : form.name}</h1>
           </div>
-          {!isNew && <div className={styles.meta}><span>{CI_TYPE_OPTIONS.find(o => o.value === form.ciType)?.label || form.ciType || 'CI'}</span></div>}
+          {!isNew && <div className={styles.meta}><span>{form.rackModel || `${form.rackSize || 42}U Rack`}</span></div>}
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           {!isNew && viewMode && (
