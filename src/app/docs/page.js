@@ -69,13 +69,16 @@ export default function DocsPage() {
   const [theme, setTheme] = useState('light');
 
   useEffect(() => {
-    const current = document.documentElement.getAttribute('data-theme') || 'light';
+    const saved = localStorage.getItem('atlas-theme-mode');
+    const current = saved || document.documentElement.getAttribute('data-theme') || 'light';
+    if (current === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
     setTheme(current);
   }, []);
 
   function toggleTheme() {
     const next = theme === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('atlas-theme-mode', next);
     setTheme(next);
   }
 

@@ -25,6 +25,8 @@ export default function PortalSettingsPage() {
   const [avatarBg, setAvatarBg] = useState('#003d7a');
   const [avatarUrl, setAvatarUrl] = useState('');
   const avatarPicked = useRef(false);
+  const fileInputRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
 
   const [mfaSecret, setMfaSecret] = useState(null);
   const [mfaCode, setMfaCode] = useState('');
@@ -86,7 +88,10 @@ export default function PortalSettingsPage() {
     if (!tokenSet) return;
     const tokens = typeof tokenSet === 'string' ? JSON.parse(tokenSet) : tokenSet;
     if (tokens.colors) {
-      Object.entries(tokens.colors).forEach(([k, v]) => document.documentElement.style.setProperty(`--${k}`, v));
+      Object.entries(tokens.colors).forEach(([k, v]) => {
+        const cssVar = k.replace(/([A-Z])/g, '-$1').toLowerCase();
+        document.documentElement.style.setProperty(`--${cssVar}`, v);
+      });
     }
     if (tokens.borderRadius) document.documentElement.style.setProperty('--radius', tokens.borderRadius);
     if (tokens.fontFamily) document.documentElement.style.setProperty('--font-family', tokens.fontFamily);
@@ -147,6 +152,38 @@ export default function PortalSettingsPage() {
     if (res.ok) { setMessage({ text: 'Avatar updated', type: 'success' }); refresh(); }
   }
 
+  async function handleAvatarUpload(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setMessage(null);
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch('/api/users/' + user.id + '/avatar', { method: 'POST', body: formData });
+    if (res.ok) {
+      const data = await res.json();
+      avatarPicked.current = true;
+      setAvatarUrl(data.url);
+      setMessage({ text: 'Photo uploaded', type: 'success' });
+      refresh();
+    } else {
+      const err = await res.json().catch(() => ({}));
+      setMessage({ text: err.error || 'Upload failed', type: 'error' });
+    }
+    setUploading(false);
+    e.target.value = '';
+  }
+
+  async function handleAvatarRemove() {
+    const res = await fetch('/api/users/' + user.id + '/avatar', { method: 'DELETE' });
+    if (res.ok) {
+      avatarPicked.current = true;
+      setAvatarUrl('');
+      setMessage({ text: 'Photo removed', type: 'success' });
+      refresh();
+    }
+  }
+
   return (
     <div className={styles.page}>
       <h1 className={styles.title} style={{ marginBottom: '1.5rem' }}>User Settings</h1>
@@ -163,7 +200,18 @@ export default function PortalSettingsPage() {
             <div>
               <div style={{ fontSize: '1.125rem', fontWeight: 600 }}>{user?.displayName}</div>
               <div style={{ fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>{user?.email}</div>
-              <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.25rem' }}>
+              <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <input type="file" ref={fileInputRef} onChange={handleAvatarUpload} accept="image/jpeg,image/png,image/gif,image/webp" style={{ display: 'none' }} />
+                <Button variant="secondary" size="small" disabled={uploading} onClick={() => fileInputRef.current?.click()}>
+                  {uploading ? 'Uploading...' : 'Upload photo'}
+                </Button>
+                {avatarUrl && (
+                  <Button variant="danger" size="small" onClick={handleAvatarRemove}>
+                    Remove photo
+                  </Button>
+                )}
+              </div>
+              <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
                 {AVATAR_COLORS.map(c => (
                   <button
                     key={c}
@@ -197,7 +245,7 @@ export default function PortalSettingsPage() {
                   textAlign: 'left',
                 }}
               >
-                <div style={{ fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.25rem' }}>{t.name}</div>
+                <div style={{ fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.25rem', color: 'var(--card-foreground)' }}>{t.name}</div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)' }}>Light &amp; Dark</div>
               </button>
             ))}
@@ -294,6 +342,7 @@ export default function PortalSettingsPage() {
             <Credit name="otpauth" url="https://github.com/hectorm/otpauth" />
             <Credit name="bcryptjs" url="https://github.com/dcodeIO/bcrypt.js" />
             <Credit name="uuid" url="https://github.com/uuidjs/uuid" />
+            <Credit name="Prism.js" url="https://prismjs.com" />
             <Credit name="Catppuccin" url="https://catppuccin.com" />
             <Credit name="Nord" url="https://www.nordtheme.com" />
             <Credit name="Dracula" url="https://draculatheme.com" />

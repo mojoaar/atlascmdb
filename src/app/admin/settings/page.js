@@ -34,6 +34,9 @@ export default function AdminSettingsPage() {
   const [adminRowLimit, setAdminRowLimit] = useState(100);
   const [attachmentTypes, setAttachmentTypes] = useState('.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg,.gif,.webp,.svg');
   const [colEditorOpen, setColEditorOpen] = useState(null);
+  const [isDemoSeeded, setIsDemoSeeded] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
+  const [resetting, setReseting] = useState(false);
 
   const columnDefs = {
     services: [
@@ -127,6 +130,11 @@ export default function AdminSettingsPage() {
 
   useEffect(() => {
     fetch('/api/auth/me').then(r => r.json()).then(u => setUser(u));
+    fetch('/api/admin/demo-status').then(r => r.json()).then(res => {
+      if (res && res.isDemoSeeded) {
+        setIsDemoSeeded(true);
+      }
+    });
     fetch('/api/me/theme').then(r => r.json()).then(t => {
       if (t) {
         setTheme(t.modePreference || '');
@@ -198,6 +206,25 @@ export default function AdminSettingsPage() {
     setColEditorOpen(null);
   }
 
+  async function handleResetDemo() {
+    setReseting(true);
+    try {
+      const res = await fetch('/api/admin/reset-demo', { method: 'POST' });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        toast('Demo data reset complete. Only Alice remains.');
+        setIsDemoSeeded(false);
+        setConfirmReset(false);
+      } else {
+        await alert(data.error || 'Failed to reset demo data.');
+      }
+    } catch (err) {
+      await alert('An error occurred while resetting demo data.');
+    } finally {
+      setReseting(false);
+    }
+  }
+
   async function handleSaveRowLimit() {
     await fetch('/api/config', {
       method: 'PUT',
@@ -260,9 +287,13 @@ export default function AdminSettingsPage() {
               <div className={styles.fieldValue}>SQLite (dev) / PostgreSQL (prod)</div>
             </div>
             <div className={styles.field}>
-              <div className={styles.fieldLabel}>Framework</div>
-              <div className={styles.fieldValue}>Next.js 16.2 (App Router)</div>
-            </div>
+                  <div className={styles.fieldLabel}>Framework</div>
+                  <div className={styles.fieldValue}>Next.js 16.2 (App Router)</div>
+                </div>
+                <div className={styles.field}>
+                  <div className={styles.fieldLabel}>UI Library</div>
+                  <div className={styles.fieldValue}>React 19.2</div>
+                </div>
           </div>
         </Card>
       </div>
@@ -396,6 +427,7 @@ export default function AdminSettingsPage() {
             <Credit name="otpauth" url="https://github.com/hectorm/otpauth" />
             <Credit name="bcryptjs" url="https://github.com/dcodeIO/bcrypt.js" />
             <Credit name="uuid" url="https://github.com/uuidjs/uuid" />
+            <Credit name="Prism.js" url="https://prismjs.com" />
             <Credit name="Catppuccin" url="https://catppuccin.com" />
             <Credit name="Nord" url="https://www.nordtheme.com" />
             <Credit name="Dracula" url="https://draculatheme.com" />
@@ -413,6 +445,40 @@ export default function AdminSettingsPage() {
           onApply={(selected) => handleSaveColumnDefaults(colEditorOpen, selected)}
           onClose={() => setColEditorOpen(null)}
         />
+      )}
+
+      {isDemoSeeded && (
+        <div className={styles.section}>
+          <div className={styles.sectionTitle} style={{ color: 'var(--danger)' }}>Danger Zone</div>
+          <Card style={{ borderColor: 'var(--danger)', borderWidth: '2px', borderStyle: 'solid' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <p style={{ margin: 0, fontSize: '0.875rem', lineHeight: '1.4' }}>
+                This option will permanently delete all demo data from the database. All services, applications, 
+                CIs, relationships, assets, locations, teams, audit logs, and users (except <strong>Alice Admin</strong>) 
+                will be lost. System roles, default configuration, and themes will be preserved.
+              </p>
+              {!confirmReset ? (
+                <div>
+                  <Button variant="danger" onClick={() => setConfirmReset(true)}>Reset Demo Data</Button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '0.75rem', backgroundColor: 'var(--muted)', borderRadius: 'var(--radius)' }}>
+                  <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--danger)' }}>
+                    Are you absolutely sure? This cannot be undone.
+                  </span>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <Button variant="danger" disabled={resetting} onClick={handleResetDemo}>
+                      {resetting ? 'Resetting...' : 'Yes, Permanently Delete All Demo Data'}
+                    </Button>
+                    <Button variant="secondary" disabled={resetting} onClick={() => setConfirmReset(false)}>
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </Card>
+        </div>
       )}
 
       <div style={{ marginTop: '1.5rem' }}>

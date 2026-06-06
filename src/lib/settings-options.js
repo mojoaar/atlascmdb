@@ -40,4 +40,4 @@ export const ROW_LIMIT_OPTIONS = [
 
 export const DEPTH_OPTIONS = Array.from({ length: 6 }, (_, i) => ({ value: String(i + 1), label: String(i + 1) }));
 
-export const AVATAR_COLORS = ['#003d7a', '#c8102e', '#2e7d32', '#ed6c02', '#4d8cc7', '#7b6faf', '#e0556b'];
+export const AVATAR_COLORS = ['#003d7a', '#c8102e', '#2e7d32', '#ed6c02', '#4d8cc7', '#7b6faf', '#e0556b', '#00695c', '#e64a19', '#3f51b5', '#f57f17', '#455a64', '#6d1f2a', '#558b2f'];

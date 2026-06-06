@@ -148,11 +148,13 @@ export default function Shell({ children, user, activeRoute, mode = 'portal', on
             </div>
           </div>
           <div className={styles.userLinks}>
-            <a href="/admin/dashboard"
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onNavigate?.('/admin/dashboard'); }}>
-              <Shield size={14} />
-              Admin
-            </a>
+            {(liveUser?.roles?.includes('admin') || liveUser?.roles?.includes('editor')) && (
+              <a href="/admin/dashboard"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onNavigate?.('/admin/dashboard'); }}>
+                <Shield size={14} />
+                Admin
+              </a>
+            )}
             <a href="/portal"
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); onNavigate?.('/portal'); }}>
               <LayoutGrid size={14} />
@@ -261,7 +263,8 @@ function applyTokens(tokenSet) {
   const parsed = typeof tokenSet === 'string' ? JSON.parse(tokenSet) : tokenSet;
   if (!parsed?.colors) return;
   for (const [key, value] of Object.entries(parsed.colors)) {
-    document.documentElement.style.setProperty(`--${key}`, value);
+    const cssVar = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+    document.documentElement.style.setProperty(`--${cssVar}`, value);
   }
   if (parsed.borderRadius) document.documentElement.style.setProperty('--radius', parsed.borderRadius);
   if (parsed.fontFamily) document.documentElement.style.setProperty('--font-family', parsed.fontFamily);
@@ -284,7 +287,11 @@ function ThemeToggle() {
       const theme = await r.json();
       if (!theme || cancelled) return;
       setThemeTokens(theme);
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const modePref = prefs.modePreference || 'light';
+      const isDark = modePref === 'dark';
+      document.documentElement.setAttribute('data-theme', isDark ? 'dark' : '');
+      setDark(isDark);
+      localStorage.setItem('atlas-theme-mode', isDark ? 'dark' : 'light');
       const tokens = isDark ? (theme.tokenSetDark || theme.tokenSetLight) : theme.tokenSetLight;
       applyTokens(tokens);
     }
@@ -309,6 +316,7 @@ function ThemeToggle() {
     const next = !dark;
     setDark(next);
     document.documentElement.setAttribute('data-theme', next ? 'dark' : '');
+    localStorage.setItem('atlas-theme-mode', next ? 'dark' : 'light');
     if (themeTokens) {
       const tokens = next ? (themeTokens.tokenSetDark || themeTokens.tokenSetLight) : themeTokens.tokenSetLight;
       if (tokens) {

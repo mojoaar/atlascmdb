@@ -36,27 +36,27 @@ const CTPS = {
     hover: '#e6e9ef',
   },
   frappe: {
-    background: '#303446', foreground: '#c6d0f5', primary: '#babbf1', primaryForeground: '#303446',
-    secondary: '#414559', secondaryForeground: '#c6d0f5', accent: '#ea999c', accentForeground: '#303446',
+    background: '#303446', foreground: '#c6d0f5', primary: '#5c63c0', primaryForeground: '#ffffff',
+    secondary: '#414559', secondaryForeground: '#c6d0f5', accent: '#a83d52', accentForeground: '#ffffff',
     muted: '#292c3c', mutedForeground: '#a5adce', border: '#51576d', card: '#414559', cardForeground: '#c6d0f5',
     success: '#a6d189', warning: '#ef9f76', danger: '#ea999c', info: '#8caaee',
-    sidebar: '#232634', sidebarForeground: '#c6d0f5', sidebarActive: '#babbf1', sidebarActiveForeground: '#303446',
+    sidebar: '#232634', sidebarForeground: '#c6d0f5', sidebarActive: '#5c63c0', sidebarActiveForeground: '#ffffff',
     hover: '#51576d',
   },
   macchiato: {
-    background: '#24273a', foreground: '#cad3f5', primary: '#b7bdf8', primaryForeground: '#24273a',
-    secondary: '#363a4f', secondaryForeground: '#cad3f5', accent: '#ed8796', accentForeground: '#24273a',
+    background: '#24273a', foreground: '#cad3f5', primary: '#5c63c0', primaryForeground: '#ffffff',
+    secondary: '#363a4f', secondaryForeground: '#cad3f5', accent: '#a83d52', accentForeground: '#ffffff',
     muted: '#1e2030', mutedForeground: '#a5adcb', border: '#494d64', card: '#363a4f', cardForeground: '#cad3f5',
     success: '#a6da95', warning: '#f5a97f', danger: '#ed8796', info: '#8aadf4',
-    sidebar: '#181926', sidebarForeground: '#cad3f5', sidebarActive: '#b7bdf8', sidebarActiveForeground: '#24273a',
+    sidebar: '#181926', sidebarForeground: '#cad3f5', sidebarActive: '#5c63c0', sidebarActiveForeground: '#ffffff',
     hover: '#494d64',
   },
   mocha: {
-    background: '#1e1e2e', foreground: '#cdd6f4', primary: '#b4befe', primaryForeground: '#1e1e2e',
-    secondary: '#313244', secondaryForeground: '#cdd6f4', accent: '#eba0ac', accentForeground: '#1e1e2e',
+    background: '#1e1e2e', foreground: '#cdd6f4', primary: '#5c63c0', primaryForeground: '#ffffff',
+    secondary: '#313244', secondaryForeground: '#cdd6f4', accent: '#a83d52', accentForeground: '#ffffff',
     muted: '#181825', mutedForeground: '#a6adc8', border: '#45475a', card: '#313244', cardForeground: '#cdd6f4',
     success: '#a6e3a1', warning: '#fab387', danger: '#eba0ac', info: '#89b4fa',
-    sidebar: '#11111b', sidebarForeground: '#cdd6f4', sidebarActive: '#b4befe', sidebarActiveForeground: '#1e1e2e',
+    sidebar: '#11111b', sidebarForeground: '#cdd6f4', sidebarActive: '#5c63c0', sidebarActiveForeground: '#ffffff',
     hover: '#45475a',
   },
 };
@@ -72,11 +72,11 @@ const NORD_LIGHT = t({
 }, '6px');
 
 const NORD_DARK = t({
-  background: '#2e3440', foreground: '#d8dee9', primary: '#88c0d0', primaryForeground: '#2e3440',
-  secondary: '#3b4252', secondaryForeground: '#d8dee9', accent: '#bf616a', accentForeground: '#2e3440',
+  background: '#2e3440', foreground: '#d8dee9', primary: '#3d5a7d', primaryForeground: '#ffffff',
+  secondary: '#3b4252', secondaryForeground: '#d8dee9', accent: '#bf616a', accentForeground: '#ffffff',
   muted: '#434c5e', mutedForeground: '#7b88a1', border: '#4c566a', card: '#3b4252', cardForeground: '#d8dee9',
   success: '#a3be8c', warning: '#d08770', danger: '#bf616a', info: '#81a1c1',
-  sidebar: '#3b4252', sidebarForeground: '#d8dee9', sidebarActive: '#88c0d0', sidebarActiveForeground: '#2e3440',
+  sidebar: '#3b4252', sidebarForeground: '#d8dee9', sidebarActive: '#3d5a7d', sidebarActiveForeground: '#ffffff',
   hover: '#434c5e',
 }, '6px');
 
@@ -91,11 +91,11 @@ const DRACULA_LIGHT = t({
 }, '8px');
 
 const DRACULA_DARK = t({
-  background: '#282a36', foreground: '#f8f8f2', primary: '#bd93f9', primaryForeground: '#282a36',
-  secondary: '#383a4a', secondaryForeground: '#f8f8f2', accent: '#ff79c6', accentForeground: '#282a36',
+  background: '#282a36', foreground: '#f8f8f2', primary: '#6c42b5', primaryForeground: '#ffffff',
+  secondary: '#383a4a', secondaryForeground: '#f8f8f2', accent: '#c0357f', accentForeground: '#ffffff',
   muted: '#33354a', mutedForeground: '#6272a4', border: '#44475a', card: '#282a36', cardForeground: '#f8f8f2',
   success: '#50fa7b', warning: '#ffb86c', danger: '#ff5555', info: '#8be9fd',
-  sidebar: '#21222c', sidebarForeground: '#f8f8f2', sidebarActive: '#bd93f9', sidebarActiveForeground: '#282a36',
+  sidebar: '#21222c', sidebarForeground: '#f8f8f2', sidebarActive: '#6c42b5', sidebarActiveForeground: '#ffffff',
   hover: '#44475a',
 }, '8px');
 
@@ -110,11 +110,11 @@ const CYBERPUNK_LIGHT = t({
 }, '4px');
 
 const CYBERPUNK_DARK = t({
-  background: '#0b0d17', foreground: '#e0e0f0', primary: '#ff2d88', primaryForeground: '#0b0d17',
-  secondary: '#181a2e', secondaryForeground: '#c0c0e0', accent: '#00e5ff', accentForeground: '#0b0d17',
+  background: '#0b0d17', foreground: '#e0e0f0', primary: '#cc0066', primaryForeground: '#ffffff',
+  secondary: '#181a2e', secondaryForeground: '#c0c0e0', accent: '#006a87', accentForeground: '#ffffff',
   muted: '#15172a', mutedForeground: '#7c7caa', border: '#2a2c44', card: '#12142a', cardForeground: '#e0e0f0',
-  success: '#00ff87', warning: '#ffb800', danger: '#ff2d88', info: '#00e5ff',
-  sidebar: '#0a0c1e', sidebarForeground: '#c0c0e0', sidebarActive: '#ff2d88', sidebarActiveForeground: '#0b0d17',
+  success: '#00ff87', warning: '#ffb800', danger: '#ff2d88', info: '#006a87',
+  sidebar: '#0a0c1e', sidebarForeground: '#c0c0e0', sidebarActive: '#cc0066', sidebarActiveForeground: '#ffffff',
   hover: '#1a1c34',
 }, '4px');
 

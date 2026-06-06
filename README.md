@@ -9,6 +9,7 @@ Open-source CMDB for IT teams — services, applications, CIs, assets, and relat
 ## Features
 
 - **Entity management** — services (business & technical), applications, configuration items (CIs), assets, teams, locations, and users
+- **Rack management** — visual 42U/48U rack layouts with front/back views, multi-U placement, and colour-coded CI type badges
 - **Relationship graph** — interactive dependency graphs with BFS depth control (1–6 hops) and Dagre auto-layout
 - **Geographic maps** — location-aware asset/CI mapping via Leaflet + OpenStreetMap
 - **Import / Export** — CSV import with field mapping, preview, and conflict resolution; CSV/JSON export per entity type
@@ -61,6 +62,7 @@ Open [http://localhost:3000](http://localhost:3000) and log in with:
 | [otpauth](https://github.com/hectorm/otpauth) | TOTP MFA |
 | [bcryptjs](https://github.com/dcodeIO/bcrypt.js) | Password hashing |
 | [lucide-react](https://lucide.dev) | Icons |
+| [Prism.js](https://prismjs.com) | Syntax highlighting |
 | [uuid](https://github.com/uuidjs/uuid) | ID generation |
 
 ---
@@ -123,6 +125,7 @@ Repository: [git@github.com:mojoaar/atlascmdb.git](https://github.com/mojoaar/at
 - [otpauth](https://github.com/hectorm/otpauth)
 - [bcryptjs](https://github.com/dcodeIO/bcrypt.js)
 - [uuid](https://github.com/uuidjs/uuid)
+- [Prism.js](https://prismjs.com)
 - [Catppuccin](https://catppuccin.com)
 - [Nord](https://www.nordtheme.com)
 - [Dracula](https://draculatheme.com)
