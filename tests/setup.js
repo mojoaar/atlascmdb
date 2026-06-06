@@ -23,6 +23,9 @@ beforeAll(async () => {
 
   deleteDbFiles(TEST_DB_PATH);
 
+  // Ensure data directory exists
+  fs.mkdirSync(path.dirname(TEST_DB_PATH), { recursive: true });
+
   const getDb = (await import('@/lib/db')).default;
   const db = getDb();
   await db.migrate.latest();
