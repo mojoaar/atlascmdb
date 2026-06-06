@@ -12,6 +12,16 @@ import { useFeedback } from '@/components/ui/FeedbackProvider';
 import { listConnectors } from '@/lib/connectors';
 import styles from './page.module.css';
 
+const COMING_SOON = [
+  { type: 'servicenow',  logoInitials: 'SN',  label: 'ServiceNow',            desc: 'ITSM and service catalog mapping' },
+  { type: 'netbox',      logoInitials: 'NB',  label: 'NetBox',                desc: 'DCIM and IPAM physical hardware' },
+  { type: 'azure',       logoInitials: 'AZ',  label: 'Microsoft Azure',       desc: 'Cloud resources and inventory' },
+  { type: 'gcp',         logoInitials: 'GCP', label: 'Google Cloud Platform', desc: 'Cloud virtual instances' },
+  { type: 'proxmox',     logoInitials: 'PX',  label: 'Proxmox',               desc: 'Hypervisor host clustering' },
+  { type: 'vcenter',     logoInitials: 'VC',  label: 'VMware vCenter',        desc: 'VM and hypervisor inventory' },
+  { type: 'hyperv',      logoInitials: 'HV',  label: 'Microsoft Hyper-V',     desc: 'Windows virtual infrastructure' },
+];
+
 export default function AdminIntegrationsPage() {
   const router = useRouter();
   const { formatDate } = useFormat();
@@ -267,9 +277,23 @@ export default function AdminIntegrationsPage() {
                   }}
                 >
                   <div className={styles.typeLogo}>{mod.logoInitials}</div>
-                  <div className={styles.typeName}>{mod.label}</div>
-                  <div className={styles.typeDesc}>Import services, applications, and relationships</div>
+                  <div style={{ flex: 1 }}>
+                    <div className={styles.typeName}>{mod.label}</div>
+                    <div className={styles.typeDesc}>Import services, applications, and relationships</div>
+                  </div>
                 </button>
+              ))}
+              {COMING_SOON.map((mod) => (
+                <div key={mod.type} className={styles.typeOptionDisabled}>
+                  <div className={styles.typeLogo}>{mod.logoInitials}</div>
+                  <div style={{ flex: 1 }}>
+                    <div className={styles.typeNameRow}>
+                      <span className={styles.typeName}>{mod.label}</span>
+                      <span className={styles.comingSoonBadge}>Soon</span>
+                    </div>
+                    <div className={styles.typeDesc}>{mod.desc}</div>
+                  </div>
+                </div>
               ))}
             </div>
             <div className={styles.modalFooter}>
