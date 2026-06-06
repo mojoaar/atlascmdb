@@ -14,6 +14,9 @@ function getMimeType(file) {
 
 export async function GET(request, { params }) {
   try {
+    const auth = await requireAuth()(request);
+    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+
     const { id } = await params;
     const db = getDb();
     const user = await db('users').where({ id }).select('avatarData', 'avatarMimeType').first();

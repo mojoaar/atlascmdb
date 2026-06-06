@@ -51,9 +51,7 @@ export async function POST(request) {
 
     const accessToken = generateAccessToken(user);
     const response = NextResponse.json({
-      accessToken,
-      refreshToken: result.token,
-      sessionId: result.sessionId,
+      success: true,
     });
 
     setTokens(response, accessToken, result.token, result.sessionId);

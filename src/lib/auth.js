@@ -55,7 +55,7 @@ export function generateMfaToken(user) {
 }
 
 export function verifyAccessToken(token) {
-  return jwt.verify(token, JWT_SECRET);
+  return jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
 }
 
 export async function generateRefreshToken(user) {
@@ -101,7 +101,7 @@ export async function rotateRefreshToken(oldToken, sessionId) {
 }
 
 export function verifyRefreshToken(token) {
-  return jwt.verify(token, JWT_REFRESH_SECRET);
+  return jwt.verify(token, JWT_REFRESH_SECRET, { algorithms: ['HS256'] });
 }
 
 export function generateMfaSecret(userEmail) {

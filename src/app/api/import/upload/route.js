@@ -56,11 +56,17 @@ export async function POST(request) {
       const formData = await request.formData();
       const file = formData.get('file');
       if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+      if (file.size > 10 * 1024 * 1024) {
+        return NextResponse.json({ error: 'Upload must be under 10 MB' }, { status: 400 });
+      }
       filename = file.name;
       content = await file.text();
     } else {
       const body = await request.json();
       if (!body.content) return NextResponse.json({ error: 'No file content provided' }, { status: 400 });
+      if (body.content.length > 10 * 1024 * 1024) {
+        return NextResponse.json({ error: 'Upload must be under 10 MB' }, { status: 400 });
+      }
       filename = body.filename || 'upload.json';
       content = body.content;
     }

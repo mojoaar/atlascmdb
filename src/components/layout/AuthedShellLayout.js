@@ -18,6 +18,10 @@ export default function AuthedShellLayout({ mode, children }) {
         const res = await fetch('/api/auth/me');
         if (res.ok) {
           const data = await res.json();
+          if (mode === 'admin' && !data.roles?.includes('admin')) {
+            router.push('/portal');
+            return;
+          }
           setUser(data);
         } else {
           router.push('/login');
@@ -28,7 +32,7 @@ export default function AuthedShellLayout({ mode, children }) {
       setLoading(false);
     }
     load();
-  }, []);
+  }, [mode, router]);
 
   function navigate(href) {
     router.push(href);

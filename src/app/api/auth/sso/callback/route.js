@@ -33,7 +33,10 @@ export async function GET(request) {
     const cookieStore = await request.cookies;
     const state = cookieStore.get('sso_state')?.value;
     const codeVerifier = cookieStore.get('sso_code_verifier')?.value;
-    const returnUrl = cookieStore.get('sso_return_url')?.value || '/portal';
+    let returnUrl = cookieStore.get('sso_return_url')?.value || '/portal';
+    if (!/^\/(?![/\\])/.test(returnUrl)) {
+      returnUrl = '/portal';
+    }
 
     const requestUrl = new URL(request.url);
     const currentState = requestUrl.searchParams.get('state');

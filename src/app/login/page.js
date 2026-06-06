@@ -77,9 +77,6 @@ export default function LoginPage() {
         return;
       }
 
-      localStorage.setItem('atlas_access', data.accessToken);
-      localStorage.setItem('atlas_refresh', data.refreshToken);
-
       const meRes = await fetch('/api/auth/me');
       const me = await meRes.json();
 
