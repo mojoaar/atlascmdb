@@ -91,7 +91,14 @@ export async function GET(request) {
     const [countResult] = await query.clone().count('* as total');
     const sortCol = ALLOWED_SORT[sort] || DEFAULT_SORT;
     const sortOrder = ['asc','desc'].includes(order) ? order : 'desc';
-    const rows = await query.orderBy(sortCol, sortOrder).limit(limit).offset(offset);
+    
+    let orderByQuery = query;
+    if (sortCol === 'ci_base.name') {
+      orderByQuery = orderByQuery.orderByRaw(`LOWER(ci_base.name) ${sortOrder}`);
+    } else {
+      orderByQuery = orderByQuery.orderBy(sortCol, sortOrder);
+    }
+    const rows = await orderByQuery.limit(limit).offset(offset);
 
     const cis = rows.map(r => ({
       id: r.id,
