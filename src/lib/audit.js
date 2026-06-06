@@ -24,6 +24,7 @@ export async function logAudit({ actorUserId, entityType, entityId, action, befo
         actorUserId,
         title: `${name} ${notification}`,
         type: action === 'deleted' ? 'warning' : 'info',
+        action,
       });
     }
   }
@@ -59,7 +60,7 @@ const TABLE_LOOKUP = {
   ci: 'ci_base',
 };
 
-async function sendEntityNotification(db, { entityType, entityId, name, actorUserId, title, type }) {
+async function sendEntityNotification(db, { entityType, entityId, name, actorUserId, title, type, action }) {
   const userIds = new Set();
 
   const ownerField = ENTITY_OWNER_FIELDS[entityType];
@@ -80,7 +81,20 @@ async function sendEntityNotification(db, { entityType, entityId, name, actorUse
 
   if (userIds.size === 0) return;
 
-  const inserts = [...userIds].map(userId => ({
+  const validUserIds = [];
+  for (const userId of userIds) {
+    const prefs = await db('user_theme_preferences').where({ userId }).first();
+    if (prefs) {
+      if (action === 'created' && !prefs.notifOnCreate) continue;
+      if (action === 'updated' && !prefs.notifOnUpdate) continue;
+      if (action === 'deleted' && !prefs.notifOnDelete) continue;
+    }
+    validUserIds.push(userId);
+  }
+
+  if (validUserIds.length === 0) return;
+
+  const inserts = validUserIds.map(userId => ({
     id: uuidv4(),
     userId,
     type,

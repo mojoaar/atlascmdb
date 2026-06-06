@@ -455,36 +455,50 @@ const endpoints = [
   {
     "category": "Config",
     "method": "GET",
+    "path": "/api/config/public",
+    "description": "Get public configuration values (unauthenticated). Used by the login screen to check the ASCII logo preference.",
+    "auth": "None",
+    "response": {
+      "login_ascii_logo": "false"
+    }
+  },
+  {
+    "category": "Config",
+    "method": "GET",
     "path": "/api/config",
-    "description": "Get SSO and SCIM configuration settings.",
+    "description": "Get system configuration settings.",
     "auth": "admin",
     "response": {
-      "ssoEnabled": false,
-      "oidcIssuerUrl": "",
-      "oidcClientId": "",
-      "scimEnabled": false,
-      "scimBearerToken": "scim-token-..."
+      "sso_enabled": "false",
+      "oidc_issuer_url": "",
+      "oidc_client_id": "",
+      "scim_enabled": "false",
+      "row_limit_default": "100",
+      "attachment_allowed_types": ".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg,.gif,.webp,.svg",
+      "login_ascii_logo": "false",
+      "scim_bearer_token_masked": "scim-tok••••••••",
+      "oidc_client_secret_masked": "oidc-cli••••••••"
     }
   },
   {
     "category": "Config",
     "method": "PUT",
     "path": "/api/config",
-    "description": "Update SSO and SCIM configuration settings.",
+    "description": "Update system configuration settings.",
     "auth": "admin",
     "body": {
-      "ssoEnabled": true,
-      "oidcIssuerUrl": "https://accounts.google.com",
-      "oidcClientId": "abc123.apps.googleusercontent.com",
-      "oidcClientSecret": "secret",
-      "scimEnabled": true,
-      "regenerateScimToken": false
+      "sso_enabled": "true",
+      "oidc_issuer_url": "https://accounts.google.com",
+      "oidc_client_id": "abc123.apps.googleusercontent.com",
+      "oidc_client_secret": "secret123",
+      "scim_enabled": "true",
+      "scim_bearer_token": "scim-token-val",
+      "row_limit_default": "100",
+      "attachment_allowed_types": ".pdf,.docx,...",
+      "login_ascii_logo": "true"
     },
     "response": {
-      "ssoEnabled": true,
-      "oidcIssuerUrl": "https://accounts.google.com",
-      "scimEnabled": true,
-      "scimBearerToken": "scim-..."
+      "updated": true
     }
   },
   {

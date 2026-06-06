@@ -44,12 +44,21 @@ export async function GET(request) {
         dateFormat: 'DD/MM/YYYY',
         graphDepth: 3,
         columnPrefs: {},
+        notifOnCreate: true,
+        notifOnUpdate: true,
+        notifOnDelete: true,
         adminColumnDefaults: adminDefaults,
       });
     }
 
     const adminDefaults = await loadAdminColumnDefaults(db);
-    const result = { ...pref, adminColumnDefaults: adminDefaults };
+    const result = {
+      ...pref,
+      notifOnCreate: pref.notifOnCreate !== undefined ? !!pref.notifOnCreate : true,
+      notifOnUpdate: pref.notifOnUpdate !== undefined ? !!pref.notifOnUpdate : true,
+      notifOnDelete: pref.notifOnDelete !== undefined ? !!pref.notifOnDelete : true,
+      adminColumnDefaults: adminDefaults
+    };
     return success(result);
   } catch (error) {
     return handleApiError(error);
@@ -62,7 +71,7 @@ export async function PUT(request) {
     if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
 
     const db = getDb();
-    const { themeId, modePreference, timezone, clockFormat, dateFormat, graphDepth, columnPrefs, rowLimit } = await request.json();
+    const { themeId, modePreference, timezone, clockFormat, dateFormat, graphDepth, columnPrefs, rowLimit, notifOnCreate, notifOnUpdate, notifOnDelete } = await request.json();
 
     const existing = await db('user_theme_preferences').where({ userId: auth.user.id }).first();
 
@@ -76,6 +85,9 @@ export async function PUT(request) {
       if (graphDepth !== undefined) updates.graphDepth = parseInt(graphDepth);
       if (rowLimit !== undefined) updates.rowLimit = parseInt(rowLimit) || null;
       if (columnPrefs !== undefined) updates.columnPrefs = typeof columnPrefs === 'string' ? columnPrefs : JSON.stringify(columnPrefs);
+      if (notifOnCreate !== undefined) updates.notifOnCreate = notifOnCreate ? 1 : 0;
+      if (notifOnUpdate !== undefined) updates.notifOnUpdate = notifOnUpdate ? 1 : 0;
+      if (notifOnDelete !== undefined) updates.notifOnDelete = notifOnDelete ? 1 : 0;
       await db('user_theme_preferences').where({ userId: auth.user.id }).update(updates);
     } else {
       await db('user_theme_preferences').insert({
@@ -89,10 +101,13 @@ export async function PUT(request) {
         graphDepth: parseInt(graphDepth) || 3,
         rowLimit: rowLimit ? parseInt(rowLimit) : null,
         columnPrefs: columnPrefs ? (typeof columnPrefs === 'string' ? columnPrefs : JSON.stringify(columnPrefs)) : null,
+        notifOnCreate: notifOnCreate !== undefined ? (notifOnCreate ? 1 : 0) : 1,
+        notifOnUpdate: notifOnUpdate !== undefined ? (notifOnUpdate ? 1 : 0) : 1,
+        notifOnDelete: notifOnDelete !== undefined ? (notifOnDelete ? 1 : 0) : 1,
       });
     }
 
-    return success({ themeId, modePreference, timezone, clockFormat, dateFormat, graphDepth });
+    return success({ themeId, modePreference, timezone, clockFormat, dateFormat, graphDepth, notifOnCreate, notifOnUpdate, notifOnDelete });
   } catch (error) {
     return handleApiError(error);
   }

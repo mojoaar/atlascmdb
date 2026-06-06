@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Button from '@/components/ui/Button';
 import Pagination from '@/components/ui/Pagination';
 import Badge from '@/components/ui/Badge';
+import { Trash2 } from 'lucide-react';
 import styles from './page.module.css';
 import LoadingState from '@/components/ui/LoadingState';
 import { unwrap } from '@/lib/unwrap';
@@ -62,6 +63,16 @@ export default function NotificationsPage() {
     setUnreadCount(0);
   }
 
+  async function dismissNotification(id) {
+    await fetch(`/api/notifications/${id}`, { method: 'DELETE' });
+    setNotifications(prev => prev.filter(n => n.id !== id));
+    setTotal(prev => Math.max(0, prev - 1));
+    const n = notifications.find(notif => notif.id === id);
+    if (n && !n.read) {
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    }
+  }
+
   const totalPages = Math.ceil(total / limit);
 
   if (loading) {
@@ -110,11 +121,22 @@ export default function NotificationsPage() {
                   <span>{new Date(n.createdAt).toLocaleString()}</span>
                 </div>
               </div>
-              {!n.read && (
-                <Button variant="ghost" size="small" onClick={() => markRead(n.id)}>
-                  Mark read
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                {!n.read && (
+                  <Button variant="ghost" size="small" onClick={() => markRead(n.id)}>
+                    Mark read
+                  </Button>
+                )}
+                <Button
+                  variant="ghost"
+                  size="small"
+                  onClick={() => dismissNotification(n.id)}
+                  style={{ padding: '0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted-foreground)' }}
+                  title="Dismiss notification"
+                >
+                  <Trash2 size={16} />
                 </Button>
-              )}
+              </div>
             </div>
           ))}
         </div>

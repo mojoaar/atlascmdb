@@ -9,7 +9,7 @@ Open-source CMDB for modern IT teams — services, applications, CIs, assets, an
 ## Features
 
 - **Entity management** — services (business & technical), applications, configuration items (CIs), assets, teams, locations, and users
-- **Rack management** — visual 42U/48U rack layouts with front/back views, multi-U placement, and colour-coded CI type badges
+- **Rack management** — visual 42U/48U rack layouts with side-by-side front/back columns, multi-U placement, hover tooltips, colour-coded CI type badges, and a dedicated full-screen layout viewer
 - **Relationship graph** — interactive dependency graphs with BFS depth control (1–6 hops) and Dagre auto-layout
 - **Geographic maps** — location-aware asset/CI mapping via Leaflet + OpenStreetMap
 - **Import / Export** — CSV import with field mapping, preview, and conflict resolution; CSV/JSON export per entity type
@@ -18,6 +18,7 @@ Open-source CMDB for modern IT teams — services, applications, CIs, assets, an
 - **MFA** — TOTP two-factor authentication (RFC 6238) with QR code setup
 - **Audit trail** — full change history with before/after diffs and actor attribution
 - **Themes** — 8 built-in colour themes (Blue Line, Catppuccin × 4, Nord, Dracula, Cyberpunk) with light/dark toggle
+- **Login branding** — toggle between standard text and a styled, responsive ASCII art logo on the login screen
 
 ---
 

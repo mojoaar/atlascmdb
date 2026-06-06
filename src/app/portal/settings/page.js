@@ -21,6 +21,9 @@ export default function PortalSettingsPage() {
   const [dateFormat, setDateFormat] = useState('DD/MM/YYYY');
   const [graphDepth, setGraphDepth] = useState(3);
   const [rowLimit, setRowLimit] = useState(100);
+  const [notifOnCreate, setNotifOnCreate] = useState(true);
+  const [notifOnUpdate, setNotifOnUpdate] = useState(true);
+  const [notifOnDelete, setNotifOnDelete] = useState(true);
   const [message, setMessage] = useState(null);
   const [avatarBg, setAvatarBg] = useState('#003d7a');
   const [avatarUrl, setAvatarUrl] = useState('');
@@ -42,6 +45,9 @@ export default function PortalSettingsPage() {
         setDateFormat(t.dateFormat || 'DD/MM/YYYY');
         setGraphDepth(t.graphDepth || 3);
         setRowLimit(t.rowLimit || t.adminColumnDefaults?._rowLimit || 100);
+        setNotifOnCreate(t.notifOnCreate !== undefined ? !!t.notifOnCreate : true);
+        setNotifOnUpdate(t.notifOnUpdate !== undefined ? !!t.notifOnUpdate : true);
+        setNotifOnDelete(t.notifOnDelete !== undefined ? !!t.notifOnDelete : true);
       }
     });
     fetch('/api/themes').then(r => r.json()).then(d => setThemes(unwrap(d)));
@@ -73,6 +79,9 @@ export default function PortalSettingsPage() {
         timezone, clockFormat, dateFormat,
         graphDepth: parseInt(graphDepth),
         rowLimit: parseInt(rowLimit),
+        notifOnCreate,
+        notifOnUpdate,
+        notifOnDelete,
       }),
     });
     if (res.ok) { setMessage({ text: 'Preferences saved', type: 'success' }); refresh(); }
@@ -318,6 +327,55 @@ export default function PortalSettingsPage() {
             <Select label="Date Format" options={DATE_OPTIONS} value={dateFormat} onChange={e => setDateFormat(e.target.value)} />
             <Select label="Graph Depth" options={DEPTH_OPTIONS} value={String(graphDepth)} onChange={e => setGraphDepth(e.target.value)} />
             <Select label="Rows Per Page" options={ROW_LIMIT_OPTIONS} value={String(rowLimit)} onChange={e => setRowLimit(Number(e.target.value))} />
+          </div>
+          <Button variant="secondary" size="small" onClick={handleSavePrefs}>Save Preferences</Button>
+        </Card>
+      </div>
+
+      <div className={styles.section}>
+        <div className={styles.sectionTitle}>Notifications</div>
+        <Card>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.25rem' }}>
+            <div style={{ fontSize: '0.8125rem', color: 'var(--muted-foreground)' }}>
+              Configure which actions on managed items (services, CIs, assets, or applications) you own trigger notifications for you.
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.875rem', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={notifOnCreate}
+                  onChange={(e) => setNotifOnCreate(e.target.checked)}
+                />
+                <div>
+                  <div style={{ fontWeight: 600, color: 'var(--card-foreground)' }}>Item Created</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)' }}>Receive a notification when a new item you own is created</div>
+                </div>
+              </label>
+
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.875rem', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={notifOnUpdate}
+                  onChange={(e) => setNotifOnUpdate(e.target.checked)}
+                />
+                <div>
+                  <div style={{ fontWeight: 600, color: 'var(--card-foreground)' }}>Item Updated</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)' }}>Receive a notification when an item you own is modified</div>
+                </div>
+              </label>
+
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.875rem', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={notifOnDelete}
+                  onChange={(e) => setNotifOnDelete(e.target.checked)}
+                />
+                <div>
+                  <div style={{ fontWeight: 600, color: 'var(--card-foreground)' }}>Item Deleted</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)' }}>Receive a notification when an item you own is deleted</div>
+                </div>
+              </label>
+            </div>
           </div>
           <Button variant="secondary" size="small" onClick={handleSavePrefs}>Save Preferences</Button>
         </Card>

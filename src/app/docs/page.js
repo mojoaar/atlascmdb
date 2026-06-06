@@ -65,7 +65,7 @@ const SEARCH_INDEX = [
   {
     id: 'themes',
     label: 'Themes & Dark Mode',
-    content: 'visual engine dual-mode palettes eight built-in themes blue line default catppuccin latte frappe macchiato mocha nord dracula cyberpunk light mode overrides dark mode overrides data-theme="dark" contrast ratio 4.5:1 primary foreground accent sidebaractive sidebar active foreground flip text colors accessibility localstorage persistence multi-tab synchronization PUT /api/me/theme atlas-theme-mode'
+    content: 'visual engine dual-mode palettes eight built-in themes blue line default catppuccin latte frappe macchiato mocha nord dracula cyberpunk light mode overrides dark mode overrides data-theme="dark" contrast ratio 4.5:1 primary foreground accent sidebaractive sidebar active foreground flip text colors accessibility localstorage persistence multi-tab synchronization PUT /api/me/theme atlas-theme-mode login_ascii_logo ascii logo branding login screen public config'
   },
   {
     id: 'audit-trail',
@@ -432,7 +432,9 @@ npm run lint     — Run linter`}</CodeBlock>
             </p>
             <ul>
               <li>Visual U-slot grid (42U or 48U, configurable rack size)</li>
-              <li>Front/back toggle for dual-sided rack mounting</li>
+              <li>Side-by-side front and back columns with a centered U-number lane</li>
+              <li>Hover tooltips showing detailed CI placement info (name, type, serial number, and U-range)</li>
+              <li>Dedicated full-screen layout viewer at <code>/admin/racks/[id]/layout</code></li>
               <li>Place any CI from <code>ci_base</code> into rack slots (single or multi-U)</li>
               <li>Auto-detection of occupied slots with overlap prevention</li>
               <li>Color-coded CI type badges (server, network, storage, database, container)</li>
@@ -658,7 +660,7 @@ npm run lint     — Run linter`}</CodeBlock>
             <h2>Navigation Rules</h2>
             <ul>
               <li><strong>Viewers:</strong> See only the Portal interface. The bottom user sidebar hides the "Admin" link entirely; only the "Portal" and "Logout" actions are visible.</li>
-              <li><strong>Editors:</strong> Have access to both interfaces. The admin dashboard is accessible, but sensitive system folders (Users, Roles, SSO/SCIM Settings) are fully restricted.</li>
+              <li><strong>Editors:</strong> Have access to both interfaces. The admin dashboard is accessible, but sensitive system folders (Users, Roles, SSO/SCIM &amp; Integrations) are fully restricted.</li>
               <li><strong>Admins:</strong> Enjoy unrestricted administrative control.</li>
             </ul>
           </>
@@ -711,6 +713,15 @@ npm run lint     — Run linter`}</CodeBlock>
               <li>The application updates the database preference via <code>PUT /api/me/theme</code>.</li>
               <li>Other open tabs (like Docs and API documentation which run in isolated sandboxes) read from <code>localStorage</code> on load, ensuring a synchronized user experience across windows without requiring active database queries.</li>
             </ol>
+
+            <h2>Login Screen Branding</h2>
+            <p>
+              In addition to UI theme overrides, administrators can customize the login screen's appearance:
+            </p>
+            <ul>
+              <li><strong>ASCII Logo Toggle:</strong> Administrators can toggle on the Atlas ASCII art logo under <strong>Admin &rarr; Settings &rarr; Login Screen</strong>.</li>
+              <li><strong>Public Config API:</strong> When enabled, the unauthenticated route <code>GET /api/config/public</code> serves <code>login_ascii_logo: "true"</code>. The login client checks this endpoint on load to render the responsive border box with standard figlet characters instead of standard heading text.</li>
+            </ul>
           </>
         )}
 
@@ -771,8 +782,19 @@ npm run lint     — Run linter`}</CodeBlock>
             <h2>User Experience</h2>
             <ul>
               <li><strong>Unread Badging:</strong> A red badge appears over the bell icon in the top header displaying the count of unread messages.</li>
-              <li><strong>Dismissal:</strong> Clicking the notification menu lets users click on messages to mark them as read, or choose "Mark All as Read" to clear the badge.</li>
+              <li><strong>Mark as Read:</strong> Users can mark individual notifications as read or choose "Mark All as Read" to clear the badge.</li>
+              <li><strong>Dismissal &amp; Deletion:</strong> Clicking the trash icon next to any notification permanently deletes/dismisses that notification.</li>
               <li><strong>Focus Auto-Sync:</strong> The notifications component registers a browser window listener. When a user switches tabs and returns to Atlas, the system automatically triggers a silent refresh, syncing notifications instantly.</li>
+            </ul>
+
+            <h2>Preferences &amp; Customization</h2>
+            <p>
+              Users can customize which automatic triggers send notifications to their account. Under <strong>Portal Settings &gt; Notifications</strong>, three global switches allow users to opt in or out of specific event types:
+            </p>
+            <ul>
+              <li><strong>Item Created:</strong> Control notifications sent when a new managed item (Service, CI, Application, or Asset) you own is created.</li>
+              <li><strong>Item Updated:</strong> Control notifications sent when an item you own is modified.</li>
+              <li><strong>Item Deleted:</strong> Control notifications sent when an item you own is deleted.</li>
             </ul>
           </>
         )}
@@ -880,7 +902,7 @@ const auth = await requireEditor()(request);    // editor or admin`}</CodeBlock>
 
             <h2>Configuration</h2>
             <p>
-              Navigate to <strong>Admin → Settings → SSO Settings</strong> to enable and configure:
+              Navigate to <strong>Admin → Integrations → SSO Settings</strong> to enable and configure:
             </p>
             <table className={styles.table}>
               <thead>
@@ -928,7 +950,7 @@ const auth = await requireEditor()(request);    // editor or admin`}</CodeBlock>
 
             <h2>Enabling SCIM in Atlas</h2>
             <ol>
-              <li>Log in as an Administrator and navigate to <strong>Admin → Settings → SCIM Configuration</strong>.</li>
+              <li>Log in as an Administrator and navigate to <strong>Admin → Integrations → SCIM Configuration</strong>.</li>
               <li>Toggle the SCIM Enabled setting to true.</li>
               <li>Click <strong>Generate Token</strong> to obtain a cryptographically secure, random bearer token. Save this token immediately as it is masked upon reload.</li>
               <li>Click <strong>Save SCIM Settings</strong> to apply the config to the database.</li>
@@ -1720,7 +1742,7 @@ npm start
               <li>Fully interactive xyflow-driven Relationship Graphs.</li>
               <li>Leaflet-powered Location Maps with OpenStreetMap integrations.</li>
               <li>Automatic audit trail logging and team-based notification delivery.</li>
-              <li>Advanced datacentre Rack layout editor with front/back toggle.</li>
+              <li>Advanced datacentre Rack layout editor with side-by-side front/back columns, hover tooltips, and a standalone full-screen layout.</li>
             </ul>
           </>
         )}
