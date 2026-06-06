@@ -1737,16 +1737,17 @@ npm start
             </p>
 
             <h3>[0.1.0] — 2026-06-06</h3>
-            <p><strong>Initial public release.</strong> Core features included:</p>
+            <p><strong>Initial public release of Atlas CMDB.</strong> Core features include:</p>
             <ul>
-              <li>JWT session authentication with httpOnly cookie storage.</li>
-              <li>Role-based access controls supporting admin, editor, and viewer roles.</li>
-              <li>Comprehensive entity tables with polymorphic table-inheritance logic.</li>
-              <li>Drag-and-drop Form Designer supporting customizable fields and per-class layouts.</li>
-              <li>Fully interactive xyflow-driven Relationship Graphs.</li>
-              <li>Leaflet-powered Location Maps with OpenStreetMap integrations.</li>
-              <li>Automatic audit trail logging and team-based notification delivery.</li>
-              <li>Advanced datacentre Rack layout editor with side-by-side front/back columns, hover tooltips, and a standalone full-screen layout.</li>
+              <li><strong>Core CMDB Engine:</strong> Comprehensive service, application, and CI management with polymorphic table-inheritance support and bi-directional relationships.</li>
+              <li><strong>Form Designer &amp; Field Customization:</strong> Drag-and-drop dynamic layout editor with support for customizable section columns (1-3) and class-specific configuration schemas.</li>
+              <li><strong>Relationship Graphs:</strong> Fully interactive xyflow-driven relationship visualization engine with custom layouts and BFS-based graph depth control (1-6).</li>
+              <li><strong>Physical Datacenter Modeling:</strong> Advanced cabinet/rack layout visualization with interactive front/back dual columns, slot positioning, and full-screen layout.</li>
+              <li><strong>Geographic Mapping:</strong> Leaflet-powered geolocation mapping utilizing OpenStreetMap data to plot organizational assets and datacenters.</li>
+              <li><strong>Security &amp; RBAC:</strong> Fine-grained role-based access control (admin, editor, viewer), secure stateless JWT sessions, and fail-closed secrets validation.</li>
+              <li><strong>Modern Responsive Design:</strong> Dual-mode light/dark themes with 8 built-in developer palettes, pre-paint FOUC prevention, a responsive collapsible sidebar, and a mobile off-canvas drawer.</li>
+              <li><strong>Integrations &amp; Import Pipeline:</strong> Built-in connector framework featuring the "Next Insight" pull connector with configurable schedule mapping, FTS (Full-Text Search) integration, and automatic notification triggers.</li>
+              <li><strong>Administrative Utilities:</strong> Custom user settings, system-wide preferences, user avatars, auditing engine, SCIM v2 user provisioning, and transactional sandbox database resets.</li>
             </ul>
           </>
         )}

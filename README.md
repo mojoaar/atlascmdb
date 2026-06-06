@@ -143,7 +143,17 @@ Repository: [git@github.com:mojoaar/atlascmdb.git](https://github.com/mojoaar/at
 
 ### [0.1.0] — 2026-06-06
 
-Initial public release.
+Initial public release of Atlas CMDB. Core features include:
+
+- **Core CMDB Engine:** Comprehensive service, application, and CI management with polymorphic table-inheritance support and bi-directional relationships.
+- **Form Designer & Field Customization:** Drag-and-drop dynamic layout editor with support for customizable section columns (1-3) and class-specific configuration schemas.
+- **Relationship Graphs:** Fully interactive `@xyflow/react` relationship visualization engine with custom layouts and BFS-based graph depth control (1-6).
+- **Physical Datacenter Modeling:** Advanced 3D/2D cabinet/rack layout visualization with interactive front/back dual columns, slot positioning, and full-screen layout.
+- **Geographic Mapping:** Leaflet-powered geolocation mapping utilizing OpenStreetMap data to plot organizational assets and datacenters.
+- **Security & RBAC:** Fine-grained role-based access control (admin, editor, viewer), secure stateless JWT sessions, and fail-closed secrets validation.
+- **Modern Responsive Design:** Dual-mode light/dark themes with 8 built-in developer palettes, pre-paint FOUC prevention, a responsive collapsible sidebar, and a mobile off-canvas drawer.
+- **Integrations & Import Pipeline:** Built-in connector framework featuring the "Next Insight" pull connector with configurable schedule mapping, FTS (Full-Text Search) integration, and automatic notification triggers.
+- **Administrative Utilities:** Custom user settings, system-wide preferences, user avatars, auditing engine, SCIM v2 user provisioning, and transactional sandbox database resets.
 
 ---
 
