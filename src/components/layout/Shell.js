@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import {
   Home,
   Search,
-  Server,
+  Box,
   Layers,
   Database,
   Bolt,
@@ -38,7 +38,7 @@ import { useAuth } from '@/components/auth/AuthProvider';
 const PORTAL_NAV = [
   { label: 'Home', href: '/portal', icon: Home },
   { label: 'Search', href: '/portal/search', icon: Search },
-  { label: 'Services', href: '/portal/services', icon: Server },
+  { label: 'Services', href: '/portal/services', icon: Box },
   { label: 'Applications', href: '/portal/applications', icon: Layers },
   { label: 'CIs', href: '/portal/cis', icon: Bolt },
   { label: 'Assets', href: '/portal/assets', icon: Monitor },
@@ -55,7 +55,7 @@ const ADMIN_NAV = [
     label: 'PLATFORM',
     items: [
       { label: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-      { label: 'Services', href: '/admin/services', icon: Server },
+      { label: 'Services', href: '/admin/services', icon: Box },
       { label: 'Applications', href: '/admin/applications', icon: Layers },
       { label: 'CIs', href: '/admin/cis', icon: Bolt },
       { label: 'Racks', href: '/admin/racks', icon: LayoutGrid },
