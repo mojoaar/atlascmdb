@@ -36,6 +36,8 @@ async function getFullService(id) {
     createdAt: row.createdAt, updatedAt: row.updatedAt, archivedAt: row.archivedAt,
     createdBy: row.createdBy, updatedBy: row.updatedBy,
     type,
+    businessServiceId: row.businessServiceId || null,
+    technicalServiceId: row.technicalServiceId || null,
     typeSpecific: type === 'business' ? {
       businessCriticality: row.businessCriticality,
       businessOwner: row.businessOwner,

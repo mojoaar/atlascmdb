@@ -118,6 +118,8 @@ export async function GET(request) {
         createdByName: r.createdByName,
         updatedByName: r.updatedByName,
         type: r.businessServiceId ? 'business' : r.technicalServiceId ? 'technical' : 'unknown',
+        businessServiceId: r.businessServiceId || null,
+        technicalServiceId: r.technicalServiceId || null,
         typeSpecific: r.businessServiceId ? {
           businessCriticality: r.businessCriticality,
           businessOwner: r.businessOwner,
