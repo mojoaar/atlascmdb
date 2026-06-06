@@ -21,12 +21,21 @@ function formatFtsQuery(q) {
 
 async function suggestFts(db, q, type, limit) {
   const suggestions = [];
-  const ftsQ = formatFtsQuery(q);
+  const isPg = db.client.config.client === 'pg' || db.client.config.client === 'postgresql';
 
   for (const entity of FTS_ENTITIES) {
     if (type && entity.type !== type) continue;
-    const sql = `SELECT sb.id, sb.name, rank FROM ${entity.base} sb JOIN ${entity.fts} ON sb.rowid = ${entity.fts}.rowid WHERE ${entity.fts} MATCH ? ORDER BY rank LIMIT ?`;
-    const rows = await db.raw(sql, [ftsQ, limit]);
+
+    let rows;
+    if (isPg) {
+      const sql = `SELECT id, name, ts_rank(fts_vector, websearch_to_tsquery('english', ?)) as rank FROM ${entity.base} WHERE fts_vector @@ websearch_to_tsquery('english', ?) ORDER BY rank DESC LIMIT ?`;
+      const res = await db.raw(sql, [q, q, limit]);
+      rows = res.rows || [];
+    } else {
+      const ftsQ = formatFtsQuery(q);
+      const sql = `SELECT sb.id, sb.name, rank FROM ${entity.base} sb JOIN ${entity.fts} ON sb.rowid = ${entity.fts}.rowid WHERE ${entity.fts} MATCH ? ORDER BY rank LIMIT ?`;
+      rows = await db.raw(sql, [ftsQ, limit]);
+    }
 
     for (const row of rows) {
       suggestions.push({ type: entity.type, id: row.id, name: row.name });
