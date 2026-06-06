@@ -49,6 +49,83 @@ export function AuthProvider({ children, seededUser }) {
     loadUser();
   }, [pathname, version]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const originalFetch = window.fetch;
+    let isRefreshing = false;
+    let failedQueue = [];
+
+    const processQueue = (error, token = null) => {
+      failedQueue.forEach((prom) => {
+        if (error) {
+          prom.reject(error);
+        } else {
+          prom.resolve(token);
+        }
+      });
+      failedQueue = [];
+    };
+
+    window.fetch = async function (...args) {
+      const res = await originalFetch(...args);
+
+      if (res.status === 401) {
+        const url = typeof args[0] === 'string' ? args[0] : args[0]?.url;
+
+        // Do not intercept authentication-related endpoints to prevent infinite loops
+        if (url && (
+          url.includes('/api/auth/login') ||
+          url.includes('/api/auth/refresh') ||
+          url.includes('/api/auth/logout') ||
+          url.includes('/api/auth/me') ||
+          url.includes('/api/config/public')
+        )) {
+          return res;
+        }
+
+        // If already rotating, queue this request's retry promise
+        if (isRefreshing) {
+          return new Promise((resolve, reject) => {
+            failedQueue.push({ resolve, reject });
+          })
+            .then(() => originalFetch(...args))
+            .catch(() => res);
+        }
+
+        isRefreshing = true;
+
+        try {
+          const refreshRes = await originalFetch('/api/auth/refresh', { method: 'POST' });
+          if (refreshRes.ok) {
+            processQueue(null);
+            isRefreshing = false;
+            // Re-try original request
+            return originalFetch(...args);
+          } else {
+            throw new Error('Session expired');
+          }
+        } catch (err) {
+          processQueue(err);
+          isRefreshing = false;
+          
+          // Log out user cleanly and redirect to login
+          originalFetch('/api/auth/logout', { method: 'POST' });
+          localStorage.removeItem('atlas_access');
+          localStorage.removeItem('atlas_refresh');
+          window.location.href = '/login?expired=true';
+          return res;
+        }
+      }
+
+      return res;
+    };
+
+    return () => {
+      window.fetch = originalFetch;
+    };
+  }, []);
+
   function logout() {
     fetch('/api/auth/logout', { method: 'POST' });
     localStorage.removeItem('atlas_access');

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { generateMfaSecret, extractUserFromRequest } from '../../../../../lib/auth';
+import { generateMfaSecret, extractUserFromRequest, verifyMfaToken } from '../../../../../lib/auth';
 import getDb from '../../../../../lib/db';
 import { handleApiError } from '../../../../../lib/api-helpers';
 import { logAudit } from '../../../../../lib/audit';
@@ -11,8 +11,22 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    const secret = generateMfaSecret(user.email);
     const db = getDb();
+    const dbUser = await db('users').where({ id: user.id }).first();
+    if (dbUser && dbUser.mfaEnabled) {
+      let code;
+      try {
+        const body = await request.json();
+        code = body?.code;
+      } catch {
+        return NextResponse.json({ error: 'MFA code is required' }, { status: 400 });
+      }
+      if (!code || !verifyMfaToken(dbUser.mfaSecret, code)) {
+        return NextResponse.json({ error: 'Invalid MFA code' }, { status: 401 });
+      }
+    }
+
+    const secret = generateMfaSecret(user.email);
 
     await db('users').where({ id: user.id }).update({
       mfaSecret: secret.base32,
@@ -36,12 +50,23 @@ export async function PUT(request) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    const { enabled } = await request.json();
+    const { enabled, code } = await request.json();
     if (typeof enabled !== 'boolean') {
       return NextResponse.json({ error: 'enabled field required (boolean)' }, { status: 400 });
     }
 
     const db = getDb();
+    const dbUser = await db('users').where({ id: user.id }).first();
+    if (!dbUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    if (enabled === false && dbUser.mfaEnabled) {
+      if (!code || !verifyMfaToken(dbUser.mfaSecret, code)) {
+        return NextResponse.json({ error: 'Invalid MFA code' }, { status: 401 });
+      }
+    }
+
     await db('users').where({ id: user.id }).update({
       mfaEnabled: enabled,
       updatedAt: new Date().toISOString(),

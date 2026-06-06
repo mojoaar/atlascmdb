@@ -61,6 +61,16 @@
   margin-bottom: 1rem;
 }
 
+.infoMessage {
+  background: color-mix(in srgb, var(--info) 10%, transparent);
+  color: var(--info);
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius);
+  font-size: 0.8125rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
 .asciiLogo {
   font-family: var(--font-mono, monospace);
   font-size: 0.625rem;

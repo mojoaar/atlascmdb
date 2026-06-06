@@ -63,7 +63,7 @@ export default function AdminIntegrationsPage() {
         setOidcClientId(c.oidc_client_id || '');
         setOidcClientSecret('');
         setScimEnabled(c.scim_enabled === 'true');
-        setScimToken(c.scim_bearer_token_masked || '');
+        setScimToken(c.scim_bearer_token_set ? '••••••••••••••••' : '');
       }
     } catch {}
   }

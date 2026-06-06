@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import getDb from '../../../../../../lib/db';
 import { requireAdmin } from '../../../../../../lib/rbac';
 import { handleApiError, success, notFound } from '../../../../../../lib/api-helpers';
+import { logAudit } from '../../../../../../lib/audit';
 
 export async function GET(request, { params }) {
   try {
@@ -75,10 +76,34 @@ export async function GET(request, { params }) {
     // Retrieve rows
     const rows = await query.limit(limit).offset(offset);
 
+    await logAudit({
+      actorUserId: auth.user.id,
+      entityType: 'db_table',
+      entityId: tableName,
+      action: 'read',
+    });
+
+    const maskedRows = rows.map((row) => {
+      const newRow = { ...row };
+      Object.keys(newRow).forEach((key) => {
+        if (newRow[key] === null || newRow[key] === undefined) return;
+        if (/passwordHash|mfaSecret|Hash$|Token$|Secret$|passwordResetToken/i.test(key)) {
+          newRow[key] = '[REDACTED]';
+        }
+        if (tableName === 'app_config' && key === 'value') {
+          const rowKey = newRow.key;
+          if (['oidc_client_secret', 'scim_bearer_token'].includes(rowKey)) {
+            newRow[key] = '[REDACTED]';
+          }
+        }
+      });
+      return newRow;
+    });
+
     return success({
       tableName,
       schema: schemaInfo,
-      data: rows,
+      data: maskedRows,
       total,
       limit,
       offset,

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
+import crypto from 'crypto';
 import getDb from '../../../lib/db';
 import { requireAdmin } from '../../../lib/rbac';
 import { handleApiError, success, badRequest } from '../../../lib/api-helpers';
@@ -9,6 +10,7 @@ import { logAudit } from '../../../lib/audit';
 // so a crafted PUT cannot inject arbitrary rows into app_config.
 const ALLOWED_KEYS = new Set([
   'sso_enabled',
+  'sso_require_verified_email',
   'oidc_issuer_url',
   'oidc_client_id',
   'oidc_client_secret',
@@ -57,9 +59,7 @@ export async function GET(request) {
     for (const row of rows) {
       config[row.key] = row.value;
     }
-    config.scim_bearer_token_masked = config.scim_bearer_token
-      ? config.scim_bearer_token.slice(0, 8) + '••••••••••••'
-      : '';
+    config.scim_bearer_token_set = !!config.scim_bearer_token;
     config.oidc_client_secret_masked = config.oidc_client_secret
       ? config.oidc_client_secret.slice(0, 8) + '••••••••••••'
       : '';
@@ -88,7 +88,11 @@ export async function PUT(request) {
 
     for (const [key, value] of entries) {
       const existing = await db('app_config').where({ key }).first();
-      await db('app_config').insert({ key, value }).onConflict('key').merge({ value });
+      let writeValue = value;
+      if (key === 'scim_bearer_token' && value) {
+        writeValue = crypto.createHash('sha256').update(value).digest('hex');
+      }
+      await db('app_config').insert({ key, value: writeValue }).onConflict('key').merge({ value: writeValue });
 
       await logAudit({
         actorUserId: auth.user.id,

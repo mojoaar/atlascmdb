@@ -133,6 +133,11 @@ export async function POST(request) {
     });
 
     const user = await db('users').where({ id }).first();
+    if (user) {
+      delete user.passwordHash;
+      delete user.mfaSecret;
+      delete user.passwordResetToken;
+    }
     return created(user);
   } catch (error) {
     return handleApiError(error, 'Failed to create user');

@@ -41,6 +41,10 @@ export async function PATCH(request, { params }) {
     if (!team) return notFound('Team');
 
     const body = await request.json();
+    if (body.roleId !== undefined && body.roleId !== team.roleId && auth.effectiveRole !== 'admin') {
+      return NextResponse.json({ error: 'Only administrators can assign or modify team roles' }, { status: 403 });
+    }
+
     const updates = {};
     const fields = ['name', 'description', 'type', 'parentTeamId', 'ownershipScope', 'status', 'roleId', 'managerId', 'leadId'];
     fields.forEach(f => { if (body[f] !== undefined) updates[f] = body[f]; });

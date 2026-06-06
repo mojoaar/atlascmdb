@@ -476,7 +476,7 @@ const endpoints = [
       "row_limit_default": "100",
       "attachment_allowed_types": ".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg,.gif,.webp,.svg",
       "login_ascii_logo": "false",
-      "scim_bearer_token_masked": "scim-tok••••••••",
+      "scim_bearer_token_set": true,
       "oidc_client_secret_masked": "oidc-cli••••••••"
     }
   },

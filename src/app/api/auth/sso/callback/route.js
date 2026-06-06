@@ -13,10 +13,11 @@ export async function GET(request) {
       return NextResponse.json({ error: 'SSO not configured' }, { status: 501 });
     }
 
-    const [issuerUrl, clientId, clientSecret] = await Promise.all([
+    const [issuerUrl, clientId, clientSecret, ssoRequireVerifiedEmail] = await Promise.all([
       db('app_config').where({ key: 'oidc_issuer_url' }).first(),
       db('app_config').where({ key: 'oidc_client_id' }).first(),
       db('app_config').where({ key: 'oidc_client_secret' }).first(),
+      db('app_config').where({ key: 'sso_require_verified_email' }).first(),
     ]);
 
     if (!issuerUrl?.value || !clientId?.value) {
@@ -54,6 +55,11 @@ export async function GET(request) {
     const email = claims.email || claims.preferred_username || claims.sub;
     if (!email) {
       return NextResponse.json({ error: 'No email in claims' }, { status: 400 });
+    }
+
+    const requireVerified = ssoRequireVerifiedEmail ? ssoRequireVerifiedEmail.value !== 'false' : true;
+    if (requireVerified && claims.email_verified !== true) {
+      return NextResponse.json({ error: 'SSO email is not verified' }, { status: 400 });
     }
 
     let user = await db('users').where({ email }).first();

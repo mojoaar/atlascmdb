@@ -5,12 +5,17 @@ import styles from './Modal.module.css';
 export default function Modal({ title, children, onClose, open, className = '', headerClassName = '' }) {
   const modalRef = useRef(null);
   const titleId = useId();
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     if (open) {
       const handler = (e) => {
         if (e.key === 'Escape') {
-          onClose();
+          onCloseRef.current();
           return;
         }
         if (e.key === 'Tab') {
@@ -38,7 +43,7 @@ export default function Modal({ title, children, onClose, open, className = '', 
         if (previouslyFocused instanceof HTMLElement) previouslyFocused.focus();
       };
     }
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
 

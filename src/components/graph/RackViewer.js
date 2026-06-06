@@ -48,24 +48,24 @@ export default function RackViewer({ rackId, rackSize = 42, rackName, locationNa
   const debouncedSearch = useDebounce(searchTerm, 300);
 
   useEffect(() => {
-    if (!debouncedSearch || debouncedSearch.length < 2) {
+    if (!debouncedSearch || debouncedSearch.length < 2 || assignCiId) {
       setSearchResults([]);
       return;
     }
     let cancelled = false;
     setSearching(true);
-    fetch(`/api/portal/suggest?q=${encodeURIComponent(debouncedSearch)}`)
+    fetch(`/api/portal/suggest?q=${encodeURIComponent(debouncedSearch)}&type=ci`)
       .then(r => r.json())
       .then(data => {
         if (!cancelled) {
-          const cidata = (data.data || data).filter(d => d.entityType === 'ci');
+          const cidata = data.data?.suggestions || data.suggestions || [];
           setSearchResults(cidata);
           setSearching(false);
         }
       })
       .catch(() => { if (!cancelled) setSearching(false); });
     return () => { cancelled = true; };
-  }, [debouncedSearch]);
+  }, [debouncedSearch, assignCiId]);
 
   const loadPlacements = useCallback(async () => {
     try {
@@ -341,7 +341,12 @@ export default function RackViewer({ rackId, rackSize = 42, rackName, locationNa
               <label className={styles.fieldLabel}>Search CI</label>
               <Input
                 value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
+                onChange={e => {
+                  setSearchTerm(e.target.value);
+                  if (assignCiId) {
+                    setAssignCiId('');
+                  }
+                }}
                 placeholder="Type to search..."
               />
               {searching && <span className={styles.searching}>Searching...</span>}
@@ -354,12 +359,12 @@ export default function RackViewer({ rackId, rackSize = 42, rackName, locationNa
                       onClick={() => { setAssignCiId(r.id); setSearchTerm(r.name); setSearchResults([]); }}
                     >
                       <span className={styles.searchName}>{r.name}</span>
-                      <span className={styles.searchType}>{r.entityType}</span>
+                      <span className={styles.searchType}>{r.type}</span>
                     </div>
                   ))}
                 </div>
               )}
-              {!searching && debouncedSearch.length >= 2 && searchResults.length === 0 && (
+              {!searching && debouncedSearch.length >= 2 && searchResults.length === 0 && !assignCiId && (
                 <span className={styles.noResults}>No CIs found</span>
               )}
               {assignCiId && (

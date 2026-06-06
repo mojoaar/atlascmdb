@@ -85,6 +85,11 @@ export async function PATCH(request, { params }) {
     });
 
     const updated = await db('users').where({ id }).first();
+    if (updated) {
+      delete updated.passwordHash;
+      delete updated.mfaSecret;
+      delete updated.passwordResetToken;
+    }
     return success(updated);
   } catch (error) {
     return handleApiError(error, 'Failed to update user');

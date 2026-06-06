@@ -28,6 +28,13 @@ export async function POST(request, { params }) {
     if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
 
     const db = getDb();
+    const team = await db('teams').where({ id: (await params).id }).first();
+    if (!team) return notFound('Team');
+
+    if (team.roleId !== null && auth.effectiveRole !== 'admin') {
+      return NextResponse.json({ error: 'Only administrators can modify membership on role-bearing teams' }, { status: 403 });
+    }
+
     const { userId, memberRole } = await request.json();
     if (!userId) return NextResponse.json({ error: 'userId required' }, { status: 400 });
 

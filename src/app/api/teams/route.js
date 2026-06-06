@@ -86,6 +86,10 @@ export async function POST(request) {
     const db = getDb();
     const { name, description, type, parentTeamId, ownershipScope, status, roleId, managerId, leadId } = await request.json();
 
+    if (roleId && auth.effectiveRole !== 'admin') {
+      return NextResponse.json({ error: 'Only administrators can assign roles to teams' }, { status: 403 });
+    }
+
     if (!name || !type) {
       return NextResponse.json({ error: 'name and type required' }, { status: 400 });
     }

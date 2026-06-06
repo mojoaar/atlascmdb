@@ -24,6 +24,7 @@ export default function LoginPage() {
   const [mfaRequired, setMfaRequired] = useState(false);
   const [mfaToken, setMfaToken] = useState('');
   const [useAsciiLogo, setUseAsciiLogo] = useState(false);
+  const [sessionExpired, setSessionExpired] = useState(false);
 
   useEffect(() => {
     fetch('/api/config/public')
@@ -34,6 +35,13 @@ export default function LoginPage() {
         }
       })
       .catch(() => {});
+
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('expired') === 'true') {
+        setSessionExpired(true);
+      }
+    }
   }, []);
 
   async function handleSubmit(e) {
@@ -97,6 +105,12 @@ export default function LoginPage() {
         <p className={styles.subtitle}>
           {mfaRequired ? 'Enter your MFA code' : 'Sign in to your account'}
         </p>
+
+        {sessionExpired && !error && (
+          <div className={styles.infoMessage}>
+            Your session has expired. Please log in again.
+          </div>
+        )}
 
         {error && <div className={styles.error}>{error}</div>}
 
