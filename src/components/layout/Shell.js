@@ -27,6 +27,9 @@ import {
   FileCode,
   Bell,
   Plug2,
+  Menu,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import styles from './Shell.module.css';
 import Avatar from '@/components/ui/Avatar';
@@ -81,17 +84,62 @@ const ADMIN_NAV = [
 export default function Shell({ children, user, activeRoute, mode = 'portal', onNavigate }) {
   const auth = useAuth();
   const liveUser = auth?.user || user;
+
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('atlas-sidebar-collapsed');
+    if (saved === 'true') {
+      setCollapsed(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setMobileOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [mobileOpen]);
+
+  const handleToggleCollapse = () => {
+    const next = !collapsed;
+    setCollapsed(next);
+    localStorage.setItem('atlas-sidebar-collapsed', String(next));
+  };
+
+  const handleNavigate = (href) => {
+    setMobileOpen(false);
+    onNavigate?.(href);
+  };
+
+  const sidebarClass = [
+    styles.sidebar,
+    collapsed ? styles.sidebarCollapsed : '',
+    mobileOpen ? styles.sidebarMobileOpen : '',
+  ].filter(Boolean).join(' ');
+
   return (
     <div className={styles.shell}>
-      <aside className={styles.sidebar}>
+      {mobileOpen && (
+        <div
+          className={styles.backdrop}
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+      <aside className={sidebarClass}>
         <div className={styles.brand}>
           <Boxes size={20} />
-          <span>Atlas</span>
+          <span className={styles.brandText}>Atlas</span>
         </div>
         <nav className={styles.nav}>
           {mode === 'admin'
             ? ADMIN_NAV.filter(g => liveUser?.roles?.includes('admin') || g.label !== 'CONFIGURATION').map(group => (
-                <div key={group.label}>
+                <div key={group.label} className={styles.sectionGroup}>
                   <div className={styles.sectionLabel}>{group.label}</div>
                   {group.items
                     .filter(item => liveUser?.roles?.includes('admin') || !['Users', 'Roles'].includes(item.label))
@@ -105,17 +153,18 @@ export default function Shell({ children, user, activeRoute, mode = 'portal', on
                         key={item.href}
                         href={item.href}
                         className={`${styles.navItem} ${activeRoute === item.href ? styles.navItemActive : ''}`}
-                        onClick={item.external ? undefined : (e) => { e.preventDefault(); onNavigate?.(item.href); }}
+                        onClick={item.external ? undefined : (e) => { e.preventDefault(); handleNavigate(item.href); }}
+                        title={collapsed ? item.label : ''}
                         {...linkProps}
                       >
                         <Icon size={18} />
-                        {item.label}
+                        <span className={styles.navLabel}>{item.label}</span>
                       </a>
                     );
                   })}
                 </div>
               ))
-            : <>
+            : <div className={styles.sectionGroup}>
                 <div className={styles.sectionLabel}>Portal</div>
                 {PORTAL_NAV.filter(item => liveUser?.roles?.includes('admin') || item.label !== 'Imports').map(item => {
                 const Icon = item.icon;
@@ -127,26 +176,35 @@ export default function Shell({ children, user, activeRoute, mode = 'portal', on
                     key={item.href}
                     href={item.href}
                     className={`${styles.navItem} ${activeRoute === item.href ? styles.navItemActive : ''}`}
-                    onClick={item.external ? undefined : (e) => { e.preventDefault(); onNavigate?.(item.href); }}
+                    onClick={item.external ? undefined : (e) => { e.preventDefault(); handleNavigate(item.href); }}
+                    title={collapsed ? item.label : ''}
                     {...linkProps}
                   >
                     <Icon size={18} />
-                    {item.label}
+                    <span className={styles.navLabel}>{item.label}</span>
                   </a>
                 );
               })}
-              </>}
+              </div>}
         </nav>
+        <button
+          className={styles.collapseBtn}
+          onClick={handleToggleCollapse}
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+        </button>
         <div
           className={styles.userSection}
-          onClick={() => onNavigate?.('/portal/settings')}
+          onClick={() => handleNavigate('/portal/settings')}
           role="button"
           tabIndex={0}
-          onKeyDown={(e) => { if (e.key === 'Enter') onNavigate?.('/portal/settings'); }}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleNavigate('/portal/settings'); }}
+          title={collapsed ? 'User Settings' : ''}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+          <div className={styles.userInfoWrapper}>
             <Avatar user={liveUser} size={36} />
-            <div>
+            <div className={styles.userDetails}>
               <div className={styles.userName}>{liveUser?.displayName || 'User'}</div>
               <div className={styles.userEmail}>{liveUser?.email}</div>
             </div>
@@ -154,13 +212,13 @@ export default function Shell({ children, user, activeRoute, mode = 'portal', on
           <div className={styles.userLinks}>
             {(liveUser?.roles?.includes('admin') || liveUser?.roles?.includes('editor')) && (
               <a href="/admin/dashboard"
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onNavigate?.('/admin/dashboard'); }}>
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleNavigate('/admin/dashboard'); }}>
                 <Shield size={14} />
                 Admin
               </a>
             )}
             <a href="/portal"
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onNavigate?.('/portal'); }}>
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleNavigate('/portal'); }}>
               <LayoutGrid size={14} />
               Portal
             </a>
@@ -175,10 +233,19 @@ export default function Shell({ children, user, activeRoute, mode = 'portal', on
       <main className={styles.main}>
         <header className={styles.header}>
           <div className={styles.headerLeft}>
-            {mode === 'admin' ? 'Admin Console' : 'Atlas Portal'}
+            <button
+              className={styles.hamburger}
+              onClick={() => setMobileOpen(true)}
+              aria-label="Open navigation menu"
+            >
+              <Menu size={20} />
+            </button>
+            <span className={styles.headerTitle}>
+              {mode === 'admin' ? 'Admin Console' : 'Atlas Portal'}
+            </span>
           </div>
           <div className={styles.headerActions}>
-            <NotificationBell onNavigate={onNavigate} />
+            <NotificationBell onNavigate={handleNavigate} />
             <ThemeToggle />
           </div>
         </header>

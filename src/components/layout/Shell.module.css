@@ -4,13 +4,18 @@
 }
 
 .sidebar {
-  width: 240px;
+  width: var(--sidebar-width, 240px);
   background: var(--sidebar);
   color: var(--sidebar-foreground);
   display: flex;
   flex-direction: column;
   border-right: 1px solid var(--border);
   flex-shrink: 0;
+  transition: width 0.15s ease;
+}
+
+.sidebarCollapsed {
+  --sidebar-width: 64px;
 }
 
 .brand {
@@ -21,12 +26,36 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  transition: padding 0.15s ease, justify-content 0.15s ease;
+}
+
+.sidebarCollapsed .brand {
+  justify-content: center;
+  padding: 1rem 0;
+}
+
+.brandText {
+  transition: opacity 0.15s ease;
+}
+
+.sidebarCollapsed .brandText {
+  display: none;
 }
 
 .nav {
   flex: 1;
   padding: 0.75rem 0;
   overflow-y: auto;
+}
+
+.sectionGroup {
+  transition: border 0.15s ease, margin 0.15s ease, padding 0.15s ease;
+}
+
+.sidebarCollapsed .sectionGroup + .sectionGroup {
+  border-top: 1px solid var(--border);
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
 }
 
 .sectionLabel {
@@ -38,6 +67,10 @@
   color: var(--muted-foreground);
 }
 
+.sidebarCollapsed .sectionLabel {
+  display: none;
+}
+
 .navItem {
   display: flex;
   align-items: center;
@@ -45,12 +78,17 @@
   padding: 0.5rem 1.25rem;
   font-size: 0.875rem;
   color: var(--sidebar-foreground);
-  transition: background 0.1s;
+  transition: background 0.1s, padding 0.15s ease, justify-content 0.15s ease;
   border: none;
   background: none;
   width: 100%;
   text-align: left;
   cursor: pointer;
+}
+
+.sidebarCollapsed .navItem {
+  justify-content: center;
+  padding: 0.625rem 0;
 }
 
 .navItem:hover {
@@ -66,16 +104,66 @@
   background: var(--sidebar-active);
 }
 
+.navLabel {
+  transition: opacity 0.15s ease;
+}
+
+.sidebarCollapsed .navLabel {
+  display: none;
+}
+
+.collapseBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.5rem 0;
+  border: none;
+  background: none;
+  border-top: 1px solid var(--border);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: color 0.1s, background 0.1s;
+}
+
+.collapseBtn:hover {
+  color: var(--sidebar-foreground);
+  background: color-mix(in srgb, var(--primary) 5%, transparent);
+}
+
 .userSection {
   padding: 0.75rem 1.25rem;
   border-top: 1px solid var(--border);
   font-size: 0.8125rem;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background 0.15s, padding 0.15s ease;
+}
+
+.sidebarCollapsed .userSection {
+  padding: 0.75rem 0;
 }
 
 .userSection:hover {
   background: color-mix(in srgb, var(--primary) 5%, transparent);
+}
+
+.userInfoWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  transition: justify-content 0.15s ease;
+}
+
+.sidebarCollapsed .userInfoWrapper {
+  justify-content: center;
+}
+
+.userDetails {
+  transition: opacity 0.15s ease;
+}
+
+.sidebarCollapsed .userDetails {
+  display: none;
 }
 
 .userName {
@@ -92,6 +180,11 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  transition: opacity 0.15s ease;
+}
+
+.sidebarCollapsed .userLinks {
+  display: none;
 }
 
 .userLinks a {
@@ -147,6 +240,12 @@
 .headerLeft {
   font-size: 1rem;
   font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+.hamburger {
+  display: none;
 }
 
 .headerActions {
@@ -229,4 +328,54 @@
 
 .impersonateStopBtn:hover {
   background: rgba(255,255,255,0.25);
+}
+
+@media (max-width: 768px) {
+  .hamburger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--background);
+    color: var(--foreground);
+    padding: 0.375rem;
+    cursor: pointer;
+    margin-right: 0.75rem;
+  }
+  
+  .hamburger:hover {
+    background: var(--hover);
+  }
+
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    height: 100vh;
+    z-index: 200;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease-in-out;
+    width: 240px; /* Drawer size is always fixed 240px on mobile */
+  }
+
+  .sidebarMobileOpen {
+    transform: translateX(0);
+  }
+
+  .collapseBtn {
+    display: none;
+  }
+
+  .backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 199;
+    backdrop-filter: blur(2px);
+  }
 }
