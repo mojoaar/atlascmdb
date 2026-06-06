@@ -1,10 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import styles from './page.module.css';
+
+const ASCII_LOGO = [
+  "    _   _   _           ",
+  "   / \\ | |_| | __ _ ___ ",
+  "  / _ \\| __| |/ _` / __|",
+  " / ___ \\ |_| | (_| \\__ \\",
+  "/_/   \\_\\__|_|\\__,_|___/"
+].join('\n');
 
 export default function LoginPage() {
   const router = useRouter();
@@ -15,6 +23,18 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [mfaRequired, setMfaRequired] = useState(false);
   const [mfaToken, setMfaToken] = useState('');
+  const [useAsciiLogo, setUseAsciiLogo] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/config/public')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.login_ascii_logo === 'true') {
+          setUseAsciiLogo(true);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -69,7 +89,11 @@ export default function LoginPage() {
   return (
     <div className={styles.page}>
       <div className={styles.card}>
-        <h1 className={styles.title}>Atlas</h1>
+        {useAsciiLogo ? (
+          <pre className={styles.asciiLogo}>{ASCII_LOGO}</pre>
+        ) : (
+          <h1 className={styles.title}>Atlas</h1>
+        )}
         <p className={styles.subtitle}>
           {mfaRequired ? 'Enter your MFA code' : 'Sign in to your account'}
         </p>

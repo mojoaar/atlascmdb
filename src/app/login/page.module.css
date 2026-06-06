@@ -60,3 +60,17 @@
   font-size: 0.8125rem;
   margin-bottom: 1rem;
 }
+
+.asciiLogo {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.625rem;
+  line-height: 1.2;
+  padding: 0.75rem 1rem;
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  width: fit-content;
+  margin: 0 auto 1.25rem auto;
+  color: var(--foreground);
+  overflow-x: auto;
+}

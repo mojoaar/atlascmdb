@@ -31,6 +31,7 @@ export default function AdminSettingsPage() {
   const [isDemoSeeded, setIsDemoSeeded] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
   const [resetting, setReseting] = useState(false);
+  const [loginAsciiLogo, setLoginAsciiLogo] = useState(false);
 
   const columnDefs = {
     services: [
@@ -149,6 +150,7 @@ export default function AdminSettingsPage() {
         setAdminColDefaults(defaults);
         if (c.row_limit_default) setAdminRowLimit(parseInt(c.row_limit_default) || 100);
         if (c.attachment_allowed_types) setAttachmentTypes(c.attachment_allowed_types);
+        if (c.hasOwnProperty('login_ascii_logo')) setLoginAsciiLogo(c.login_ascii_logo === 'true');
       }
     });
   }, []);
@@ -215,6 +217,15 @@ export default function AdminSettingsPage() {
       body: JSON.stringify({ attachment_allowed_types: attachmentTypes }),
     });
     toast('Attachment settings saved');
+  }
+
+  async function handleSaveLoginAsciiLogo() {
+    await fetch('/api/config', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ login_ascii_logo: String(loginAsciiLogo) }),
+    });
+    toast('Login screen settings saved');
   }
 
   return (
@@ -301,6 +312,55 @@ export default function AdminSettingsPage() {
               <Input label="Allowed Extensions" value={attachmentTypes} onChange={e => setAttachmentTypes(e.target.value)} placeholder=".pdf,.docx,.png,.jpg" />
             </div>
             <Button variant="secondary" onClick={handleSaveAttachmentTypes}>Save</Button>
+          </div>
+        </Card>
+      </div>
+
+      <div className={styles.section}>
+        <div className={styles.sectionTitle}>Login Screen</div>
+        <Card>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div style={{ fontSize: '0.8125rem', color: 'var(--muted-foreground)' }}>
+              Enable an Atlas ASCII art logo on the login screen instead of standard text.
+            </div>
+            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={loginAsciiLogo}
+                  onChange={(e) => setLoginAsciiLogo(e.target.checked)}
+                />
+                Use ASCII Logo on Login Screen
+              </label>
+            </div>
+            
+            <div style={{ marginTop: '0.5rem' }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)', marginBottom: '0.25rem' }}>Preview:</div>
+              <pre style={{
+                fontFamily: 'monospace',
+                fontSize: '0.65rem',
+                lineHeight: '1.2',
+                padding: '0.75rem 1rem',
+                backgroundColor: 'var(--muted)',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius)',
+                width: 'fit-content',
+                margin: 0,
+                color: 'var(--foreground)'
+              }}>
+{[
+  "    _   _   _           ",
+  "   / \\ | |_| | __ _ ___ ",
+  "  / _ \\| __| |/ _` / __|",
+  " / ___ \\ |_| | (_| \\__ \\",
+  "/_/   \\_\\__|_|\\__,_|___/"
+].join('\n')}
+              </pre>
+            </div>
+            
+            <div style={{ marginTop: '0.5rem' }}>
+              <Button variant="secondary" onClick={handleSaveLoginAsciiLogo}>Save Login Settings</Button>
+            </div>
           </div>
         </Card>
       </div>

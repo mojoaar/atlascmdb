@@ -283,12 +283,15 @@ export default function AdminIntegrationsPage() {
                   </div>
                 </button>
               ))}
+              {COMING_SOON.length > 0 && (
+                <div className={styles.comingSoonDivider}>Coming Soon</div>
+              )}
               {COMING_SOON.map((mod) => (
                 <div key={mod.type} className={styles.typeOptionDisabled}>
-                  <div className={styles.typeLogo}>{mod.logoInitials}</div>
-                  <div style={{ flex: 1 }}>
-                    <div className={styles.typeNameRow}>
-                      <span className={styles.typeName}>{mod.label}</span>
+                  <div className={styles.typeLogoMuted}>{mod.logoInitials}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className={styles.typeName}>
+                      {mod.label}
                       <span className={styles.comingSoonBadge}>Soon</span>
                     </div>
                     <div className={styles.typeDesc}>{mod.desc}</div>

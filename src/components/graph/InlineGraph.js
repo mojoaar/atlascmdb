@@ -32,7 +32,7 @@ export default function InlineGraph({ entityType, entityId, basePath = '/portal'
         <a
           href={`${basePath}/graph/${entityType}/${entityId}`}
           onClick={(e) => { e.preventDefault(); router.push(`${basePath}/graph/${entityType}/${entityId}`); }}
-          style={{ fontSize: '0.8125rem', color: 'var(--primary)', textDecoration: 'none' }}
+          style={{ fontSize: '0.8125rem', color: 'var(--primary)', textDecoration: 'none', fontWeight: 600 }}
         >
           View Full Graph &rarr;
         </a>

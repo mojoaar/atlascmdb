@@ -38,6 +38,7 @@ const ALLOWED_KEYS = new Set([
   'column_default_locations',
   'column_default_roles',
   'column_default_themes',
+  'login_ascii_logo',
 ]);
 
 // Values for these keys must never be written to the audit log in plaintext.

@@ -162,7 +162,8 @@ export default function Shell({ children, user, activeRoute, mode = 'portal', on
               <LayoutGrid size={14} />
               Portal
             </a>
-            <a href="/api/auth/logout" className={styles.logoutLink}>
+            <a href="/api/auth/logout" className={styles.logoutLink}
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); auth.logout(); }}>
               <LogOut size={14} />
               Logout
             </a>

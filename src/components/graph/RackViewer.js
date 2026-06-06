@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
 import Select from '@/components/ui/Select';
@@ -18,12 +19,16 @@ function useDebounce(value, delay) {
   return debounced;
 }
 
-export default function RackViewer({ rackId, rackSize, rackName, locationName }) {
+export default function RackViewer({ rackId, rackSize = 42, rackName, locationName, fullScreen = false }) {
+  const router = useRouter();
   const { user } = useAuth();
+  const UNIT_H = fullScreen ? 24 : 20;
   const [placements, setPlacements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [view, setView] = useState('front');
+
+  const [hoveredPlacement, setHoveredPlacement] = useState(null);
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingPlacement, setEditingPlacement] = useState(null);
@@ -78,13 +83,13 @@ export default function RackViewer({ rackId, rackSize, rackName, locationName })
 
   useEffect(() => { loadPlacements(); }, [loadPlacements]);
 
-  function openAssignModal(slotU) {
+  function openAssignModal(slotU, side) {
     setEditingPlacement(null);
     setSelectedSlot(slotU);
     setAssignCiId('');
     setAssignStartU(String(slotU));
     setAssignOccupied('1');
-    setAssignPosition(view);
+    setAssignPosition(side);
     setAssignLabel('');
     setSaveError(null);
     setSearchTerm('');
@@ -169,79 +174,165 @@ export default function RackViewer({ rackId, rackSize, rackName, locationName })
     }
   }
 
-  const filteredPlacements = placements.filter(p => (p.position || 'front') === view);
+  function handleMouseMove(e) {
+    if (hoveredPlacement) {
+      setTooltipPos({ x: e.clientX, y: e.clientY });
+    }
+  }
 
-  const rows = [];
-  for (let u = (rackSize || 42); u >= 1; u--) {
-    const placement = filteredPlacements.find(p => p.startU <= u && u < p.startU + (p.occupiedUs || 1));
-    rows.push({ u, placement });
+  function renderRackColumn(sidePlacements, side) {
+    const size = rackSize || 42;
+    const occupiedUs = new Set();
+    sidePlacements.forEach(p => {
+      for (let u = p.startU; u < p.startU + (p.occupiedUs || 1); u++) {
+        occupiedUs.add(u);
+      }
+    });
+
+    return (
+      <div className={styles.rackColumn} style={{ '--rack-size': size, '--unit-height': `${UNIT_H}px` }}>
+        {/* Clickable empty zones */}
+        {Array.from({ length: size }, (_, i) => size - i).map(u =>
+          occupiedUs.has(u) ? null : (
+            <div
+              key={`e-${u}`}
+              className={styles.rackEmptyZone}
+              style={{
+                top: (size - u) * UNIT_H,
+                height: UNIT_H - 1,
+              }}
+              onClick={() => openAssignModal(u, side)}
+            />
+          )
+        )}
+
+        {/* Occupied units */}
+        {sidePlacements.map(p => {
+          const span = p.occupiedUs || 1;
+          const top = (size - p.startU - span + 1) * UNIT_H;
+          const height = span * UNIT_H - 1;
+
+          return (
+            <div
+              key={p.id}
+              className={`${styles.rackSlot} ${styles[p.ciType] || styles.rackSlotDefault}`}
+              style={{
+                top,
+                height,
+              }}
+              onClick={() => openEditModal(p)}
+              onMouseEnter={e => {
+                setHoveredPlacement(p);
+                setTooltipPos({ x: e.clientX, y: e.clientY });
+              }}
+              onMouseMove={handleMouseMove}
+              onMouseLeave={() => setHoveredPlacement(null)}
+            >
+              <div className={styles.slotContent}>
+                <span className={styles.slotName}>{p.ciName || p.ciId}</span>
+                {p.ciType && (
+                  <span className={`${styles.slotTypeBadge} ${styles[p.ciType] || ''}`}>
+                    {p.ciType.replace('_', ' ')}
+                  </span>
+                )}
+                {p.label && <span className={styles.slotLabel}>{p.label}</span>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
   }
 
   if (loading) return <div className={styles.wrap}><LoadingState /></div>;
   if (error) return <div className={styles.wrap}><p className={styles.error}>{error}</p></div>;
 
+  const size = rackSize || 42;
+  const frontPlacements = placements.filter(p => (p.position || 'front') === 'front');
+  const backPlacements = placements.filter(p => p.position === 'back');
+
   return (
     <div className={styles.wrap}>
       <div className={styles.toolbar}>
-        <div className={styles.viewToggle}>
-          <button
-            className={`${styles.toggleBtn} ${view === 'front' ? styles.active : ''}`}
-            onClick={() => setView('front')}
-          >
-            Front
-          </button>
-          <button
-            className={`${styles.toggleBtn} ${view === 'back' ? styles.active : ''}`}
-            onClick={() => setView('back')}
-          >
-            Back
-          </button>
-        </div>
         <span className={styles.legend}>
           {locationName && <span className={styles.locationTag}>{locationName}</span>}{' '}
-          {view} view · {filteredPlacements.length} placements
+          {placements.length} placement{placements.length !== 1 ? 's' : ''} · {size}U
         </span>
       </div>
 
-      <div className={styles.rack} style={{ '--rack-size': rackSize || 42 }}>
-        {rows.map(({ u, placement }) => {
-          const isFirst = placement && placement.startU === u;
-          const span = placement ? (placement.occupiedUs || 1) : 1;
+      <div className={`${styles.rackOuter} ${fullScreen ? styles.fullScreen : ''}`} style={{ '--rack-size': size, '--unit-height': `${UNIT_H}px` }}>
+        {/* Row 1: Headers */}
+        <div className={styles.rackSideLabel}>Front</div>
+        <div className={styles.uLabelSpacer} />
+        <div className={styles.rackSideLabel}>Rear</div>
 
-          if (placement && !isFirst) return null;
+        {/* Row 2: Columns (Auto-flow places these in row 2) */}
+        {renderRackColumn(frontPlacements, 'front')}
 
-          return (
-            <div
-              key={u}
-              className={`${styles.slot} ${placement ? styles.occupied : styles.empty}`}
-              style={placement ? { gridRow: `${(rackSize || 42) - (placement.startU + span - 1) + 1} / span ${span}` } : {}}
-              onClick={() => {
-                if (placement) {
-                  openEditModal(placement);
-                } else {
-                  openAssignModal(u);
-                }
-              }}
-            >
-              <span className={styles.slotNumber}>{placement ? `${placement.startU}-${placement.startU + span - 1}` : u}</span>
-              {placement ? (
-                <div className={styles.placementInfo}>
-                  <span className={styles.placementName}>{placement.ciName || placement.ciId}</span>
-                  {placement.ciType && (
-                    <span className={`${styles.ciTypeBadge} ${styles[placement.ciType] || ''}`}>
-                      {placement.ciType}
-                    </span>
-                  )}
-                  {placement.label && <span className={styles.placementLabel}>{placement.label}</span>}
-                  {placement.ciSerialNumber && <span className={styles.placementSerial}>{placement.ciSerialNumber}</span>}
-                </div>
-              ) : (
-                <div className={styles.emptyHint}>Empty</div>
-              )}
-            </div>
-          );
-        })}
+        <div className={styles.uNumbers}>
+          {Array.from({ length: size }, (_, i) => size - i).map(u => {
+            const isMilestone = u % 10 === 0 || u === 1 || u === size;
+            return (
+              <div
+                key={u}
+                className={`${styles.uNumber} ${isMilestone ? styles.uNumberMilestone : ''}`}
+              >
+                {u}
+              </div>
+            );
+          })}
+        </div>
+
+        {renderRackColumn(backPlacements, 'back')}
       </div>
+
+      {!fullScreen && (
+        <div style={{ marginTop: '1rem', textAlign: 'right' }}>
+          <a
+            href={`/admin/racks/${rackId}/layout`}
+            onClick={(e) => { e.preventDefault(); router.push(`/admin/racks/${rackId}/layout`); }}
+            style={{ fontSize: '0.8125rem', color: 'var(--primary)', textDecoration: 'none', fontWeight: 600 }}
+          >
+            View Full Rack Layout &rarr;
+          </a>
+        </div>
+      )}
+
+      {/* Floating tooltip */}
+      {hoveredPlacement && (
+        <div
+          className={styles.slotTooltip}
+          style={{
+            left: tooltipPos.x + 15,
+            top: tooltipPos.y - 10,
+          }}
+        >
+          <div className={styles.tooltipName}>{hoveredPlacement.ciName || hoveredPlacement.ciId}</div>
+          <div className={styles.tooltipGrid}>
+            <span className={styles.tooltipLabel}>Type:</span>
+            <span className={styles.tooltipValue}>{hoveredPlacement.ciType ? hoveredPlacement.ciType.replace('_', ' ') : 'CI'}</span>
+
+            {hoveredPlacement.ciSerialNumber && (
+              <>
+                <span className={styles.tooltipLabel}>S/N:</span>
+                <span className={styles.tooltipValue}>{hoveredPlacement.ciSerialNumber}</span>
+              </>
+            )}
+
+            {hoveredPlacement.label && (
+              <>
+                <span className={styles.tooltipLabel}>Label:</span>
+                <span className={styles.tooltipValue}>{hoveredPlacement.label}</span>
+              </>
+            )}
+
+            <span className={styles.tooltipLabel}>Position:</span>
+            <span className={styles.tooltipValue}>
+              U{hoveredPlacement.startU}–U{hoveredPlacement.startU + (hoveredPlacement.occupiedUs || 1) - 1} ({hoveredPlacement.occupiedUs || 1}U, {hoveredPlacement.position || 'front'})
+            </span>
+          </div>
+        </div>
+      )}
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editingPlacement ? 'Edit Placement' : `Assign CI — U${selectedSlot}`}>
         <div className={styles.modalBody}>
