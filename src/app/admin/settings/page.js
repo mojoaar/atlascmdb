@@ -24,12 +24,6 @@ export default function AdminSettingsPage() {
   const [dateFormat, setDateFormat] = useState('DD/MM/YYYY');
   const [graphDepth, setGraphDepth] = useState(3);
 
-  const [ssoEnabled, setSsoEnabled] = useState(false);
-  const [oidcIssuerUrl, setOidcIssuerUrl] = useState('');
-  const [oidcClientId, setOidcClientId] = useState('');
-  const [oidcClientSecret, setOidcClientSecret] = useState('');
-  const [scimEnabled, setScimEnabled] = useState(false);
-  const [scimToken, setScimToken] = useState('');
   const [adminColDefaults, setAdminColDefaults] = useState({});
   const [adminRowLimit, setAdminRowLimit] = useState(100);
   const [attachmentTypes, setAttachmentTypes] = useState('.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg,.gif,.webp,.svg');
@@ -146,12 +140,6 @@ export default function AdminSettingsPage() {
     });
     fetch('/api/config').then(r => r.json()).then(c => {
       if (c && !c.error) {
-        setSsoEnabled(c.sso_enabled === 'true');
-        setOidcIssuerUrl(c.oidc_issuer_url || '');
-        setOidcClientId(c.oidc_client_id || '');
-        setOidcClientSecret('');
-        setScimEnabled(c.scim_enabled === 'true');
-        setScimToken(c.scim_bearer_token_masked || '');
         const defaults = {};
         for (const [key, val] of Object.entries(c)) {
           if (key.startsWith('column_default_')) {
@@ -179,20 +167,6 @@ export default function AdminSettingsPage() {
     });
     refresh();
     toast('Settings saved');
-  }
-
-  async function handleSaveSso() {
-    await fetch('/api/config', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        sso_enabled: ssoEnabled ? 'true' : 'false',
-        oidc_issuer_url: oidcIssuerUrl,
-        oidc_client_id: oidcClientId,
-        ...(oidcClientSecret ? { oidc_client_secret: oidcClientSecret } : {}),
-      }),
-    });
-    toast('SSO settings saved');
   }
 
   async function handleSaveColumnDefaults(entityType, selected) {
@@ -241,27 +215,6 @@ export default function AdminSettingsPage() {
       body: JSON.stringify({ attachment_allowed_types: attachmentTypes }),
     });
     toast('Attachment settings saved');
-  }
-
-  async function handleSaveScim() {
-    await fetch('/api/config', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ scim_enabled: scimEnabled ? 'true' : 'false' }),
-    });
-    toast('SCIM settings saved');
-  }
-
-  async function handleRegenerateToken() {
-    const newToken = crypto.randomUUID();
-    await fetch('/api/config', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ scim_bearer_token: newToken }),
-    });
-    setScimToken(newToken.slice(0, 8) + '••••••••••••');
-    await alert('Token regenerated. Copy it now as it will not be shown again.');
-    navigator.clipboard.writeText(newToken);
   }
 
   return (
@@ -365,45 +318,6 @@ export default function AdminSettingsPage() {
             </div>
           </div>
           <Button variant="secondary" onClick={handleSaveTheme}>Save Preferences</Button>
-        </Card>
-      </div>
-
-      <div className={styles.section}>
-        <div className={styles.sectionTitle}>SSO Configuration</div>
-        <Card>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <Select label="Enable" options={[{ value: 'true', label: 'Enabled' }, { value: 'false', label: 'Disabled' }]} value={ssoEnabled ? 'true' : 'false'} onChange={(e) => setSsoEnabled(e.target.value === 'true')} />
-            <Input label="Issuer URL" placeholder="https://idp.example.com" value={oidcIssuerUrl} onChange={e => setOidcIssuerUrl(e.target.value)} />
-            <Input label="Client ID" value={oidcClientId} onChange={e => setOidcClientId(e.target.value)} />
-            <Input label="Client Secret" type="password" value={oidcClientSecret} onChange={e => setOidcClientSecret(e.target.value)} />
-            <Button variant="primary" onClick={handleSaveSso}>Save SSO Settings</Button>
-          </div>
-        </Card>
-      </div>
-
-      <div className={styles.section}>
-        <div className={styles.sectionTitle}>SCIM Configuration</div>
-        <Card>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <Select label="Enable" options={[{ value: 'true', label: 'Enabled' }, { value: 'false', label: 'Disabled' }]} value={scimEnabled ? 'true' : 'false'} onChange={(e) => setScimEnabled(e.target.value === 'true')} />
-            <Input label="Bearer Token" value={scimToken} readOnly onChange={() => {}} />
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <Button variant="secondary" onClick={handleRegenerateToken}>Regenerate Token</Button>
-              <Button variant="primary" onClick={handleSaveScim}>Save SCIM Settings</Button>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      <div className={styles.section}>
-        <div className={styles.sectionTitle}>Authentication</div>
-        <Card>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <div className={styles.field}>
-              <div className={styles.fieldLabel}>MFA</div>
-              <div className={styles.fieldValue}>TOTP (otpauth)</div>
-            </div>
-          </div>
         </Card>
       </div>
 

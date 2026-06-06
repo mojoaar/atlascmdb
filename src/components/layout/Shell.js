@@ -25,6 +25,7 @@ import {
   BookOpenText,
   FileCode,
   Bell,
+  Plug2,
 } from 'lucide-react';
 import styles from './Shell.module.css';
 import Avatar from '@/components/ui/Avatar';
@@ -68,6 +69,7 @@ const ADMIN_NAV = [
     label: 'CONFIGURATION',
     items: [
       { label: 'Imports', href: '/admin/imports', icon: Upload },
+      { label: 'Integrations', href: '/admin/integrations', icon: Plug2 },
       { label: 'Themes', href: '/admin/themes', icon: Palette },
       { label: 'Settings', href: '/admin/settings', icon: Settings },
     ],

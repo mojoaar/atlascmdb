@@ -2279,6 +2279,152 @@ const endpoints = [
         "uuid-editor"
       ]
     }
+  },
+  {
+    "category": "Integrations",
+    "method": "GET",
+    "path": "/api/integrations",
+    "description": "List all configured integration connectors (API keys masked).",
+    "auth": "admin",
+    "query": {
+      "limit": 20,
+      "offset": 0
+    },
+    "response": {
+      "data": [
+        {
+          "id": "uuid",
+          "name": "My Next Insight",
+          "connectorType": "next_insight",
+          "enabled": 1,
+          "baseUrl": "https://yourcompany.next-insight.com",
+          "apiKey": "sk-abc123••••••••••••",
+          "conflictMode": "merge",
+          "lastSyncAt": "2026-06-06T12:34:56.789Z",
+          "lastSyncStatus": "success",
+          "lastSyncSummary": "Created 12, Updated 3, Skipped 0, Errored 0"
+        }
+      ]
+    }
+  },
+  {
+    "category": "Integrations",
+    "method": "POST",
+    "path": "/api/integrations",
+    "description": "Create a new integration connector.",
+    "auth": "admin",
+    "body": {
+      "name": "My Next Insight",
+      "connectorType": "next_insight",
+      "baseUrl": "https://yourcompany.next-insight.com",
+      "apiKey": "sk-abc123def456",
+      "conflictMode": "merge",
+      "fieldOverrides": {
+        "lifecycleStatus": "skip",
+        "environment": "overwrite"
+      }
+    },
+    "response": {
+      "id": "uuid",
+      "name": "My Next Insight",
+      "connectorType": "next_insight",
+      "apiKey": "sk-abc123••••••••••••",
+      "conflictMode": "merge",
+      "createdAt": "2026-06-06T12:00:00.000Z"
+    }
+  },
+  {
+    "category": "Integrations",
+    "method": "PATCH",
+    "path": "/api/integrations/:id",
+    "description": "Update an integration connector (name, URL, API key, conflict mode, field overrides, enabled toggle).",
+    "auth": "admin",
+    "body": {
+      "name": "Renamed Connector",
+      "enabled": 0,
+      "conflictMode": "overwrite",
+      "fieldOverrides": {
+        "classification": "merge"
+      }
+    },
+    "response": {
+      "id": "uuid",
+      "name": "Renamed Connector",
+      "enabled": 0,
+      "conflictMode": "overwrite",
+      "apiKey": "sk-abc123••••••••••••"
+    }
+  },
+  {
+    "category": "Integrations",
+    "method": "DELETE",
+    "path": "/api/integrations/:id",
+    "description": "Permanently delete an integration connector and all its sync logs.",
+    "auth": "admin",
+    "response": {
+      "deleted": true
+    }
+  },
+  {
+    "category": "Integrations",
+    "method": "POST",
+    "path": "/api/integrations/:id/sync",
+    "description": "Trigger a manual sync. Pulls entities from the external system and applies conflict resolution.",
+    "auth": "admin",
+    "response": {
+      "logId": "uuid",
+      "status": "success",
+      "created": 12,
+      "updated": 3,
+      "skipped": 0,
+      "errored": 0,
+      "errors": []
+    }
+  },
+  {
+    "category": "Integrations",
+    "method": "GET",
+    "path": "/api/integrations/:id/logs",
+    "description": "Retrieve sync history for a connector with pagination.",
+    "auth": "admin",
+    "query": {
+      "limit": 50,
+      "offset": 0
+    },
+    "response": {
+      "data": [
+        {
+          "id": "uuid",
+          "connectorId": "uuid",
+          "startedAt": "2026-06-06T12:00:00.000Z",
+          "completedAt": "2026-06-06T12:00:05.000Z",
+          "status": "success",
+          "recordsCreated": 12,
+          "recordsUpdated": 3,
+          "recordsSkipped": 0,
+          "recordsErrored": 0
+        }
+      ],
+      "total": 5,
+      "limit": 50,
+      "offset": 0
+    }
+  },
+  {
+    "category": "Integrations",
+    "method": "POST",
+    "path": "/api/integrations/test",
+    "description": "Test connection to an integration endpoint without saving a connector.",
+    "auth": "admin",
+    "body": {
+      "connectorType": "next_insight",
+      "baseUrl": "https://yourcompany.next-insight.com",
+      "apiKey": "sk-abc123def456"
+    },
+    "response": {
+      "ok": true,
+      "message": "Connection successful"
+    }
   }
 ];
 

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Sun, Moon } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { Sun, Moon, Search, X } from 'lucide-react';
 import CodeBlock from '@/components/ui/CodeBlock';
 import { getEntityFields } from '@/lib/form-fields';
 import styles from './page.module.css';
@@ -24,6 +24,7 @@ const SECTIONS = [
   { id: 'auth', label: 'Auth & RBAC' },
   { id: 'sso', label: 'SSO Integration' },
   { id: 'scim-setup', label: 'SCIM Setup' },
+  { id: 'integrations', label: 'Integrations' },
   { id: 'entities', label: 'Entity Types' },
   { id: 'service', label: 'Services', indent: true },
   { id: 'application', label: 'Applications', indent: true },
@@ -38,6 +39,134 @@ const SECTIONS = [
   { id: 'deployment', label: 'Deployment' },
   { id: 'database', label: 'Database & Backup' },
   { id: 'changelog', label: 'Changelog' },
+];
+
+const SEARCH_INDEX = [
+  {
+    id: 'overview',
+    label: 'Overview',
+    content: 'atlas cmdb documentation open-source cmdb for modern it teams centralized system infrastructure services applications configuration items cis assets teams locations relationships next.js 16 react 19 default admin account alice@atlas.local password123 interfaces admin portal command reference npm run dev start dev server turbopack npm run build production build npm run test run test suite vitest npm run db:setup reset db drop migrate seed npm run lint run linter'
+  },
+  {
+    id: 'features',
+    label: 'Features',
+    content: 'form designer per-class ci layouts rack layout rack form editor relationship graph location maps dashboard analytics bulk operations data import pipeline notifications full-text search dark mode themes drag-and-drop field reordering cross-section custom sections columns relationships audit trail reset default layouts form_layout_* visual u-slot grid 42u 48u front back toggle dual-sided rack mounting hosted_on relationship auto-creation overlap prevention xyflow react dagrejs minimap zoom pan leaflet cartodb dark tiles recharts pie chart line chart bulk delete csv json import upload map validate preview commit retry in-app notifications team members bell icon unread count badge autocomplete matches fts5'
+  },
+  {
+    id: 'user-management',
+    label: 'User Management',
+    content: 'managing accounts creating new user email status active inactive suspended disable password reset bcryptjs manager hierarchy managerid multi-factor authentication mfa totp setup qr code verification code authenticator google authenticator microsoft authenticator 1password recovery admin revocation reset mfa device avatars personalization color swatches 14 colors custom photo upload 2mb limit file format png jpg jpeg gif webp binary blob database storage'
+  },
+  {
+    id: 'portal-admin',
+    label: 'Portal vs Admin',
+    content: 'capabilities matrix viewer editor admin access dashboard analytics read services cis assets locations relationships maps graph create edit form designer user roles permissions settings reset demo data sso scim config navigation rules hide admin link user section sidebar portal logout only'
+  },
+  {
+    id: 'themes',
+    label: 'Themes & Dark Mode',
+    content: 'visual engine dual-mode palettes eight built-in themes blue line default catppuccin latte frappe macchiato mocha nord dracula cyberpunk light mode overrides dark mode overrides data-theme="dark" contrast ratio 4.5:1 primary foreground accent sidebaractive sidebar active foreground flip text colors accessibility localstorage persistence multi-tab synchronization PUT /api/me/theme atlas-theme-mode'
+  },
+  {
+    id: 'audit-trail',
+    label: 'Audit Trail',
+    content: 'compliance reliability logaudit hook write ops audit_events table actor identity actoruserid target modify state snapshot beforedata afterdata json snapshot timeline revisions audit trail component form designer security read-only immutable no api edit delete impersonation administrator tracks real actor'
+  },
+  {
+    id: 'notifications',
+    label: 'Notifications',
+    content: 'in-app notification team ownership team_members notifications table unread badging count badge bell icon dismissal mark read mark all as read auto-sync focus regained active tab focus refresh'
+  },
+  {
+    id: 'auth',
+    label: 'Auth & RBAC',
+    content: 'authentication rbac security jwt cookies bearer token programmatic access refresh tokens sessions table session rotation mismatch jwt_expires_in jwt_refresh_expires_in mfa totp setup otpauth qr code setup confirm verification code impersonation troubleshoot verify active banner banner menu end session un-impersonate portal admin editor viewer direct user roles team-inherited roles highest role resolution user_roles team_members'
+  },
+  {
+    id: 'sso',
+    label: 'SSO Integration',
+    content: 'oidc openid connect single sign-on pkce s256 microsoft entra id azure ad keycloak configuration admin settings sso settings sso enabled issuer url client id client secret redirect uri callback certificates directory tenant id realm openid-connect confidential'
+  },
+  {
+    id: 'scim-setup',
+    label: 'SCIM Setup',
+    content: 'system for cross-domain identity management scim v2.0 rfc 7643 rfc 7644 user group provisioning identity provider idp okta microsoft entra id bearer token configuration active settings generate token random token save scim base url userName email push new users push profile updates push groups authorization bearer test connection group mappings team_members groups schema endpoints users'
+  },
+  {
+    id: 'integrations',
+    label: 'Integrations',
+    content: 'integrations connectors external systems data import sync next insight enterprise architecture api key bearer token pull-only pull write-back conflict resolution overwrite merge fill empty skip per-connector per-field global mode field overrides override table applications services relationships sync logs history dashboard enabled toggle test connection credentials masked plaintext base url SSO single sign-on OIDC PKCE SCIM provisioning identity providers keycloak entra id okta admin settings configuration page Plug2 icon'
+  },
+  {
+    id: 'entities',
+    label: 'Entity Types',
+    content: 'entity types primary types services business technical criticality tier support model applications vendor version technology stack configuration items cis physical virtual servers network devices databases containers racks assets hardware licenses equipment cost warranty assignment tracking teams locations users roles themes api'
+  },
+  {
+    id: 'service',
+    label: 'Services',
+    content: 'services represent business technical capabilities service_base business_services technical_services table inheritance shared columns type-specific fields endpoints GET POST PATCH DELETE /api/services field reference name description ownerteamid lifecyclestatus environment classification businesscriticality businessowner servicetier supportmodel servicecategory'
+  },
+  {
+    id: 'application',
+    label: 'Applications',
+    content: 'applications software systems versions vendors technology stack application_base applications table inheritance shared columns app-specific fields endpoints GET POST PATCH DELETE /api/applications field reference name description ownerteamid lifecyclestatus environment classification vendor version apptype technologystack'
+  },
+  {
+    id: 'ci',
+    label: 'CIs',
+    content: 'configuration items cis physical virtual infrastructure components ci_base cis table inheritance shared columns ci-specific fields endpoints GET POST PATCH DELETE /api/cis field reference name description ownerteamid locationid lifecyclestatus environment classification externalref citype serialnumber assettag racksize rackmodel'
+  },
+  {
+    id: 'ci-classes',
+    label: 'CI Classes',
+    content: 'ci classes layouts citype server network device storage database container rack other physical servers virtual machines cloud instances aws ec2 azure vm routers switches firewalls load balancers san nas disks logical oracle postgresql ms sql mongodb pods docker runtimes datacenter mounts rack size model shared schema specialized layouts form designer layout keys form_layout_ci:database form_layout_ci:server fallback form_layout_ci'
+  },
+  {
+    id: 'asset',
+    label: 'Assets',
+    content: 'assets hardware software licenses equipment linked ci ownership tracking file attachments invoices warranties configuration documents endpoints GET POST PATCH DELETE /api/assets field reference name assettag model category status ciid locationid assignedto supplier purchasedate warrantyexpiry cost notes'
+  },
+  {
+    id: 'attachments',
+    label: 'Attachments',
+    content: 'attachments upload files assets pdf doc docx xls xlsx csv txt png jpg jpeg gif webp svg attachment settings mime types binary data blob asset_attachments table s3 database size restriction 2mb mime masking cross-site scripting xss vulnerabilities forced download application/octet-stream x-content-type-options nosniff drag drop remove delete'
+  },
+  {
+    id: 'api-reference',
+    label: 'API Reference',
+    content: 'rest api reference rest explorer sidebar apidocs menu cookie auth session auth bearer token programmatic auth authorization bearer json envelope wrap pagination total limit offset sort order conditions filter query string ?filter= startsWith eq neq contains isEmpty conditional operators error format error message statuscode conflict 409'
+  },
+  {
+    id: 'search-filter',
+    label: 'Search & Filter',
+    content: 'fts5 global search sqlite virtual fts5 relevance ranking autocomplete search suggest autocomplete suggest debounced suggest builder rule multi-column filters toolbar column selector logical rules query bulk export not yet supported csv download pagination'
+  },
+  {
+    id: 'data-model',
+    label: 'Data Model',
+    content: 'data model database tables 26 tables table inheritance core tables supporting tables users roles user_roles teams team_members locations relationships assets sessions audit_events themes user_theme_preferences app_config notifications import_sets import_rows import_mappings attachments service_fts application_fts ci_fts fts5 triggers'
+  },
+  {
+    id: 'relationships',
+    label: 'Relationships',
+    content: 'relationships connections between entities interactive relationship graph relationships table sourcetype sourceid targettype targetid relationshiptype direction outbound inbound bidirectional notes depends_on hosted_on owned_by part_of connects_to uses graph visualization xyflow react dagrejs depth minimap zoom pan center node highlighted deep pink color-coded depth'
+  },
+  {
+    id: 'deployment',
+    label: 'Deployment',
+    content: 'deployment environment variables production default credentials jwt_secret jwt_refresh_secret jwt_expires_in jwt_refresh_expires_in database_url base_url docker compose volume kubernetes manifest deployment pvc secrets standalone node.js installation npm install db:init db:setup build start local server'
+  },
+  {
+    id: 'database',
+    label: 'Database & Backup',
+    content: 'database storage sqlite better-sqlite3 write-ahead logging wal mode connection pool db/knexfile.js max pool min pool SQLite backup vacuum into atlas.db atlas.db-shm atlas.db-wal postgresql database_url npm run db:init schema npm run db:setup migration path manual cross-dialect migration export re-import'
+  },
+  {
+    id: 'changelog',
+    label: 'Changelog',
+    content: 'changelog features optimizations bug fixes initial public release 0.1.0 jwt authentication session controls rbac admin editor viewer polymorphic table inheritance drag drop form designer xyflow relationship graphs leaflet location maps audit trail notifications rack layout editor'
+  }
 ];
 
 function FieldTable({ entityType }) {
@@ -79,6 +208,9 @@ function FieldTable({ entityType }) {
 export default function DocsPage() {
   const [active, setActive] = useState('overview');
   const [theme, setTheme] = useState('light');
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const [paletteIndex, setPaletteIndex] = useState(0);
 
   useEffect(() => {
     const saved = localStorage.getItem('atlas-theme-mode');
@@ -94,14 +226,118 @@ export default function DocsPage() {
     setTheme(next);
   }
 
+  // Pure word-matching and scoring search logic
+  const results = useMemo(() => {
+    if (!query || query.trim().length < 2) return [];
+    const q = query.toLowerCase().trim();
+    const words = q.split(/\s+/).filter(Boolean);
+
+    return SEARCH_INDEX.map(section => {
+      let score = 0;
+      const content = section.content;
+      const label = section.label.toLowerCase();
+
+      // Full phrase matches
+      if (label.includes(q)) score += 5;
+      else if (content.includes(q)) score += 3;
+
+      // Word matches (AND vs OR)
+      let wordMatches = 0;
+      words.forEach(w => {
+        if (label.includes(w) || content.includes(w)) {
+          wordMatches++;
+        }
+      });
+
+      if (wordMatches === words.length) {
+        score += 2; // All terms present
+      } else if (wordMatches > 0) {
+        score += 1; // Partial terms present
+      }
+
+      if (score === 0) return null;
+
+      // Slice out 120-character excerpt context
+      let excerpt = '';
+      const matchIdx = content.indexOf(words[0]);
+      if (matchIdx !== -1) {
+        const start = Math.max(0, matchIdx - 50);
+        const end = Math.min(content.length, matchIdx + 70);
+        excerpt = (start > 0 ? '...' : '') + content.substring(start, end) + (end < content.length ? '...' : '');
+      } else {
+        excerpt = section.content.substring(0, 120) + '...';
+      }
+
+      // Generate segments to support styled highlighting
+      const regex = new RegExp(`(${words.map(w => w.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')).join('|')})`, 'gi');
+      const segments = excerpt.split(regex);
+
+      return {
+        ...section,
+        score,
+        excerptParts: segments
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 8);
+  }, [query]);
+
+  // Reset keyboard selection on query change
+  useEffect(() => {
+    setPaletteIndex(0);
+  }, [query]);
+
+  // Handle shortcut events globally
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setPaletteOpen(true);
+        setQuery('');
+      }
+
+      if (!paletteOpen) return;
+
+      if (e.key === 'Escape') {
+        setPaletteOpen(false);
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setPaletteIndex(prev => (prev + 1) % Math.max(1, results.length));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setPaletteIndex(prev => (prev - 1 + results.length) % Math.max(1, results.length));
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (results[paletteIndex]) {
+          setActive(results[paletteIndex].id);
+          setPaletteOpen(false);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [paletteOpen, results, paletteIndex]);
+
   return (
     <div className={styles.docs}>
       <div className={styles.sidebar}>
         <div className={styles.sidebarHeader}>
           <div className={styles.sidebarTitle}>Contents</div>
-          <button className={styles.themeToggle} onClick={toggleTheme} aria-label="Toggle theme">
-            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-          </button>
+          <div className={styles.searchAndToggle}>
+            <button 
+              className={styles.searchButton} 
+              onClick={() => { setPaletteOpen(true); setQuery(''); }} 
+              aria-label="Search documentation"
+            >
+              <Search size={14} />
+              <span className={styles.tooltip}>Search (⌘K / Ctrl+K)</span>
+            </button>
+            <button className={styles.themeToggle} onClick={toggleTheme} aria-label="Toggle theme">
+              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+          </div>
         </div>
         {SECTIONS.map((s) => (
           <button
@@ -290,7 +526,7 @@ npm run lint     — Run linter`}</CodeBlock>
               SQLite FTS5 full-text search across services, applications, and CIs:
             </p>
             <ul>
-              <li>Relevance-ranked results with <code>MATCH</code> queries</li>
+              <li>RElevance-ranked results with <code>MATCH</code> queries</li>
               <li>Type filter (<code>?type=service</code>)</li>
               <li>Autocomplete suggest API with debounced typeahead</li>
             </ul>
@@ -738,6 +974,114 @@ const auth = await requireEditor()(request);    // editor or admin`}</CodeBlock>
                 <tr><td><code>DELETE</code></td><td><code>/api/scim/v2/Groups/:id</code></td><td>Delete group alignment</td></tr>
               </tbody>
             </table>
+          </>
+        )}
+
+        {/* INTEGRATIONS */}
+        {active === 'integrations' && (
+          <>
+            <h1>Integrations</h1>
+            <p>
+              The Integrations page (<code>/admin/integrations</code>) provides a centralized hub for connecting Atlas
+              to external systems. SSO and SCIM authentication configs have moved here alongside data connectors.
+            </p>
+
+            <h2>Connectors</h2>
+            <p>
+              Data connectors pull services, applications, and relationships from external tools into Atlas.
+              Each connector authenticates via a bearer token (API key) stored in the database and masked
+              in the UI and audit logs — the same approach used for SSO client secrets and SCIM tokens.
+            </p>
+
+            <h3>Conflict Resolution</h3>
+            <p>
+              When syncing, Atlas compares incoming data against existing records matched by <code>externalRef</code>.
+              The conflict mode determines what happens to overlapping fields:
+            </p>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Mode</th>
+                  <th>Behaviour</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Merge</strong> (default)</td>
+                  <td style={{ color: 'var(--muted-foreground)' }}>Fill empty fields only — existing data is never overwritten</td>
+                </tr>
+                <tr>
+                  <td><strong>Overwrite</strong></td>
+                  <td style={{ color: 'var(--muted-foreground)' }}>Always replace the Atlas value with the incoming value</td>
+                </tr>
+                <tr>
+                  <td><strong>Skip</strong></td>
+                  <td style={{ color: 'var(--muted-foreground)' }}>Never write this field — kept for read-only reference</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <p>
+              A <strong>global mode</strong> sets the default for all fields, and each individual
+              field can override that setting in the <strong>Field Conflict Overrides</strong> table.
+            </p>
+
+            <h3>Sync Flow</h3>
+            <ul>
+              <li>The connector fetches a paginated list from the external API using the configured base URL and bearer token</li>
+              <li>Each record is mapped from the external schema to Atlas&apos;s internal field names</li>
+              <li>Records matching an existing <code>externalRef</code> are updated; unmatched records are created</li>
+              <li>The connector respects per-field conflict modes when merging data</li>
+              <li>A sync log entry records the result: created, updated, skipped, and errored counts</li>
+            </ul>
+
+            <h3>Next Insight</h3>
+            <p>
+              <strong>Next Insight</strong> is the first supported connector — an enterprise architecture
+              management tool whose REST API provides applications, services, and their relationships.
+            </p>
+            <ul>
+              <li>API authentication: Bearer token in the <code>Authorization</code> header</li>
+              <li>Syncable entities: Applications, Services (business &amp; technical), Relationships</li>
+              <li>Configurable per-field conflict resolution for all app and service columns</li>
+              <li>Test Connection button validates URL and credentials before first sync</li>
+            </ul>
+
+            <h2>SSO & SCIM</h2>
+            <p>
+              Single Sign-On (OIDC PKCE) and SCIM v2.0 provisioning are configured below the
+              connector cards on the same Integrations page. Their configuration keys
+              (<code>sso_enabled</code>, <code>oidc_*</code>, <code>scim_enabled</code>, <code>scim_bearer_token</code>)
+              are stored in the <code>app_config</code> table alongside connector config.
+            </p>
+
+            <h3>SSO Providers</h3>
+            <ul>
+              <li>OpenID Connect (PKCE S256) — openid-client v6</li>
+              <li>Tested against Microsoft Entra ID (Azure AD) and Keycloak</li>
+              <li>SSO login redirects unauthenticated users automatically when enabled</li>
+            </ul>
+
+            <h3>SCIM v2.0</h3>
+            <ul>
+              <li>RFC 7643 / RFC 7644 compliant</li>
+              <li>Bearer token authentication — generate and copy the token, then enter it in your IdP (Okta, Entra ID)</li>
+              <li>Users and Groups endpoints auto-create accounts and populate team memberships</li>
+              <li>SCIM base URL: <code>https://your-atlas.example.com/api/scim/v2</code></li>
+            </ul>
+
+            <h2>Enabled Connector Badge</h2>
+            <p>
+              Each connector card includes a toggle to enable/disable sync. Disabled connectors
+              can still be edited and tested but will reject sync requests.
+            </p>
+
+            <h2>Future Connectors</h2>
+            <p>
+              The connector framework is extensible — additional modules
+              for ServiceNow, Azure Cloud, GCP, Proxmox, vCenter, and Hyper‑V
+              will plug into the same UI, conflict-resolution engine, and sync log system.
+            </p>
           </>
         )}
 
@@ -1381,6 +1725,57 @@ npm start
           </>
         )}
       </div>
+
+      {/* SEARCH COMMAND PALETTE MODAL OVERLAY */}
+      {paletteOpen && (
+        <div className={styles.paletteOverlay} onClick={() => setPaletteOpen(false)}>
+          <div className={styles.palette} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.paletteHeader}>
+              <Search size={16} className={styles.paletteIcon} />
+              <input
+                type="text"
+                className={styles.paletteInput}
+                placeholder="Search documentation (Cmd/Ctrl+K)..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                autoFocus
+              />
+              <span className={styles.paletteShortcutBadge}>ESC</span>
+            </div>
+            
+            {query.trim().length >= 2 && (
+              <div className={styles.paletteResults}>
+                {results.length > 0 ? (
+                  results.map((r, i) => (
+                    <div
+                      key={r.id}
+                      className={`${styles.paletteResult}${paletteIndex === i ? ' ' + styles.paletteResultActive : ''}`}
+                      onClick={() => {
+                        setActive(r.id);
+                        setPaletteOpen(false);
+                      }}
+                    >
+                      <div className={styles.paletteLabel}>{r.label}</div>
+                      <div className={styles.paletteExcerpt}>
+                        {r.excerptParts.map((part, pi) => {
+                          const isMatch = query.toLowerCase().trim().split(/\s+/).some(w => part.toLowerCase() === w);
+                          return isMatch ? <mark key={pi}>{part}</mark> : part;
+                        })}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className={styles.paletteEmpty}>No results for "{query}"</div>
+                )}
+              </div>
+            )}
+            
+            {query.trim().length < 2 && (
+              <div className={styles.paletteEmpty}>Type at least 2 characters to search...</div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

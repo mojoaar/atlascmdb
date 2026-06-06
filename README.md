@@ -14,6 +14,7 @@ Open-source CMDB for modern IT teams — services, applications, CIs, assets, an
 - **Geographic maps** — location-aware asset/CI mapping via Leaflet + OpenStreetMap
 - **Import / Export** — CSV import with field mapping, preview, and conflict resolution; CSV/JSON export per entity type
 - **SSO / SCIM** — OpenID Connect (PKCE S256) single sign-on and SCIM 2.0 provisioning, configured via admin UI
+- **Integrations** — connect external tools (Next Insight, future ServiceNow, vCenter, Azure, GCP) with pull-based sync, per-field conflict resolution, and sync history
 - **MFA** — TOTP two-factor authentication (RFC 6238) with QR code setup
 - **Audit trail** — full change history with before/after diffs and actor attribution
 - **Themes** — 8 built-in colour themes (Blue Line, Catppuccin × 4, Nord, Dracula, Cyberpunk) with light/dark toggle
@@ -93,9 +94,9 @@ Copy the variables below into a `.env.local` file at the project root.
 |---|---|---|
 | `NODE_ENV` | `development` | Set to `production` in production deployments. Enables secure cookies and enforces secret validation. |
 
-### SSO / SCIM
+### Integrations (SSO / SCIM / Connectors)
 
-OpenID Connect (SSO) and SCIM 2.0 provisioning are configured through the **Admin → Settings** UI and stored in the database. No environment variables are required for these features.
+OpenID Connect (SSO), SCIM 2.0 provisioning, and data connectors (Next Insight, future ServiceNow, vCenter, Azure, GCP, etc.) are configured through the **Admin → Integrations** page and stored in the database. Connectors support per-field conflict resolution (merge / overwrite / skip) and maintain a full sync history.
 
 ---
 
