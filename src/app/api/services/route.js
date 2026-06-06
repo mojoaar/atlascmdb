@@ -2,13 +2,13 @@ import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import getDb from '../../../lib/db';
 import { requireAuth, requireEditor } from '../../../lib/rbac';
-import { handleApiError, success, created } from '../../../lib/api-helpers';
+import { handleApiError, success, created, guardResponse, badRequest } from '../../../lib/api-helpers';
 import { logAudit } from '../../../lib/audit';
 
 export async function GET(request) {
   try {
     const auth = await requireAuth()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const { searchParams } = new URL(request.url);
@@ -98,7 +98,14 @@ export async function GET(request) {
     const [countResult] = await query.clone().count('* as total');
     const sortCol = ALLOWED_SORT[sort] || DEFAULT_SORT;
     const sortOrder = ['asc','desc'].includes(order) ? order : 'desc';
-    const rows = await query.orderBy(sortCol, sortOrder).limit(limit).offset(offset);
+    
+    let orderByQuery = query;
+    if (sortCol === 'service_base.name') {
+      orderByQuery = orderByQuery.orderByRaw(`LOWER(service_base.name) ${sortOrder}`);
+    } else {
+      orderByQuery = orderByQuery.orderBy(sortCol, sortOrder);
+    }
+    const rows = await orderByQuery.limit(limit).offset(offset);
 
     const services = rows.map(r => {
       const service = {
@@ -141,21 +148,27 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const auth = await requireEditor()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const body = await request.json();
     const { name, description, ownerTeamId, lifecycleStatus, environment, classification, type, typeFields } = body;
 
     if (!name || !type) {
-      return NextResponse.json({ error: 'name and type (business|technical) required' }, { status: 400 });
+      return badRequest('name and type (business|technical) required');
     }
 
     const baseId = uuidv4();
 
     await db.transaction(async (trx) => {
       await trx('service_base').insert({
-        id: baseId, name, description, ownerTeamId, lifecycleStatus, environment, classification,
+        id: baseId,
+        name,
+        description,
+        ownerTeamId: ownerTeamId === '' ? null : ownerTeamId,
+        lifecycleStatus,
+        environment,
+        classification,
         createdBy: auth.user.id,
       });
 

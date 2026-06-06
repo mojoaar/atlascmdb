@@ -3,7 +3,7 @@ import { verifyPassword, generateAccessToken, generateMfaToken, generateRefreshT
 import getDb from '../../../../lib/db';
 import { handleApiError } from '../../../../lib/api-helpers';
 import { logAudit } from '../../../../lib/audit';
-import { enforceRateLimit } from '../../../../lib/rate-limit';
+import { enforceRateLimit, failedLoginLimiter } from '../../../../lib/rate-limit';
 
 export async function POST(request) {
   try {
@@ -11,15 +11,28 @@ export async function POST(request) {
     if (limited) return limited;
 
     const { email, password, mfaCode } = await request.json();
+
+    if (email) {
+      const lockoutCheck = failedLoginLimiter(email, { checkOnly: true });
+      if (!lockoutCheck.allowed) {
+        return NextResponse.json(
+          { error: 'Too many failed login attempts. This account is temporarily locked.' },
+          { status: 429, headers: { 'Retry-After': String(lockoutCheck.retryAfter) } }
+        );
+      }
+    }
+
     const db = getDb();
 
     const user = await db('users').where({ email }).first();
     if (!user || user.status !== 'active') {
+      failedLoginLimiter(email);
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
     const validPassword = await verifyPassword(password, user.passwordHash);
     if (!validPassword) {
+      failedLoginLimiter(email);
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 

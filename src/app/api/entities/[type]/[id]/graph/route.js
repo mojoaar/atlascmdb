@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import getDb from '../../../../../../lib/db';
 import { requireAuth } from '../../../../../../lib/rbac';
-import { handleApiError } from '../../../../../../lib/api-helpers';
+import { handleApiError, guardResponse } from '../../../../../../lib/api-helpers';
 
 const VALID_TYPES = ['service', 'application', 'ci'];
 const MAX_DEPTH = 6;
@@ -15,7 +15,7 @@ const TABLE_MAP = {
 export async function GET(request, { params }) {
   try {
     const auth = await requireAuth()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const { type, id } = await params;
     const { searchParams } = new URL(request.url);

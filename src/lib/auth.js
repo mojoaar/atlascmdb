@@ -7,8 +7,10 @@ import getDb from './db';
 function getSecret(name, fallback) {
   const value = process.env[name];
   if (!value) {
-    if (process.env.NODE_ENV === 'production' && !process.env.NEXT_PHASE) {
-      throw new Error(`${name} environment variable must be set in production`);
+    const isDev = !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
+    const isBuildPhase = !!process.env.NEXT_PHASE;
+    if (!isDev && !isBuildPhase) {
+      throw new Error(`${name} environment variable must be set in non-development environments`);
     }
     console.warn(`[SECURITY] Using default ${name} — set ${name} env var before deploying`);
     return fallback;

@@ -2,13 +2,13 @@ import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import getDb from '../../../../../lib/db';
 import { requireAuth, requireEditor } from '../../../../../lib/rbac';
-import { handleApiError, success, created } from '../../../../../lib/api-helpers';
+import { handleApiError, success, created, guardResponse } from '../../../../../lib/api-helpers';
 import { logAudit } from '../../../../../lib/audit';
 
 export async function GET(request, { params }) {
   try {
     const auth = await requireAuth()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const attachments = await db('asset_attachments')
@@ -27,7 +27,7 @@ const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 export async function POST(request, { params }) {
   try {
     const auth = await requireEditor()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const formData = await request.formData();
     const file = formData.get('file');

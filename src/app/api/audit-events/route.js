@@ -1,12 +1,11 @@
-import { NextResponse } from 'next/server';
 import getDb from '../../../lib/db';
 import { requireAdmin } from '../../../lib/rbac';
-import { handleApiError, success } from '../../../lib/api-helpers';
+import { handleApiError, success, guardResponse } from '../../../lib/api-helpers';
 
 export async function GET(request) {
   try {
     const auth = await requireAdmin()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const { searchParams } = new URL(request.url);

@@ -1,11 +1,14 @@
-import db from '../../../../lib/db';
+import getDb from '../../../../lib/db';
 import { requireAdmin } from '../../../../lib/rbac';
-import { success, handleApiError, badRequest } from '../../../../lib/api-helpers';
+import { success, handleApiError, badRequest, guardResponse } from '../../../../lib/api-helpers';
+import { logAudit } from '../../../../lib/audit';
 
 export async function POST(request) {
   try {
     const auth = await requireAdmin()(request);
+    if (!auth.authorized) return guardResponse(auth);
 
+    const db = getDb();
     // 1. Identify Alice Admin (must stay)
     const alice = await db('users').where({ email: 'alice@atlas.local' }).first();
     if (!alice) {
@@ -56,6 +59,16 @@ export async function POST(request) {
 
       // Delete all users except Alice
       await trx('users').whereNot({ id: alice.id }).del();
+    });
+
+    const isActorAlice = auth.user.id === alice.id;
+    await logAudit({
+      actorUserId: isActorAlice ? alice.id : null,
+      entityType: 'system',
+      entityId: 'reset-demo',
+      action: 'demo_reset',
+      beforeData: null,
+      afterData: { message: 'Demo data successfully reset.' },
     });
 
     return success({ success: true, message: 'Demo data successfully reset. Only Alice Admin remains.' });

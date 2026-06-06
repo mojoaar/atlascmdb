@@ -1,12 +1,12 @@
-import { NextResponse } from 'next/server';
 import getDb from '../../../../../lib/db';
 import { requireAuth } from '../../../../../lib/rbac';
-import { handleApiError, notFound, success } from '../../../../../lib/api-helpers';
+import { handleApiError, notFound, success, guardResponse } from '../../../../../lib/api-helpers';
+import { logAudit } from '../../../../../lib/audit';
 
 export async function POST(request, { params }) {
   try {
     const auth = await requireAuth()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const theme = await db('themes').where({ id: (await params).id }).first();
@@ -14,6 +14,15 @@ export async function POST(request, { params }) {
 
     await db('themes').where({ isDefault: true }).update({ isDefault: false });
     await db('themes').where({ id: (await params).id }).update({ isDefault: true });
+
+    await logAudit({
+      actorUserId: auth.user.id,
+      entityType: 'theme',
+      entityId: (await params).id,
+      action: 'activated',
+      beforeData: null,
+      afterData: { name: theme.name },
+    });
 
     return success({ message: 'Theme activated' });
   } catch (error) {

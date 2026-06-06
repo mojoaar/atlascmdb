@@ -1,14 +1,13 @@
-import { NextResponse } from 'next/server';
 import getDb from '../../../../lib/db';
 import { requireAuth, requireAdmin } from '../../../../lib/rbac';
-import { handleApiError, notFound, success } from '../../../../lib/api-helpers';
-import { hashPassword } from '../../../../lib/auth';
+import { handleApiError, notFound, success, guardResponse, badRequest } from '../../../../lib/api-helpers';
+import { hashPassword, verifyPassword } from '../../../../lib/auth';
 import { logAudit } from '../../../../lib/audit';
 
 export async function GET(request, { params }) {
   try {
     const auth = await requireAdmin()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const { id } = await params;
     const db = getDb();
@@ -30,7 +29,14 @@ export async function GET(request, { params }) {
       .where('team_members.userId', user.id)
       .select('teams.id', 'teams.name', 'team_members.memberRole');
 
-    return success({ ...user, roles, teams, passwordHash: undefined });
+    if (user) {
+      delete user.passwordHash;
+      delete user.mfaSecret;
+      delete user.passwordResetToken;
+      delete user.passwordResetExpires;
+    }
+
+    return success({ ...user, roles, teams });
   } catch (error) {
     return handleApiError(error, 'Failed to fetch user');
   }
@@ -39,7 +45,7 @@ export async function GET(request, { params }) {
 export async function PATCH(request, { params }) {
   try {
     const auth = await requireAuth()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const { id } = await params;
     const db = getDb();
@@ -55,8 +61,29 @@ export async function PATCH(request, { params }) {
     if (isAdmin && body.displayName !== undefined) updates.displayName = body.displayName;
     if (isAdmin && body.email !== undefined) updates.email = body.email;
     if (isAdmin && body.status !== undefined) updates.status = body.status;
-    if (body.password !== undefined && (isAdmin || isSelf)) updates.passwordHash = await hashPassword(body.password);
-    if ((isAdmin || isSelf) && body.mfaEnabled !== undefined) updates.mfaEnabled = body.mfaEnabled;
+    
+    if (body.password !== undefined && (isAdmin || isSelf)) {
+      if (body.password.length < 8) {
+        return badRequest('Password must be at least 8 characters');
+      }
+      if (isSelf && !isAdmin) {
+        if (!body.currentPassword) {
+          return badRequest('Current password required to change password');
+        }
+        const isValid = await verifyPassword(body.currentPassword, user.passwordHash);
+        if (!isValid) {
+          return badRequest('Invalid current password');
+        }
+      }
+      updates.passwordHash = await hashPassword(body.password);
+    }
+    
+    if ((isAdmin || isSelf) && body.mfaEnabled !== undefined) {
+      if (body.mfaEnabled === true) {
+        updates.mfaEnabled = true;
+      }
+    }
+    
     if (isAdmin && body.managerId !== undefined) updates.managerId = body.managerId || null;
     if ((isAdmin || isSelf) && body.avatarUrl !== undefined) updates.avatarUrl = body.avatarUrl || null;
     if ((isAdmin || isSelf) && body.avatarBg !== undefined) updates.avatarBg = body.avatarBg;
@@ -65,6 +92,9 @@ export async function PATCH(request, { params }) {
       updates.updatedAt = new Date().toISOString();
       updates.updatedBy = auth.user.id;
       await db('users').where({ id }).update(updates);
+      if (updates.passwordHash) {
+        await db('sessions').where({ userId: id }).del();
+      }
     }
 
     let roleChange;
@@ -99,7 +129,7 @@ export async function PATCH(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const auth = await requireAdmin()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const { id } = await params;
     const db = getDb();

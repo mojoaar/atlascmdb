@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { hashPassword } from '../../../../lib/auth';
 import getDb from '../../../../lib/db';
-import { handleApiError } from '../../../../lib/api-helpers';
+import { handleApiError, badRequest, success } from '../../../../lib/api-helpers';
 import { enforceRateLimit } from '../../../../lib/rate-limit';
+import { logAudit } from '../../../../lib/audit';
 
 export async function POST(request) {
   try {
@@ -12,11 +13,11 @@ export async function POST(request) {
     const { token, password } = await request.json();
 
     if (!token || !password) {
-      return NextResponse.json({ error: 'Token and password required' }, { status: 400 });
+      return badRequest('Token and password required');
     }
 
     if (password.length < 8) {
-      return NextResponse.json({ error: 'Password must be at least 8 characters' }, { status: 400 });
+      return badRequest('Password must be at least 8 characters');
     }
 
     const db = getDb();
@@ -26,7 +27,7 @@ export async function POST(request) {
       .first();
 
     if (!user) {
-      return NextResponse.json({ error: 'Invalid or expired reset token' }, { status: 400 });
+      return badRequest('Invalid or expired reset token');
     }
 
     const passwordHash = await hashPassword(password);
@@ -42,7 +43,16 @@ export async function POST(request) {
     // (e.g. to an attacker) can no longer be refreshed.
     await db('sessions').where({ userId: user.id }).del();
 
-    return NextResponse.json({ message: 'Password reset successful' });
+    await logAudit({
+      actorUserId: user.id,
+      entityType: 'user',
+      entityId: user.id,
+      action: 'password_reset_completed',
+      beforeData: null,
+      afterData: { message: 'Password updated and sessions invalidated' },
+    });
+
+    return success({ message: 'Password reset successful' });
   } catch (error) {
     return handleApiError(error, 'Password reset failed');
   }

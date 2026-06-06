@@ -48,7 +48,7 @@ export default function AdminLocationDetail() {
   useEffect(() => { if (message) { const t = setTimeout(() => setMessage(null), 5000); return () => clearTimeout(t); } }, [message]);
 
   useEffect(() => {
-    fetch('/api/locations?limit=100').then(r => r.json()).then(d => setAllLocations(unwrap(d)));
+    fetch('/api/locations?limit=100').then(r => r.json()).then(d => setAllLocations(unwrap(d))).catch(() => {});
     if (!isNew) {
       fetch(`/api/locations/${id}`).then(r => r.json()).then(l => {
         if (l) {
@@ -68,6 +68,9 @@ export default function AdminLocationDetail() {
             country: l.country || '',
           });
         }
+        setLoading(false);
+      }).catch(err => {
+        console.error(err);
         setLoading(false);
       });
     }
@@ -263,7 +266,7 @@ export default function AdminLocationDetail() {
         {!isNew && !viewMode && <Button variant="danger" onClick={handleDelete}>Delete</Button>}
       </div>
 
-      {!isNew && form.latitude && form.longitude && (
+      {!isNew && !isNaN(parseFloat(form.latitude)) && isFinite(parseFloat(form.latitude)) && !isNaN(parseFloat(form.longitude)) && isFinite(parseFloat(form.longitude)) && (
         <div className={styles.section} style={{ marginTop: '1.5rem' }}>
           <div className={styles.sectionTitle}>Location</div>
           <Card>

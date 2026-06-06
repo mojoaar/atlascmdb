@@ -2,13 +2,13 @@ import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import getDb from '../../../lib/db';
 import { requireAuth, requireEditor } from '../../../lib/rbac';
-import { handleApiError, success, created } from '../../../lib/api-helpers';
+import { handleApiError, success, created, guardResponse, badRequest } from '../../../lib/api-helpers';
 import { logAudit } from '../../../lib/audit';
 
 export async function GET(request) {
   try {
     const auth = await requireAuth()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const { searchParams } = new URL(request.url);
@@ -79,7 +79,14 @@ export async function GET(request) {
     const [countResult] = await query.clone().count('* as total');
     const sortCol = ALLOWED_SORT[sort] || DEFAULT_SORT;
     const sortOrder = ['asc','desc'].includes(order) ? order : 'desc';
-    const rows = await query.orderBy(sortCol, sortOrder).limit(limit).offset(offset);
+    
+    let orderByQuery = query;
+    if (sortCol === 'assets.name') {
+      orderByQuery = orderByQuery.orderByRaw(`LOWER(assets.name) ${sortOrder}`);
+    } else {
+      orderByQuery = orderByQuery.orderBy(sortCol, sortOrder);
+    }
+    const rows = await orderByQuery.limit(limit).offset(offset);
 
     const assets = rows.map(r => ({
       id: r.id, name: r.name, assetTag: r.assetTag, ciId: r.ciId,
@@ -102,16 +109,24 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const auth = await requireEditor()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const body = await request.json();
-    if (!body.name) return NextResponse.json({ error: 'name required' }, { status: 400 });
+    if (!body.name) return badRequest('name required');
 
     const id = uuidv4();
     const fields = ['name', 'assetTag', 'ciId', 'category', 'model', 'status', 'assignedTo', 'locationId', 'supplier', 'purchaseDate', 'warrantyExpiry', 'cost', 'notes'];
     const insert = { id, createdBy: auth.user.id };
-    fields.forEach(f => { if (body[f] !== undefined) insert[f] = body[f]; });
+    fields.forEach(f => {
+      if (body[f] !== undefined) {
+        let val = body[f];
+        if (['ciId', 'assignedTo', 'locationId'].includes(f) && val === '') {
+          val = null;
+        }
+        insert[f] = val;
+      }
+    });
 
     await db('assets').insert(insert);
 

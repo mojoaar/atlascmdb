@@ -5,6 +5,10 @@ import getDb from '../../../../../lib/db';
 import { handleApiError } from '../../../../../lib/api-helpers';
 import { generateAccessToken, generateRefreshToken, setTokens } from '../../../../../lib/auth';
 
+export function isSafeLocalUrl(url) {
+  return /^\/(?![/\\])/.test(url);
+}
+
 export async function GET(request) {
   try {
     const db = getDb();
@@ -34,7 +38,7 @@ export async function GET(request) {
     const state = cookieStore.get('sso_state')?.value;
     const codeVerifier = cookieStore.get('sso_code_verifier')?.value;
     let returnUrl = cookieStore.get('sso_return_url')?.value || '/portal';
-    if (!/^\/(?![/\\])/.test(returnUrl)) {
+    if (!isSafeLocalUrl(returnUrl)) {
       returnUrl = '/portal';
     }
 

@@ -1,13 +1,12 @@
-import { NextResponse } from 'next/server';
 import getDb from '../../../../lib/db';
 import { requireAdmin } from '../../../../lib/rbac';
-import { handleApiError, success, badRequest } from '../../../../lib/api-helpers';
+import { handleApiError, success, badRequest, guardResponse } from '../../../../lib/api-helpers';
 import { getConnector } from '../../../../lib/connectors';
 
 export async function POST(request) {
   try {
     const auth = await requireAdmin()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const body = await request.json();
     const { connectorType, baseUrl, apiKey } = body;

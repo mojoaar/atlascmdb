@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
 import getDb from '../../../../../lib/db';
 import { requireAdmin } from '../../../../../lib/rbac';
-import { handleApiError, success } from '../../../../../lib/api-helpers';
+import { handleApiError, success, guardResponse } from '../../../../../lib/api-helpers';
 import { logAudit } from '../../../../../lib/audit';
 
 export async function PUT(request, { params }) {
   try {
     const auth = await requireAdmin()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const { id } = await params;
     const { roleIds } = await request.json();

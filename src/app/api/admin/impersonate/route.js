@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '../../../../lib/rbac';
 import { generateImpersonationToken } from '../../../../lib/auth';
-import { handleApiError } from '../../../../lib/api-helpers';
+import { handleApiError, guardResponse } from '../../../../lib/api-helpers';
 import { logAudit } from '../../../../lib/audit';
 import getDb from '../../../../lib/db';
 
 export async function POST(request) {
   try {
     const auth = await requireAdmin()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const { userId } = await request.json();
     if (!userId) return NextResponse.json({ error: 'userId is required' }, { status: 400 });

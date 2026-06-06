@@ -2,13 +2,13 @@ import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import getDb from '../../../lib/db';
 import { requireAuth, requireEditor } from '../../../lib/rbac';
-import { handleApiError, success, created } from '../../../lib/api-helpers';
+import { handleApiError, success, created, guardResponse } from '../../../lib/api-helpers';
 import { logAudit } from '../../../lib/audit';
 
 export async function GET(request) {
   try {
     const auth = await requireAuth()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const { searchParams } = new URL(request.url);
@@ -80,7 +80,7 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const auth = await requireEditor()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const { sourceType, sourceId, targetType, targetId, relationshipType, direction, notes } = await request.json();

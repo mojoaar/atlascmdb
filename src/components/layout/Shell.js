@@ -6,6 +6,7 @@ import {
   Server,
   Layers,
   Database,
+  Bolt,
   Users,
   UserCircle,
   MapPin,
@@ -36,7 +37,7 @@ const PORTAL_NAV = [
   { label: 'Search', href: '/portal/search', icon: Search },
   { label: 'Services', href: '/portal/services', icon: Server },
   { label: 'Applications', href: '/portal/applications', icon: Layers },
-  { label: 'CIs', href: '/portal/cis', icon: Database },
+  { label: 'CIs', href: '/portal/cis', icon: Bolt },
   { label: 'Assets', href: '/portal/assets', icon: Monitor },
   { label: 'Teams', href: '/portal/teams', icon: Users },
   { label: 'Locations', href: '/portal/locations', icon: MapPin },
@@ -53,7 +54,7 @@ const ADMIN_NAV = [
       { label: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
       { label: 'Services', href: '/admin/services', icon: Server },
       { label: 'Applications', href: '/admin/applications', icon: Layers },
-      { label: 'CIs', href: '/admin/cis', icon: Database },
+      { label: 'CIs', href: '/admin/cis', icon: Bolt },
       { label: 'Racks', href: '/admin/racks', icon: LayoutGrid },
       { label: 'Assets', href: '/admin/assets', icon: Monitor },
       { label: 'Relationships', href: '/admin/relationships', icon: GitBranch },
@@ -301,6 +302,22 @@ function ThemeToggle() {
     }
     load();
     return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    function handleThemeChanged(e) {
+      const theme = e.detail?.theme;
+      if (theme) {
+        setThemeTokens(theme);
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const tokens = isDark ? (theme.tokenSetDark || theme.tokenSetLight) : theme.tokenSetLight;
+        applyTokens(tokens);
+      }
+    }
+    window.addEventListener('atlas-theme-changed', handleThemeChanged);
+    return () => {
+      window.removeEventListener('atlas-theme-changed', handleThemeChanged);
+    };
   }, []);
 
   function clearTokens() {

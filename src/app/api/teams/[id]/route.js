@@ -2,13 +2,13 @@ import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import getDb from '../../../../lib/db';
 import { requireAuth, requireEditor } from '../../../../lib/rbac';
-import { handleApiError, notFound, success } from '../../../../lib/api-helpers';
+import { handleApiError, notFound, success, guardResponse, forbidden } from '../../../../lib/api-helpers';
 import { logAudit } from '../../../../lib/audit';
 
 export async function GET(request, { params }) {
   try {
     const auth = await requireAuth()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const team = await db('teams')
@@ -34,7 +34,7 @@ export async function GET(request, { params }) {
 export async function PATCH(request, { params }) {
   try {
     const auth = await requireEditor()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const team = await db('teams').where({ id: (await params).id }).first();
@@ -42,12 +42,20 @@ export async function PATCH(request, { params }) {
 
     const body = await request.json();
     if (body.roleId !== undefined && body.roleId !== team.roleId && auth.effectiveRole !== 'admin') {
-      return NextResponse.json({ error: 'Only administrators can assign or modify team roles' }, { status: 403 });
+      return forbidden('Only administrators can assign or modify team roles');
     }
 
     const updates = {};
     const fields = ['name', 'description', 'type', 'parentTeamId', 'ownershipScope', 'status', 'roleId', 'managerId', 'leadId'];
-    fields.forEach(f => { if (body[f] !== undefined) updates[f] = body[f]; });
+    fields.forEach(f => {
+      if (body[f] !== undefined) {
+        let val = body[f];
+        if (['parentTeamId', 'roleId', 'managerId', 'leadId'].includes(f) && val === '') {
+          val = null;
+        }
+        updates[f] = val;
+      }
+    });
 
     if (Object.keys(updates).length) {
       updates.updatedAt = new Date().toISOString();
@@ -70,7 +78,7 @@ export async function PATCH(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const auth = await requireEditor()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const team = await db('teams').where({ id: (await params).id }).first();

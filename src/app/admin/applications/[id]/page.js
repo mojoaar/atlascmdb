@@ -39,7 +39,7 @@ export default function AdminApplicationDetail() {
   useEffect(() => { if (message) { const t = setTimeout(() => setMessage(null), 5000); return () => clearTimeout(t); } }, [message]);
 
   useEffect(() => {
-    fetch('/api/teams?limit=100').then(r => r.json()).then(d => setTeams(unwrap(d)));
+    fetch('/api/teams?limit=100').then(r => r.json()).then(d => setTeams(unwrap(d))).catch(() => {});
     if (!isNew) {
       fetch(`/api/applications/${id}`).then(r => r.json()).then(a => {
         if (a) {
@@ -57,6 +57,9 @@ export default function AdminApplicationDetail() {
             technologyStack: a.technologyStack || '',
           });
         }
+        setLoading(false);
+      }).catch(err => {
+        console.error(err);
         setLoading(false);
       });
     }

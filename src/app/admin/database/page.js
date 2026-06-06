@@ -22,6 +22,7 @@ export default function AdminDatabaseExplorer() {
   const [sortOrder, setSortOrder] = useState('asc');
   const [loading, setLoading] = useState(false);
   const [loadingTables, setLoadingTables] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Selected Row for JSON Viewer Modal
   const [viewingRow, setViewingRow] = useState(null);
@@ -37,7 +38,7 @@ export default function AdminDatabaseExplorer() {
           const fetchedTables = body.tables || body.data?.tables || [];
           setTables(fetchedTables);
           setFilteredTables(fetchedTables);
-          if (fetchedTables.length > 0) {
+          if (fetchedTables.length > 0 && !selectedTable) {
             setSelectedTable(fetchedTables[0]);
           }
         }
@@ -48,7 +49,7 @@ export default function AdminDatabaseExplorer() {
       }
     }
     fetchTables();
-  }, []);
+  }, [refreshKey]);
 
   // Filter tables by search text
   useEffect(() => {
@@ -99,7 +100,7 @@ export default function AdminDatabaseExplorer() {
     return () => {
       isSubscribed = false;
     };
-  }, [selectedTable, limit, offset, rowSearch, sortCol, sortOrder]);
+  }, [selectedTable, limit, offset, rowSearch, sortCol, sortOrder, refreshKey]);
 
   const handleTableChange = (tableName) => {
     setSelectedTable(tableName);
@@ -191,7 +192,7 @@ export default function AdminDatabaseExplorer() {
                 <button 
                   onClick={() => {
                     // Trigger dynamic table refetch
-                    setOffset(prev => prev);
+                    setRefreshKey(prev => prev + 1);
                   }} 
                   className={styles.refreshButton}
                   title="Refresh Table"

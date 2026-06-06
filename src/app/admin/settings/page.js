@@ -389,6 +389,7 @@ export default function AdminSettingsPage() {
             <Credit name="React" url="https://react.dev" />
             <Credit name="Knex.js" url="https://knexjs.org" />
             <Credit name="better-sqlite3" url="https://github.com/WiseLibs/better-sqlite3" />
+            <Credit name="node-postgres (pg)" url="https://github.com/brianc/node-postgres" />
             <Credit name="@xyflow/react" url="https://reactflow.dev" />
             <Credit name="@dagrejs/dagre" url="https://github.com/dagrejs/dagre" />
             <Credit name="recharts" url="https://recharts.org" />
@@ -400,6 +401,7 @@ export default function AdminSettingsPage() {
             <Credit name="jsonwebtoken" url="https://github.com/auth0/node-jsonwebtoken" />
             <Credit name="otpauth" url="https://github.com/hectorm/otpauth" />
             <Credit name="bcryptjs" url="https://github.com/dcodeIO/bcrypt.js" />
+            <Credit name="qrcode" url="https://github.com/soldair/node-qrcode" />
             <Credit name="uuid" url="https://github.com/uuidjs/uuid" />
             <Credit name="Prism.js" url="https://prismjs.com" />
             <Credit name="Catppuccin" url="https://catppuccin.com" />

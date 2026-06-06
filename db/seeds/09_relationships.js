@@ -1,5 +1,13 @@
 const { v4: uuidv4 } = require('uuid');
 
+function makeRng(seed) {
+  let s = seed || 42;
+  return function() {
+    s = (s * 1664525 + 1013904223) % 4294967296;
+    return s / 4294967296;
+  };
+}
+
 exports.seed = async function (knex) {
   await knex('relationships').del();
 
@@ -8,7 +16,6 @@ exports.seed = async function (knex) {
   const cis = await knex('ci_base').select('id', 'name');
   const teams = await knex('teams').select('id', 'name');
   const locations = await knex('locations').select('id', 'name');
-
   const assets = await knex('assets').select('id', 'assetTag', 'ciId');
 
   const svc = (name) => services.find(s => s.name === name)?.id;
@@ -59,7 +66,8 @@ exports.seed = async function (knex) {
     ['application', app('Store Manager Dashboard'), 'ci', ci('prod-web-02'), 'hosted_on', 'outbound', 'Store Manager backend on prod-web-02'],
     ['application', app('Logistics Portal'), 'ci', ci('prod-web-01'), 'hosted_on', 'outbound', 'Logistics app on prod-web-01'],
     ['application', app('Supplier Portal'), 'ci', ci('prod-web-02'), 'hosted_on', 'outbound', 'Supplier Portal on prod-web-02'],
-    ['application', app('Analytics & Reporting'), 'ci', ci('db-warehouse-01'), 'hosted_on', 'outbound', 'Analytics queries run on warehouse DB'],
+    // Fixed: 'Analytics & Reporting' is a service, not an application!
+    ['service', svc('Analytics & Reporting'), 'ci', ci('db-warehouse-01'), 'hosted_on', 'outbound', 'Analytics queries run on warehouse DB'],
 
     ['ci', ci('prod-web-01'), 'ci', ci('db-prod-01'), 'depends_on', 'outbound', 'Web server connects to database backend'],
     ['ci', ci('prod-web-02'), 'ci', ci('db-prod-01'), 'depends_on', 'outbound', 'Web server connects to database backend'],
@@ -117,6 +125,7 @@ exports.seed = async function (knex) {
     ['team', tm('IT Support'), 'service', svc('Authentication Service'), 'owned_by', 'inbound', 'Auth managed by IT Support'],
     ['team', tm('IT Support'), 'service', svc('HR Portal'), 'owned_by', 'inbound', 'HR Portal managed by IT Support'],
     ['team', tm('IT Support'), 'application', app('Monitoring Dashboard'), 'owned_by', 'inbound', 'Dashboard managed by IT Support'],
+
     ['team', tm('Security Team'), 'service', svc('Authentication Service'), 'owned_by', 'inbound', 'Auth security audited by Security'],
     ['team', tm('Security Team'), 'service', svc('Payment Gateway'), 'owned_by', 'inbound', 'PCI compliance by Security Team'],
     ['team', tm('Security Team'), 'service', svc('Monitoring Platform'), 'owned_by', 'inbound', 'Monitoring overseen by Security'],
@@ -155,6 +164,111 @@ exports.seed = async function (knex) {
     direction,
     notes,
   }));
+
+  // Programmatically generate extra relationships between the newly generated entities to form a rich web
+  const rng = makeRng(109);
+
+  // Link extra services together (depends_on)
+  const extraServices = services.filter(s => !['Customer Portal', 'HR Portal', 'eCommerce Platform', 'Inventory Management', 'Customer Loyalty System', 'Mobile App Backend', 'Authentication Service', 'Email Service', 'Monitoring Platform', 'Payment Gateway', 'Warehouse Management', 'Analytics & Reporting'].includes(s.name));
+  for (const es of extraServices) {
+    const parentSvc = services[Math.floor(rng() * services.length)];
+    if (parentSvc.id !== es.id) {
+      inserts.push({
+        id: uuidv4(),
+        sourceType: 'service',
+        sourceId: es.id,
+        targetType: 'service',
+        targetId: parentSvc.id,
+        relationshipType: 'depends_on',
+        direction: 'outbound',
+        notes: `Dependency link between ${es.name} and ${parentSvc.name}`,
+      });
+    }
+  }
+
+  // Link extra applications (uses / hosted_on)
+  const extraApps = applications.filter(a => !['Atlas CMDB', 'Employee Portal', 'Monitoring Dashboard', 'POS Terminal App', 'Mobile Shopping App', 'Store Manager Dashboard', 'Logistics Portal', 'Supplier Portal'].includes(a.name));
+  const infraCis = cis.filter(c => c.name.includes('server') || c.name.includes('node') || c.name.includes('db') || c.name.includes('cache'));
+  for (const ea of extraApps) {
+    const parentSvc = services[Math.floor(rng() * services.length)];
+    inserts.push({
+      id: uuidv4(),
+      sourceType: 'application',
+      sourceId: ea.id,
+      targetType: 'service',
+      targetId: parentSvc.id,
+      relationshipType: 'uses',
+      direction: 'outbound',
+      notes: `${ea.name} utilizes backend service ${parentSvc.name}`,
+    });
+
+    if (infraCis.length > 0) {
+      const hostCi = infraCis[Math.floor(rng() * infraCis.length)];
+      inserts.push({
+        id: uuidv4(),
+        sourceType: 'application',
+        sourceId: ea.id,
+        targetType: 'ci',
+        targetId: hostCi.id,
+        relationshipType: 'hosted_on',
+        direction: 'outbound',
+        notes: `${ea.name} runtime hosted on infrastructure node ${hostCi.name}`,
+      });
+    }
+  }
+
+  // Link extra CIs together (depends_on / part_of)
+  const extraCis = cis.filter(c => !['prod-web-01', 'prod-web-02', 'web-shop-01', 'web-shop-02', 'db-prod-01', 'db-warehouse-01', 'lb-prod-01', 'lb-web-01', 'k8s-prod-01', 'core-sw-01', 'cache-prod-01', 'mq-prod-01', 'RACK-A-01', 'RACK-B-02', 'RACK-C-01', 'RACK-D-01', 'RACK-E-02', 'RACK-F-01'].includes(c.name));
+  for (const ec of extraCis) {
+    const targetCi = cis[Math.floor(rng() * cis.length)];
+    if (targetCi.id !== ec.id) {
+      inserts.push({
+        id: uuidv4(),
+        sourceType: 'ci',
+        sourceId: ec.id,
+        targetType: 'ci',
+        targetId: targetCi.id,
+        relationshipType: rng() < 0.5 ? 'depends_on' : 'connects_to',
+        direction: 'outbound',
+        notes: `Physical / logical link between ${ec.name} and ${targetCi.name}`,
+      });
+    }
+  }
+
+  // Link extra locations together (connects_to)
+  const extraLocs = locations.filter(l => !['Denmark', 'Sweden', 'Germany', 'Primary Data Center', 'Aarhus Office', 'Stockholm Office', 'Berlin Office', 'Secondary Data Center', 'Oslo Office'].includes(l.name));
+  for (const el of extraLocs) {
+    const hubLoc = locations[Math.floor(rng() * locations.length)];
+    if (hubLoc.id !== el.id) {
+      inserts.push({
+        id: uuidv4(),
+        sourceType: 'location',
+        sourceId: el.id,
+        targetType: 'location',
+        targetId: hubLoc.id,
+        relationshipType: 'connects_to',
+        direction: 'bidirectional',
+        notes: `Network tunnel linking ${el.name} region and ${hubLoc.name}`,
+      });
+    }
+  }
+
+  // Link extra teams to services or apps (owned_by)
+  const extraTeams = teams.filter(t => !['Platform Engineering', 'IT Support', 'Security Team', 'DevOps Team', 'QA Team'].includes(t.name));
+  for (const et of extraTeams) {
+    const sOrA = rng() < 0.5 ? { type: 'service', pool: services } : { type: 'application', pool: applications };
+    const entity = sOrA.pool[Math.floor(rng() * sOrA.pool.length)];
+    inserts.push({
+      id: uuidv4(),
+      sourceType: 'team',
+      sourceId: et.id,
+      targetType: sOrA.type,
+      targetId: entity.id,
+      relationshipType: 'owned_by',
+      direction: 'inbound',
+      notes: `${entity.name} ownership scope managed by functional group ${et.name}`,
+    });
+  }
 
   await knex('relationships').insert(inserts);
 };

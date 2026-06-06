@@ -2,14 +2,14 @@ import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import getDb from '../../../lib/db';
 import { requireAuth, requireAdmin } from '../../../lib/rbac';
-import { handleApiError, created, badRequest } from '../../../lib/api-helpers';
+import { handleApiError, created, badRequest, guardResponse } from '../../../lib/api-helpers';
 
 const VALID_TYPES = new Set(['info', 'warning', 'success', 'error']);
 
 export async function GET(request) {
   try {
     const auth = await requireAuth()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const { searchParams } = new URL(request.url);
@@ -35,7 +35,7 @@ export async function POST(request) {
     // POST endpoint is admin-only to prevent any authenticated user from planting
     // arbitrary notifications in another user's feed (phishing/spoofing).
     const auth = await requireAdmin()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const { userId, type, title, body, entityType, entityId } = await request.json();
     if (!userId || !title) return badRequest('userId and title required');

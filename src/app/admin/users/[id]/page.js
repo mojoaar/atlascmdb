@@ -51,8 +51,8 @@ export default function AdminUserDetail() {
   }
 
   useEffect(() => {
-    fetch('/api/roles').then(r => r.json()).then(d => setAllRoles(unwrap(d)));
-    fetch('/api/users').then(r => r.json()).then(d => setAllUsers(unwrap(d)));
+    fetch('/api/roles').then(r => r.json()).then(d => setAllRoles(unwrap(d))).catch(() => {});
+    fetch('/api/users').then(r => r.json()).then(d => setAllUsers(unwrap(d))).catch(() => {});
     if (!isNew) {
       fetch(`/api/users/${id}`).then(r => r.json()).then(u => {
         if (u) {
@@ -66,6 +66,9 @@ export default function AdminUserDetail() {
             managerName: u.managerName || '',
           });
         }
+        setLoading(false);
+      }).catch(err => {
+        console.error(err);
         setLoading(false);
       });
     }

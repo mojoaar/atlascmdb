@@ -1,13 +1,12 @@
-import { NextResponse } from 'next/server';
 import getDb from '../../../../lib/db';
 import { requireAuth, requireEditor } from '../../../../lib/rbac';
-import { handleApiError, notFound, success } from '../../../../lib/api-helpers';
+import { handleApiError, notFound, success, guardResponse } from '../../../../lib/api-helpers';
 import { logAudit } from '../../../../lib/audit';
 
 export async function GET(request, { params }) {
   try {
     const auth = await requireAuth()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const location = await db('locations')
@@ -30,7 +29,7 @@ export async function GET(request, { params }) {
 export async function PATCH(request, { params }) {
   try {
     const auth = await requireEditor()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const location = await db('locations').where({ id: (await params).id }).first();
@@ -39,7 +38,14 @@ export async function PATCH(request, { params }) {
     const body = await request.json();
     const updates = {};
     const fields = ['name', 'description', 'type', 'parentLocationId', 'status', 'latitude', 'longitude', 'streetAddress', 'city', 'stateProvince', 'postalCode', 'country'];
-    fields.forEach(f => { if (body[f] !== undefined) updates[f] = body[f]; });
+    fields.forEach(f => {
+      if (body[f] !== undefined) {
+        updates[f] = body[f];
+        if (f === 'parentLocationId' && updates[f] === '') {
+          updates[f] = null;
+        }
+      }
+    });
 
     if (Object.keys(updates).length) {
       updates.updatedAt = new Date().toISOString();
@@ -62,7 +68,7 @@ export async function PATCH(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const auth = await requireEditor()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const location = await db('locations').where({ id: (await params).id }).first();

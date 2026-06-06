@@ -145,7 +145,7 @@ const SEARCH_INDEX = [
   {
     id: 'data-model',
     label: 'Data Model',
-    content: 'data model database tables 26 tables table inheritance core tables supporting tables users roles user_roles teams team_members locations relationships assets sessions audit_events themes user_theme_preferences app_config notifications import_sets import_rows import_mappings attachments service_fts application_fts ci_fts fts5 triggers'
+    content: 'data model database tables 33 tables table inheritance core tables supporting tables users roles user_roles teams team_members locations relationships assets sessions audit_events themes user_theme_preferences app_config notifications import_sets import_rows import_mappings attachments asset_attachments rack_placements integration_connectors integration_sync_logs service_fts application_fts ci_fts fts5 triggers'
   },
   {
     id: 'relationships',
@@ -1446,7 +1446,7 @@ Fallback Key:      form_layout_ci`}</CodeBlock>
           <>
             <h1>Data Model</h1>
             <p>
-              Atlas uses SQLite (development) or PostgreSQL (production) with 26 tables.
+              Atlas uses SQLite (development) or PostgreSQL (production) with 33 tables.
               Three entity types use table inheritance:
             </p>
 
@@ -1503,7 +1503,11 @@ Fallback Key:      form_layout_ci`}</CodeBlock>
               <li><code>app_config</code> — Key-value system configuration (SSO, SCIM, column defaults, attachment settings)</li>
               <li><code>notifications</code> — In-app notification bell with auto-triggers from audit events</li>
               <li><code>import_sets</code>, <code>import_rows</code>, <code>import_mappings</code> — Data import pipeline</li>
-              <li><code>attachments</code> — File attachments for assets and entities</li>
+              <li><code>attachments</code> — Metadata for file attachments</li>
+              <li><code>asset_attachments</code> — Relationship mapping between assets and uploaded files</li>
+              <li><code>rack_placements</code> — Coordinates and placement of CIs inside rack enclosures</li>
+              <li><code>integration_connectors</code> — Configured sources and sync targets for external integrations</li>
+              <li><code>integration_sync_logs</code> — Execution logs and run results for connector synchronization jobs</li>
               <li><code>service_fts</code>, <code>application_fts</code>, <code>ci_fts</code> — SQLite FTS5 full-text indexes with auto-sync triggers</li>
             </ul>
           </>

@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { verifyMfaToken, extractUserFromRequest } from '../../../../../lib/auth';
 import getDb from '../../../../../lib/db';
-import { handleApiError } from '../../../../../lib/api-helpers';
+import { handleApiError, unauthorized, badRequest, success } from '../../../../../lib/api-helpers';
 import { enforceRateLimit } from '../../../../../lib/rate-limit';
+import { logAudit } from '../../../../../lib/audit';
 
 export async function POST(request) {
   try {
@@ -11,24 +12,24 @@ export async function POST(request) {
 
     const user = await extractUserFromRequest(request);
     if (!user) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+      return unauthorized();
     }
 
     const { code } = await request.json();
     if (!code) {
-      return NextResponse.json({ error: 'code required' }, { status: 400 });
+      return badRequest('code required');
     }
 
     const dbUser = await getDb()('users').where({ id: user.id }).first();
 
     if (!dbUser || !dbUser.mfaSecret) {
-      return NextResponse.json({ error: 'MFA not set up' }, { status: 400 });
+      return badRequest('MFA not set up');
     }
 
     const verified = verifyMfaToken(dbUser.mfaSecret, code);
 
     if (!verified) {
-      return NextResponse.json({ error: 'Invalid code' }, { status: 401 });
+      return unauthorized('Invalid code');
     }
 
     await getDb()('users').where({ id: user.id }).update({
@@ -36,7 +37,16 @@ export async function POST(request) {
       updatedAt: new Date().toISOString(),
     });
 
-    return NextResponse.json({ mfaEnabled: true });
+    await logAudit({
+      actorUserId: user.id,
+      entityType: 'user',
+      entityId: user.id,
+      action: 'mfa_enabled',
+      beforeData: null,
+      afterData: { mfaEnabled: true },
+    });
+
+    return success({ mfaEnabled: true });
   } catch (error) {
     return handleApiError(error, 'MFA confirm failed');
   }

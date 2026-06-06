@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import getDb from '../../../../../lib/db';
 import { requireAuth } from '../../../../../lib/rbac';
-import { handleApiError } from '../../../../../lib/api-helpers';
+import { handleApiError, guardResponse, forbidden, badRequest, success } from '../../../../../lib/api-helpers';
+import { logAudit } from '../../../../../lib/audit';
 
 const MAX_SIZE = 2 * 1024 * 1024;
 const EXT_TYPES = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', webp: 'image/webp' };
@@ -15,7 +16,7 @@ function getMimeType(file) {
 export async function GET(request, { params }) {
   try {
     const auth = await requireAuth()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const { id } = await params;
     const db = getDb();
@@ -37,22 +38,22 @@ export async function GET(request, { params }) {
 export async function POST(request, { params }) {
   try {
     const auth = await requireAuth()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const { id } = await params;
     const isSelf = auth.user.id === id || auth.user.targetUserId === id;
-    if (!isSelf) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    if (!isSelf) return forbidden();
 
     const formData = await request.formData();
     const file = formData.get('file');
-    if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+    if (!file) return badRequest('No file provided');
 
     const mimeType = getMimeType(file);
     if (!mimeType) {
-      return NextResponse.json({ error: 'Only JPEG, PNG, GIF, and WebP images are allowed' }, { status: 400 });
+      return badRequest('Only JPEG, PNG, GIF, and WebP images are allowed');
     }
     if (file.size > MAX_SIZE) {
-      return NextResponse.json({ error: 'Avatar must be under 2 MB' }, { status: 400 });
+      return badRequest('Avatar must be under 2 MB');
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
@@ -64,7 +65,15 @@ export async function POST(request, { params }) {
       avatarUrl: `/api/users/${id}/avatar`,
     });
 
-    return NextResponse.json({ url: `/api/users/${id}/avatar` });
+    await logAudit({
+      actorUserId: auth.user.id,
+      entityType: 'user',
+      entityId: id,
+      action: 'avatar_updated',
+      afterData: { mimeType, size: buffer.length },
+    });
+
+    return success({ url: `/api/users/${id}/avatar` });
   } catch (error) {
     return handleApiError(error, 'Avatar upload failed');
   }
@@ -73,16 +82,23 @@ export async function POST(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const auth = await requireAuth()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const { id } = await params;
     const isSelf = auth.user.id === id || auth.user.targetUserId === id;
-    if (!isSelf) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    if (!isSelf) return forbidden();
 
     const db = getDb();
     await db('users').where({ id }).update({ avatarData: null, avatarMimeType: null, avatarUrl: null });
 
-    return NextResponse.json({ message: 'Avatar removed' });
+    await logAudit({
+      actorUserId: auth.user.id,
+      entityType: 'user',
+      entityId: id,
+      action: 'avatar_deleted',
+    });
+
+    return success({ message: 'Avatar removed' });
   } catch (error) {
     return handleApiError(error, 'Failed to remove avatar');
   }

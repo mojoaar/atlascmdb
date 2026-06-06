@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import getDb from '../../../../lib/db';
 import { requireEditor } from '../../../../lib/rbac';
-import { handleApiError, success } from '../../../../lib/api-helpers';
+import { handleApiError, success, guardResponse } from '../../../../lib/api-helpers';
+import { logAudit } from '../../../../lib/audit';
 
 async function parseCSV(content) {
   const lines = content.trim().split('\n');
@@ -47,7 +48,7 @@ async function parseJSON(content) {
 export async function POST(request) {
   try {
     const auth = await requireEditor()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const contentType = request.headers.get('content-type') || '';
     let filename, content;
@@ -100,6 +101,14 @@ export async function POST(request) {
         await db('import_set_rows').insert(rowData.slice(i, i + 250));
       }
     }
+
+    await logAudit({
+      actorUserId: auth.user.id,
+      entityType: 'import',
+      entityId: setId,
+      action: 'uploaded',
+      afterData: { filename, sourceType: isCSV ? 'csv' : 'json', rowCount: rows.length },
+    });
 
     return success({
       id: setId,

@@ -43,9 +43,9 @@ export default function AdminAssetDetail() {
   useEffect(() => { if (message) { const t = setTimeout(() => setMessage(null), 5000); return () => clearTimeout(t); } }, [message]);
 
   useEffect(() => {
-    fetch('/api/cis?limit=100').then(r => r.json()).then(d => setCis(unwrap(d)));
-    fetch('/api/locations?limit=100').then(r => r.json()).then(d => setLocations(unwrap(d)));
-    fetch('/api/users?limit=100').then(r => r.json()).then(d => setUsers(unwrap(d)));
+    fetch('/api/cis?limit=100').then(r => r.json()).then(d => setCis(unwrap(d))).catch(() => {});
+    fetch('/api/locations?limit=100').then(r => r.json()).then(d => setLocations(unwrap(d))).catch(() => {});
+    fetch('/api/users?limit=100').then(r => r.json()).then(d => setUsers(unwrap(d))).catch(() => {});
     if (!isNew) {
       fetch(`/api/assets/${id}`).then(r => r.json()).then(a => {
         if (a) {
@@ -58,6 +58,9 @@ export default function AdminAssetDetail() {
             cost: a.cost || '', notes: a.notes || '',
           });
         }
+        setLoading(false);
+      }).catch(err => {
+        console.error(err);
         setLoading(false);
       });
     }

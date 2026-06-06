@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '../../../../lib/rbac';
-import { success } from '../../../../lib/api-helpers';
+import { success, guardResponse } from '../../../../lib/api-helpers';
 
 export async function GET(request) {
   try {
     const auth = await requireAuth()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const templates = [
       { name: 'Services', entityType: 'services', fields: ['name', 'description', 'ownerTeamId', 'lifecycleStatus', 'environment', 'classification'] },

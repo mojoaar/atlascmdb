@@ -1,12 +1,11 @@
-import { NextResponse } from 'next/server';
 import getDb from '../../../../../lib/db';
 import { requireAuth } from '../../../../../lib/rbac';
-import { handleApiError, notFound, success } from '../../../../../lib/api-helpers';
+import { handleApiError, notFound, success, guardResponse } from '../../../../../lib/api-helpers';
 
 export async function POST(request, { params }) {
   try {
     const auth = await requireAuth()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const importSet = await db('import_sets').where({ id: (await params).id }).first();

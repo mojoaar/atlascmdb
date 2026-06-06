@@ -1,7 +1,11 @@
 exports.up = async function (knex) {
-  await knex.raw('ALTER TABLE user_theme_preferences ADD COLUMN rowLimit INTEGER');
+  await knex.schema.alterTable('user_theme_preferences', (t) => {
+    t.integer('rowLimit');
+  });
 };
 
 exports.down = async function (knex) {
-  await knex.raw('ALTER TABLE user_theme_preferences DROP COLUMN rowLimit');
+  await knex.schema.alterTable('user_theme_preferences', (t) => {
+    t.dropColumn('rowLimit');
+  });
 };

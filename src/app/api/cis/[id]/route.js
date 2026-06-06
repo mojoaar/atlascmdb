@@ -1,7 +1,6 @@
-import { NextResponse } from 'next/server';
 import getDb from '../../../../lib/db';
 import { requireAuth, requireEditor } from '../../../../lib/rbac';
-import { handleApiError, notFound, success } from '../../../../lib/api-helpers';
+import { handleApiError, notFound, success, guardResponse } from '../../../../lib/api-helpers';
 import { logAudit } from '../../../../lib/audit';
 
 async function getFullCi(id) {
@@ -37,7 +36,7 @@ async function getFullCi(id) {
 export async function GET(request, { params }) {
   try {
     const auth = await requireAuth()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const ci = await getFullCi((await params).id);
     if (!ci) return notFound('CI');
@@ -50,7 +49,7 @@ export async function GET(request, { params }) {
 export async function PATCH(request, { params }) {
   try {
     const auth = await requireEditor()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const existing = await db('ci_base').where({ id: (await params).id }).first();
@@ -97,16 +96,25 @@ export async function PATCH(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const auth = await requireEditor()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
+    const { id } = await params;
     const db = getDb();
-    const ci = await db('ci_base').where({ id: (await params).id }).first();
+    const ci = await db('ci_base').where({ id }).first();
     if (!ci) return notFound('CI');
 
-    await db('ci_base').where({ id: (await params).id }).del();
+    await db.transaction(async (trx) => {
+      await trx('ci_base').where({ id }).del();
+      await trx('relationships').where(function() {
+        this.where({ sourceType: 'ci', sourceId: id })
+            .orWhere({ targetType: 'ci', targetId: id });
+      }).del();
+      await trx('entity_tags').where({ entityType: 'ci', entityId: id }).del();
+      await trx('notifications').where({ entityType: 'ci', entityId: id }).del();
+    });
 
     await logAudit({
-      actorUserId: auth.user.id, entityType: 'ci', entityId: (await params).id,
+      actorUserId: auth.user.id, entityType: 'ci', entityId: id,
       action: 'deleted', beforeData: ci,
     });
 

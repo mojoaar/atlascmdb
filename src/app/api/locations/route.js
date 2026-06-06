@@ -1,14 +1,13 @@
-import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import getDb from '../../../lib/db';
 import { requireAuth, requireEditor } from '../../../lib/rbac';
-import { handleApiError, success, created } from '../../../lib/api-helpers';
+import { handleApiError, success, created, guardResponse, badRequest } from '../../../lib/api-helpers';
 import { logAudit } from '../../../lib/audit';
 
 export async function GET(request) {
   try {
     const auth = await requireAuth()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const { searchParams } = new URL(request.url);
@@ -69,7 +68,14 @@ const ALLOWED_FIELDS = new Set(['name', 'description', 'type', 'status', 'parent
     const [countResult] = await query.clone().count('* as total');
     const sortCol = ALLOWED_SORT[sort] || DEFAULT_SORT;
     const sortOrder = ['asc','desc'].includes(order) ? order : 'asc';
-    const rows = await query.orderBy(sortCol, sortOrder).limit(limit).offset(offset);
+    
+    let orderByQuery = query;
+    if (sortCol === 'locations.name') {
+      orderByQuery = orderByQuery.orderByRaw(`LOWER(locations.name) ${sortOrder}`);
+    } else {
+      orderByQuery = orderByQuery.orderBy(sortCol, sortOrder);
+    }
+    const rows = await orderByQuery.limit(limit).offset(offset);
 
     return success({ data: rows, total: countResult.total, limit, offset });
   } catch (error) {
@@ -80,14 +86,16 @@ const ALLOWED_FIELDS = new Set(['name', 'description', 'type', 'status', 'parent
 export async function POST(request) {
   try {
     const auth = await requireEditor()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const { name, description, type, parentLocationId, status, latitude, longitude, streetAddress, city, stateProvince, postalCode, country } = await request.json();
-    if (!name) return NextResponse.json({ error: 'name required' }, { status: 400 });
+    if (!name) return badRequest('name required');
+
+    const coercedParentId = parentLocationId || null;
 
     const id = uuidv4();
-    await db('locations').insert({ id, name, description, type, parentLocationId, status: status || 'active', latitude, longitude, streetAddress, city, stateProvince, postalCode, country, createdBy: auth.user.id });
+    await db('locations').insert({ id, name, description, type, parentLocationId: coercedParentId, status: status || 'active', latitude, longitude, streetAddress, city, stateProvince, postalCode, country, createdBy: auth.user.id });
 
     await logAudit({
       actorUserId: auth.user.id, entityType: 'location', entityId: id,

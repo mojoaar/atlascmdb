@@ -1,8 +1,7 @@
-import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import getDb from '../../../lib/db';
 import { requireAdmin } from '../../../lib/rbac';
-import { handleApiError, success, created, badRequest } from '../../../lib/api-helpers';
+import { handleApiError, success, created, badRequest, guardResponse } from '../../../lib/api-helpers';
 import { logAudit } from '../../../lib/audit';
 import { listConnectors } from '../../../lib/connectors';
 
@@ -16,7 +15,7 @@ const maskConnector = (c) => ({
 export async function GET(request) {
   try {
     const auth = await requireAdmin()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const connectors = await db('integration_connectors')
@@ -31,7 +30,7 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const auth = await requireAdmin()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const body = await request.json();
     const { name, connectorType, baseUrl, apiKey, conflictMode } = body;

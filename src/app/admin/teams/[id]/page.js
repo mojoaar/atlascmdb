@@ -56,9 +56,9 @@ export default function AdminTeamDetail() {
   const [newMemberRole, setNewMemberRole] = useState('');
 
   useEffect(() => {
-    fetch('/api/teams?limit=100').then(r => r.json()).then(d => setAllTeams(unwrap(d)));
-    fetch('/api/roles').then(r => r.json()).then(d => setAllRoles(unwrap(d)));
-    fetch('/api/users').then(r => r.json()).then(d => setAllUsers(unwrap(d)));
+    fetch('/api/teams?limit=100').then(r => r.json()).then(d => setAllTeams(unwrap(d))).catch(() => {});
+    fetch('/api/roles').then(r => r.json()).then(d => setAllRoles(unwrap(d))).catch(() => {});
+    fetch('/api/users').then(r => r.json()).then(d => setAllUsers(unwrap(d))).catch(() => {});
     if (!isNew) {
       fetch(`/api/teams/${id}`).then(r => r.json()).then(t => {
         if (t) {
@@ -79,6 +79,9 @@ export default function AdminTeamDetail() {
           });
           setMembers(t.members || []);
         }
+        setLoading(false);
+      }).catch(err => {
+        console.error(err);
         setLoading(false);
       });
     }

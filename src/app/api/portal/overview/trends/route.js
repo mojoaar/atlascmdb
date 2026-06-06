@@ -1,12 +1,11 @@
-import { NextResponse } from 'next/server';
 import getDb from '../../../../../lib/db';
 import { requireAuth } from '../../../../../lib/rbac';
-import { handleApiError, success } from '../../../../../lib/api-helpers';
+import { handleApiError, success, guardResponse } from '../../../../../lib/api-helpers';
 
 export async function GET(request) {
   try {
     const auth = await requireAuth()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
 
@@ -32,11 +31,14 @@ export async function GET(request) {
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
     const cutoff = sixMonthsAgo.toISOString();
 
+    const isPg = db.client.config.client === 'pg' || db.client.config.client === 'postgresql';
+    const monthExpr = isPg ? "to_char(\"createdAt\", 'YYYY-MM')" : "strftime('%Y-%m', createdAt)";
+
     const activity = await db('audit_events')
-      .select(db.raw("strftime('%Y-%m', createdAt) as month"))
+      .select(db.raw(`${monthExpr} as month`))
       .count('* as total')
       .where('createdAt', '>=', cutoff)
-      .groupByRaw("strftime('%Y-%m', createdAt)")
+      .groupByRaw(monthExpr)
       .orderBy('month');
 
     const months = [];

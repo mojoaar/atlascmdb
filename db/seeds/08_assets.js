@@ -1,3 +1,13 @@
+const { v4: uuidv4 } = require('uuid');
+
+function makeRng(seed) {
+  let s = seed || 42;
+  return function() {
+    s = (s * 1664525 + 1013904223) % 4294967296;
+    return s / 4294967296;
+  };
+}
+
 exports.seed = async function (knex) {
   await knex('assets').del();
 
@@ -43,21 +53,41 @@ exports.seed = async function (knex) {
   assets.push({ name: 'Synology RS3621xs+', assetTag: 'ST-2024-001', ciName: null, category: 'hardware', model: 'RS3621xs+', status: 'in_use', user: null, location: 'Primary Data Center', supplier: 'Synology', purchaseDate: '2024-01-25', warrantyExpiry: '2027-01-25', cost: 8900.00, notes: 'NAS storage — 48TB usable, backups' });
   assets.push({ name: 'Dell PowerEdge R750 (Cold)', assetTag: 'HW-2024-009', ciName: null, category: 'hardware', model: 'PowerEdge R750xs', status: 'in_stock', user: null, location: 'Oslo Office', supplier: 'Dell Technologies', purchaseDate: '2024-04-15', warrantyExpiry: '2027-04-15', cost: 14800.00, notes: 'Cold standby — ready for provisioning' });
 
-  // Total generator with deterministic IDs
+  const rng = makeRng(108);
+
+  const locList = Object.values(locMap);
+  const userList = Object.values(userMap);
+  const ciList = Object.values(ciMap);
+
   for (let i = 0; i < assets.length; i++) {
     const a = assets[i];
-    const num = String(i + 1).padStart(3, '0');
-    const id = `a0000001-${num}01-4000-8000-00000000000${num}`.slice(0, 36);
+    const id = uuidv4();
+    
+    let resolvedCiId = a.ciName ? ciMap[a.ciName] : null;
+    let resolvedLocId = a.location ? locMap[a.location] : null;
+    let resolvedUserId = a.user ? userMap[a.user] : null;
+
+    // Fallbacks if mapping failed due to dynamically-altered parents
+    if (a.ciName && !resolvedCiId && ciList.length > 0) {
+      resolvedCiId = ciList[Math.floor(rng() * ciList.length)];
+    }
+    if (a.location && !resolvedLocId && locList.length > 0) {
+      resolvedLocId = locList[Math.floor(rng() * locList.length)];
+    }
+    if (a.user && !resolvedUserId && userList.length > 0) {
+      resolvedUserId = userList[Math.floor(rng() * userList.length)];
+    }
+
     await knex('assets').insert({
       id,
       name: a.name,
       assetTag: a.assetTag,
-      ciId: a.ciName ? ciMap[a.ciName] : null,
+      ciId: resolvedCiId,
       category: a.category,
       model: a.model,
       status: a.status,
-      assignedTo: a.user ? userMap[a.user] : null,
-      locationId: a.location ? locMap[a.location] : null,
+      assignedTo: resolvedUserId,
+      locationId: resolvedLocId,
       supplier: a.supplier,
       purchaseDate: a.purchaseDate,
       warrantyExpiry: a.warrantyExpiry,

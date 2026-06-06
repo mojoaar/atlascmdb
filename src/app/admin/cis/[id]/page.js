@@ -50,8 +50,8 @@ export default function AdminCiDetail() {
   useEffect(() => { if (message) { const t = setTimeout(() => setMessage(null), 5000); return () => clearTimeout(t); } }, [message]);
 
   useEffect(() => {
-    fetch('/api/teams?limit=100').then(r => r.json()).then(d => setTeams(unwrap(d)));
-    fetch('/api/locations?limit=100').then(r => r.json()).then(d => setLocations(unwrap(d)));
+    fetch('/api/teams?limit=100').then(r => r.json()).then(d => setTeams(unwrap(d))).catch(() => {});
+    fetch('/api/locations?limit=100').then(r => r.json()).then(d => setLocations(unwrap(d))).catch(() => {});
     if (!isNew) {
       fetch(`/api/cis/${id}`).then(r => r.json()).then(c => {
         if (c) {
@@ -71,6 +71,9 @@ export default function AdminCiDetail() {
             assetTag: c.assetTag || '',
           });
         }
+        setLoading(false);
+      }).catch(err => {
+        console.error(err);
         setLoading(false);
       });
     }

@@ -30,6 +30,9 @@ export default function AdminImportDetail() {
         setImportSet(s);
         setForm({ name: s.name || '', sourceType: s.sourceType || 'csv' });
         setLoading(false);
+      }).catch(err => {
+        console.error(err);
+        setLoading(false);
       });
     }
   }, [id, isNew]);

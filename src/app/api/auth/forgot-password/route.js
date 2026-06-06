@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import getDb from '../../../../lib/db';
-import { handleApiError } from '../../../../lib/api-helpers';
+import { handleApiError, badRequest, success } from '../../../../lib/api-helpers';
 import { enforceRateLimit } from '../../../../lib/rate-limit';
+import { logAudit } from '../../../../lib/audit';
 
 export async function POST(request) {
   try {
@@ -12,14 +13,14 @@ export async function POST(request) {
     const { email } = await request.json();
 
     if (!email) {
-      return NextResponse.json({ error: 'Email required' }, { status: 400 });
+      return badRequest('Email required');
     }
 
     const db = getDb();
     const user = await db('users').where({ email }).first();
 
     if (!user) {
-      return NextResponse.json({ message: 'If the account exists, a reset link has been sent.' });
+      return success({ message: 'If the account exists, a reset link has been sent.' });
     }
 
     const resetToken = uuidv4();
@@ -28,7 +29,16 @@ export async function POST(request) {
       passwordResetExpires: new Date(Date.now() + 3600000).toISOString(),
     });
 
-    return NextResponse.json({ message: 'If the account exists, a reset link has been sent.' });
+    await logAudit({
+      actorUserId: user.id,
+      entityType: 'user',
+      entityId: user.id,
+      action: 'password_reset_requested',
+      beforeData: null,
+      afterData: { message: 'Password reset token generated' },
+    });
+
+    return success({ message: 'If the account exists, a reset link has been sent.' });
   } catch (error) {
     return handleApiError(error, 'Request failed');
   }

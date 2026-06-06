@@ -122,35 +122,56 @@ export default function EntityList({
   const [filterVersion, setFilterVersion] = useState(0);
 
   const [advFilter, setAdvFilter] = useState(null);
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
   useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 250);
+    return () => clearTimeout(handler);
+  }, [search]);
+
+  useEffect(() => {
+    const controller = new AbortController();
     async function load() {
       setLoading(true);
-      const params = new URLSearchParams({ limit: rowLimit, offset: (page - 1) * rowLimit });
-      if (search) params.set('search', search);
-      if (sort) params.set('sort', sort);
-      if (order) params.set('order', order);
+      try {
+        const params = new URLSearchParams({ limit: rowLimit, offset: (page - 1) * rowLimit });
+        if (debouncedSearch) params.set('search', debouncedSearch);
+        if (sort) params.set('sort', sort);
+        if (order) params.set('order', order);
 
-      Object.entries(filterState.current).forEach(([k, v]) => {
-        if (v) params.set(k, v);
-      });
+        Object.entries(filterState.current).forEach(([k, v]) => {
+          if (v) params.set(k, v);
+        });
 
-      if (advFilter) params.set('filter', JSON.stringify(advFilter));
+        if (advFilter) params.set('filter', JSON.stringify(advFilter));
 
-      let url = `${apiPath}?${params}`;
-      if (apiParams) url += '&' + apiParams;
+        let url = `${apiPath}?${params}`;
+        if (apiParams) url += '&' + apiParams;
 
-      const res = await fetch(url);
-      if (res.ok) {
-        const result = await res.json();
-        setData(unwrap(result));
-        setTotal(result.total || 0);
+        const res = await fetch(url, { signal: controller.signal });
+        if (res.ok) {
+          const result = await res.json();
+          setData(unwrap(result));
+          setTotal(result.total || 0);
+        }
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          console.error('Error loading entity list:', error);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
-      setLoading(false);
     }
     load();
     setSelectedIds(new Set());
-  }, [apiPath, page, search, sort, order, filterVersion, advFilter, rowLimit, apiParams]);
+    return () => {
+      controller.abort();
+    };
+  }, [apiPath, page, debouncedSearch, sort, order, filterVersion, advFilter, rowLimit, apiParams]);
 
   const totalPages = Math.ceil(total / rowLimit);
 

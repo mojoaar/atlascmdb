@@ -1,19 +1,20 @@
 import { NextResponse } from 'next/server';
 import getDb from '../../../../../lib/db';
 import { requireEditor } from '../../../../../lib/rbac';
-import { handleApiError, notFound, success } from '../../../../../lib/api-helpers';
+import { handleApiError, notFound, success, guardResponse, badRequest } from '../../../../../lib/api-helpers';
+import { logAudit } from '../../../../../lib/audit';
 
 export async function POST(request, { params }) {
   try {
     const auth = await requireEditor()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const importSet = await db('import_sets').where({ id: (await params).id }).first();
     if (!importSet) return notFound('Import Set');
 
     const { rows } = await request.json();
-    if (!rows?.length) return NextResponse.json({ error: 'rows required' }, { status: 400 });
+    if (!rows?.length) return badRequest('rows required');
 
     const mappings = await db('import_mappings').where({ importSetId: (await params).id }).orderBy('orderIndex');
 
@@ -50,6 +51,15 @@ export async function POST(request, { params }) {
     await db('import_sets').where({ id: (await params).id }).update({
       status: 'mapped',
       updatedAt: new Date().toISOString(),
+    });
+
+    await logAudit({
+      actorUserId: auth.user.id,
+      entityType: 'import',
+      entityId: (await params).id,
+      action: 'mapped',
+      beforeData: null,
+      afterData: { rowsCount: rows.length },
     });
 
     return success({ message: 'Mapping complete' });

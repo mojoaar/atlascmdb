@@ -60,15 +60,18 @@ export async function seedTestData() {
   const passwordHash = await bcrypt.hash('password123', 4);
   const userId = uuidv4();
   const viewerId = uuidv4();
+  const editorId = uuidv4();
 
   await db('users').insert([
     { id: userId, email: 'admin@test.local', displayName: 'Test Admin', passwordHash, status: 'active' },
     { id: viewerId, email: 'viewer@test.local', displayName: 'Test Viewer', passwordHash, status: 'active' },
+    { id: editorId, email: 'editor@test.local', displayName: 'Test Editor', passwordHash, status: 'active' },
   ]);
 
   await db('user_roles').insert([
     { userId, roleId: adminRoleId },
     { userId: viewerId, roleId: viewerRoleId },
+    { userId: editorId, roleId: editorRoleId },
   ]);
 
   const teamId = uuidv4();
@@ -78,5 +81,5 @@ export async function seedTestData() {
   const serviceId = uuidv4();
   await db('service_base').insert({ id: serviceId, name: 'Test Service', lifecycleStatus: 'active', environment: 'development' });
 
-  return { userId, viewerId, adminRoleId, editorRoleId, viewerRoleId, teamId, serviceId, passwordHash };
+  return { userId, viewerId, editorId, adminRoleId, editorRoleId, viewerRoleId, teamId, serviceId, passwordHash };
 }

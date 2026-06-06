@@ -53,6 +53,32 @@ export function rateLimit(key, { limit = 10, windowMs = 60_000 } = {}) {
 }
 
 /**
+ * Track failed login attempts for an account to implement account lockout.
+ * If checkOnly is true, only checks if locked out without incrementing.
+ */
+export function failedLoginLimiter(email, { limit = 5, windowMs = 300_000, checkOnly = false } = {}) {
+  if (!email) return { allowed: true };
+  const key = `login:failed:${email.toLowerCase().trim()}`;
+  const now = Date.now();
+  sweep(now);
+
+  let bucket = buckets.get(key);
+  if (!bucket || bucket.resetAt <= now) {
+    if (checkOnly) return { allowed: true };
+    bucket = { count: 0, resetAt: now + windowMs };
+    buckets.set(key, bucket);
+  }
+
+  if (!checkOnly) {
+    bucket.count += 1;
+  }
+  
+  const remaining = Math.max(0, limit - bucket.count);
+  const retryAfter = Math.ceil((bucket.resetAt - now) / 1000);
+  return { allowed: bucket.count < limit, remaining, retryAfter };
+}
+
+/**
  * Convenience guard for route handlers. Returns a 429 NextResponse when the
  * caller has exceeded the window, or null when the request may proceed.
  *

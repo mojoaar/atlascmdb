@@ -114,6 +114,7 @@ export async function PUT(request, { params }) {
         id: newId,
         email: body.userName || body.emails?.[0]?.value || '',
         displayName: body.displayName || body.name?.formatted || body.userName || '',
+        passwordHash: '',
         status: body.active === false ? 'inactive' : 'active',
       });
       const created = await db('users').where({ id: newId }).first();

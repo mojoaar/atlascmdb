@@ -64,6 +64,9 @@ export default function AdminRelationshipDetail() {
           });
         }
         setLoading(false);
+      }).catch(err => {
+        console.error(err);
+        setLoading(false);
       });
     }
   }, [id, isNew]);

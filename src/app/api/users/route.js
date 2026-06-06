@@ -2,14 +2,14 @@ import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import getDb from '../../../lib/db';
 import { requireAdmin } from '../../../lib/rbac';
-import { handleApiError, success, created } from '../../../lib/api-helpers';
+import { handleApiError, success, created, guardResponse, conflict, badRequest } from '../../../lib/api-helpers';
 import { hashPassword } from '../../../lib/auth';
 import { logAudit } from '../../../lib/audit';
 
 export async function GET(request) {
   try {
     const auth = await requireAdmin()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const { searchParams } = new URL(request.url);
@@ -83,7 +83,16 @@ export async function GET(request) {
     const [countResult] = await countQuery.countDistinct('users.id as total');
     const sortCol = ALLOWED_SORT[sort] || DEFAULT_SORT;
     const sortOrder = ['asc','desc'].includes(order) ? order : 'desc';
-    const users = await dataQuery.orderBy(sortCol, sortOrder).limit(limit).offset(offset);
+    
+    let orderByQuery = dataQuery;
+    if (sortCol === 'users.displayName') {
+      orderByQuery = orderByQuery.orderByRaw(`LOWER(users.displayName) ${sortOrder}`);
+    } else if (sortCol === 'users.email') {
+      orderByQuery = orderByQuery.orderByRaw(`LOWER(users.email) ${sortOrder}`);
+    } else {
+      orderByQuery = orderByQuery.orderBy(sortCol, sortOrder);
+    }
+    const users = await orderByQuery.limit(limit).offset(offset);
     const formatted = users.map(u => ({
       ...u,
       roleNames: u.roleNames ? u.roleNames.split(',') : [],
@@ -98,18 +107,18 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const auth = await requireAdmin()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const { email, password, displayName, roleIds, managerId } = await request.json();
     const db = getDb();
 
     if (!email || !password || !displayName) {
-      return NextResponse.json({ error: 'email, password, displayName required' }, { status: 400 });
+      return badRequest('email, password, displayName required');
     }
 
     const existing = await db('users').where({ email }).first();
     if (existing) {
-      return NextResponse.json({ error: 'Email already in use' }, { status: 409 });
+      return conflict('Email already in use');
     }
 
     const passwordHash = await hashPassword(password);

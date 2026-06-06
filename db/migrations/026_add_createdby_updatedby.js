@@ -5,8 +5,10 @@ exports.up = async function (knex) {
     'users', 'roles', 'themes', 'relationships',
   ];
   for (const table of tables) {
-    await knex.raw(`ALTER TABLE ${table} ADD COLUMN createdBy TEXT`);
-    await knex.raw(`ALTER TABLE ${table} ADD COLUMN updatedBy TEXT`);
+    await knex.schema.alterTable(table, (t) => {
+      t.text('createdBy');
+      t.text('updatedBy');
+    });
   }
 };
 
@@ -17,7 +19,9 @@ exports.down = async function (knex) {
     'users', 'roles', 'themes', 'relationships',
   ];
   for (const table of tables) {
-    await knex.raw(`ALTER TABLE ${table} DROP COLUMN updatedBy`);
-    await knex.raw(`ALTER TABLE ${table} DROP COLUMN createdBy`);
+    await knex.schema.alterTable(table, (t) => {
+      t.dropColumn('updatedBy');
+      t.dropColumn('createdBy');
+    });
   }
 };

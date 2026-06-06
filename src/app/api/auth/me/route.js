@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 import { extractUserFromRequest } from '../../../../lib/auth';
 import getDb from '../../../../lib/db';
+import { unauthorized, handleApiError, success } from '../../../../lib/api-helpers';
 
 export async function GET(request) {
   try {
     const user = await extractUserFromRequest(request);
     if (!user) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+      return unauthorized();
     }
 
     const db = getDb();
@@ -16,7 +17,7 @@ export async function GET(request) {
       .where({ userId: user.id })
       .first();
 
-    return NextResponse.json({
+    return success({
       id: fresh.id,
       email: fresh.email,
       displayName: fresh.displayName,
@@ -32,7 +33,7 @@ export async function GET(request) {
       columnPrefs: prefs?.columnPrefs ? JSON.parse(prefs.columnPrefs) : {},
       impersonatedBy: user.impersonatedBy || null,
     });
-  } catch {
-    return NextResponse.json({ error: 'Failed to get user info' }, { status: 500 });
+  } catch (error) {
+    return handleApiError(error, 'Failed to get user info');
   }
 }

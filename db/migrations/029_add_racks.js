@@ -1,6 +1,8 @@
 exports.up = async function (knex) {
-  await knex.raw('ALTER TABLE cis ADD COLUMN rackSize INTEGER');
-  await knex.raw('ALTER TABLE cis ADD COLUMN rackModel VARCHAR(255)');
+  await knex.schema.alterTable('cis', (t) => {
+    t.integer('rackSize');
+    t.string('rackModel', 255);
+  });
 
   await knex.schema.createTable('rack_placements', (t) => {
     t.uuid('id').primary();
@@ -17,6 +19,8 @@ exports.up = async function (knex) {
 
 exports.down = async function (knex) {
   await knex.schema.dropTableIfExists('rack_placements');
-  await knex.raw('ALTER TABLE cis DROP COLUMN rackSize');
-  await knex.raw('ALTER TABLE cis DROP COLUMN rackModel');
+  await knex.schema.alterTable('cis', (t) => {
+    t.dropColumn('rackSize');
+    t.dropColumn('rackModel');
+  });
 };

@@ -1,17 +1,35 @@
 exports.up = async function (knex) {
-  await knex.raw('ALTER TABLE themes ADD COLUMN tokenSetLight TEXT');
-  await knex.raw('ALTER TABLE themes ADD COLUMN tokenSetDark TEXT');
-  await knex.raw("UPDATE themes SET tokenSetLight = tokenSet WHERE mode = 'light'");
-  await knex.raw("UPDATE themes SET tokenSetDark = tokenSet WHERE mode = 'dark'");
-  await knex.raw('ALTER TABLE themes DROP COLUMN tokenSet');
-  await knex.raw('ALTER TABLE themes DROP COLUMN mode');
+  await knex.schema.alterTable('themes', (t) => {
+    t.text('tokenSetLight');
+    t.text('tokenSetDark');
+  });
+  await knex('themes').where({ mode: 'light' }).update({
+    tokenSetLight: knex.ref('tokenSet'),
+  });
+  await knex('themes').where({ mode: 'dark' }).update({
+    tokenSetDark: knex.ref('tokenSet'),
+  });
+  await knex.schema.alterTable('themes', (t) => {
+    t.dropColumn('tokenSet');
+    t.dropColumn('mode');
+  });
 };
 
 exports.down = async function (knex) {
-  await knex.raw('ALTER TABLE themes ADD COLUMN tokenSet TEXT');
-  await knex.raw("ALTER TABLE themes ADD COLUMN mode VARCHAR(50) DEFAULT 'light'");
-  await knex.raw("UPDATE themes SET tokenSet = tokenSetLight, mode = 'light' WHERE tokenSetLight IS NOT NULL");
-  await knex.raw("UPDATE themes SET tokenSet = tokenSetDark, mode = 'dark' WHERE tokenSetDark IS NOT NULL AND tokenSet IS NULL");
-  await knex.raw('ALTER TABLE themes DROP COLUMN tokenSetLight');
-  await knex.raw('ALTER TABLE themes DROP COLUMN tokenSetDark');
+  await knex.schema.alterTable('themes', (t) => {
+    t.text('tokenSet');
+    t.string('mode', 50).defaultTo('light');
+  });
+  await knex('themes').whereNotNull('tokenSetLight').update({
+    tokenSet: knex.ref('tokenSetLight'),
+    mode: 'light',
+  });
+  await knex('themes').whereNotNull('tokenSetDark').whereNull('tokenSet').update({
+    tokenSet: knex.ref('tokenSetDark'),
+    mode: 'dark',
+  });
+  await knex.schema.alterTable('themes', (t) => {
+    t.dropColumn('tokenSetLight');
+    t.dropColumn('tokenSetDark');
+  });
 };

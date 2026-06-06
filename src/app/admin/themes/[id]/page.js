@@ -36,6 +36,9 @@ export default function AdminThemeDetail() {
           });
         }
         setLoading(false);
+      }).catch(err => {
+        console.error(err);
+        setLoading(false);
       });
     }
   }, [id, isNew]);

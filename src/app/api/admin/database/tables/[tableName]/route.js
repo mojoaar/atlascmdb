@@ -1,13 +1,12 @@
-import { NextResponse } from 'next/server';
 import getDb from '../../../../../../lib/db';
 import { requireAdmin } from '../../../../../../lib/rbac';
-import { handleApiError, success, notFound } from '../../../../../../lib/api-helpers';
+import { handleApiError, success, notFound, guardResponse } from '../../../../../../lib/api-helpers';
 import { logAudit } from '../../../../../../lib/audit';
 
 export async function GET(request, { params }) {
   try {
     const auth = await requireAdmin()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const { tableName } = await params;
     const db = getDb();

@@ -75,7 +75,7 @@ The DB file lives at `data/atlas.db`. Use `process.cwd()` (not `__dirname`) to c
 
 ### Migrations & Seeds
 
-28 migrations (001–028). All have `up` and `down` methods. Run sequentially:
+34 migrations (001–034). All have `up` and `down` methods. Run sequentially:
 ```sh
 node db/setup.js   # Runs knex migrate:latest then knex seed:run
 ```
@@ -263,3 +263,8 @@ Test auth helpers use `requireAuth()()(request)` — double parentheses (closure
  15. **Bcrypt Hash compatibility**: The database seed uses different salt versions (`$2a$` or `$2b$`) depending on the execution environment. Assertions in tests must be flexible (e.g., verifying `startsWith('$2a$') || startsWith('$2b$')`).
  16. **`/api/config` ALLOWED_KEYS allowlist**: Any new `app_config` key written via `PUT /api/config` must be added to the `ALLOWED_KEYS` set in `src/app/api/config/route.js` or the request returns a 400. Current keys include `form_layout_*` (incl. per-Class `form_layout_ci:{ciType}`), `column_default_*` (per-entity), SSO, SCIM, `row_limit_default`, `attachment_allowed_types`, and `login_ascii_logo`.
  17. **`serverExternalPackages` in `next.config.js`**: Only native-binding packages need listing (`better-sqlite3`, `knex`, `bcryptjs`). Do not add pure-JS packages here.
+ 18. **PostgreSQL vs SQLite Date Formatting**: Always branch database calls between PostgreSQL (`to_char`) and SQLite (`strftime`) when grouping or formatting dates in raw query expressions.
+ 19. **Structural Migrations**: Prefer `knex.schema.alterTable` over raw, unquoted camelCase SQL statements because PostgreSQL folds unquoted identifiers to lowercase, resulting in casing/existence failures.
+ 20. **JWT/MFA Secret Security**: Inside `src/lib/auth.js`, the system must fail-closed if token secrets are missing in non-development environments to prevent security bypass.
+ 21. **Password Enforcement & Verification**: Require a minimum of 8 characters for passwords and enforce valid `currentPassword` authentication on self-service user updates. Disabling MFA via PATCH routes is blocked entirely.
+ 22. **Standard API Response Helpers**: Prefer `success()`, `created()`, `notFound()`, and `badRequest()` from `src/lib/api-helpers.js` over creating custom `NextResponse.json` payloads directly.

@@ -2,13 +2,13 @@ import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import getDb from '../../../lib/db';
 import { requireAuth, requireEditor } from '../../../lib/rbac';
-import { handleApiError, success, created } from '../../../lib/api-helpers';
+import { handleApiError, success, created, guardResponse, forbidden, badRequest } from '../../../lib/api-helpers';
 import { logAudit } from '../../../lib/audit';
 
 export async function GET(request) {
   try {
     const auth = await requireAuth()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const { searchParams } = new URL(request.url);
@@ -70,7 +70,14 @@ export async function GET(request) {
     const [countResult] = await query.clone().count('* as total');
     const sortCol = ALLOWED_SORT[sort] || DEFAULT_SORT;
     const sortOrder = ['asc','desc'].includes(order) ? order : 'asc';
-    const rows = await query.orderBy(sortCol, sortOrder).limit(limit).offset(offset);
+    
+    let orderByQuery = query;
+    if (sortCol === 'teams.name') {
+      orderByQuery = orderByQuery.orderByRaw(`LOWER(teams.name) ${sortOrder}`);
+    } else {
+      orderByQuery = orderByQuery.orderBy(sortCol, sortOrder);
+    }
+    const rows = await orderByQuery.limit(limit).offset(offset);
 
     return success({ data: rows, total: countResult.total, limit, offset });
   } catch (error) {
@@ -81,21 +88,33 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const auth = await requireEditor()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const { name, description, type, parentTeamId, ownershipScope, status, roleId, managerId, leadId } = await request.json();
 
     if (roleId && auth.effectiveRole !== 'admin') {
-      return NextResponse.json({ error: 'Only administrators can assign roles to teams' }, { status: 403 });
+      return forbidden('Only administrators can assign roles to teams');
     }
 
     if (!name || !type) {
-      return NextResponse.json({ error: 'name and type required' }, { status: 400 });
+      return badRequest('name and type required');
     }
 
     const id = uuidv4();
-    await db('teams').insert({ id, name, description, type, parentTeamId, ownershipScope, status: status || 'active', roleId, managerId, leadId, createdBy: auth.user.id });
+    await db('teams').insert({
+      id,
+      name,
+      description,
+      type,
+      parentTeamId: parentTeamId === '' ? null : parentTeamId,
+      ownershipScope,
+      status: status || 'active',
+      roleId: roleId === '' ? null : roleId,
+      managerId: managerId === '' ? null : managerId,
+      leadId: leadId === '' ? null : leadId,
+      createdBy: auth.user.id,
+    });
 
     await logAudit({
       actorUserId: auth.user.id, entityType: 'team', entityId: id,

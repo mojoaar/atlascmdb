@@ -1,20 +1,20 @@
 import { NextResponse } from 'next/server';
 import getDb from '../../../../../../lib/db';
 import { requireEditor } from '../../../../../../lib/rbac';
-import { handleApiError, notFound, success } from '../../../../../../lib/api-helpers';
+import { handleApiError, notFound, success, guardResponse, forbidden } from '../../../../../../lib/api-helpers';
 import { logAudit } from '../../../../../../lib/audit';
 
 export async function DELETE(request, { params }) {
   try {
     const auth = await requireEditor()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const team = await db('teams').where({ id: (await params).id }).first();
     if (!team) return notFound('Team');
 
     if (team.roleId !== null && auth.effectiveRole !== 'admin') {
-      return NextResponse.json({ error: 'Only administrators can modify membership on role-bearing teams' }, { status: 403 });
+      return forbidden('Only administrators can modify membership on role-bearing teams');
     }
 
     const member = await db('team_members').where({ id: (await params).memberId, teamId: (await params).id }).first();

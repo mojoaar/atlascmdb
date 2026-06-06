@@ -1,7 +1,6 @@
-import { NextResponse } from 'next/server';
 import getDb from '../../../../lib/db';
 import { requireAuth, requireEditor } from '../../../../lib/rbac';
-import { handleApiError, notFound, success } from '../../../../lib/api-helpers';
+import { handleApiError, notFound, success, guardResponse } from '../../../../lib/api-helpers';
 import { logAudit } from '../../../../lib/audit';
 
 async function getFullService(id) {
@@ -52,7 +51,7 @@ async function getFullService(id) {
 export async function GET(request, { params }) {
   try {
     const auth = await requireAuth()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const service = await getFullService((await params).id);
     if (!service) return notFound('Service');
@@ -65,7 +64,7 @@ export async function GET(request, { params }) {
 export async function PATCH(request, { params }) {
   try {
     const auth = await requireEditor()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const existing = await db('service_base').where({ id: (await params).id }).first();
@@ -126,16 +125,25 @@ export async function PATCH(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const auth = await requireEditor()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
+    const { id } = await params;
     const db = getDb();
-    const service = await db('service_base').where({ id: (await params).id }).first();
+    const service = await db('service_base').where({ id }).first();
     if (!service) return notFound('Service');
 
-    await db('service_base').where({ id: (await params).id }).del();
+    await db.transaction(async (trx) => {
+      await trx('service_base').where({ id }).del();
+      await trx('relationships').where(function() {
+        this.where({ sourceType: 'service', sourceId: id })
+            .orWhere({ targetType: 'service', targetId: id });
+      }).del();
+      await trx('entity_tags').where({ entityType: 'service', entityId: id }).del();
+      await trx('notifications').where({ entityType: 'service', entityId: id }).del();
+    });
 
     await logAudit({
-      actorUserId: auth.user.id, entityType: 'service', entityId: (await params).id,
+      actorUserId: auth.user.id, entityType: 'service', entityId: id,
       action: 'deleted', beforeData: service,
     });
 

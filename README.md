@@ -55,6 +55,7 @@ Open [http://localhost:3000](http://localhost:3000) and log in with:
 | [React](https://react.dev) | UI |
 | [Knex.js](https://knexjs.org) | Query builder / migrations |
 | [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) | SQLite (development) |
+| [pg (node-postgres)](https://github.com/brianc/node-postgres) | PostgreSQL (production) |
 | [@xyflow/react](https://reactflow.dev) | Relationship graph canvas |
 | [@dagrejs/dagre](https://github.com/dagrejs/dagre) | Graph auto-layout |
 | [recharts](https://recharts.org) | Dashboard charts |
@@ -63,6 +64,7 @@ Open [http://localhost:3000](http://localhost:3000) and log in with:
 | [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken) | JWT auth |
 | [otpauth](https://github.com/hectorm/otpauth) | TOTP MFA |
 | [bcryptjs](https://github.com/dcodeIO/bcrypt.js) | Password hashing |
+| [qrcode](https://github.com/soldair/node-qrcode) | MFA QR code generation |
 | [lucide-react](https://lucide.dev) | Icons |
 | [Prism.js](https://prismjs.com) | Syntax highlighting |
 | [uuid](https://github.com/uuidjs/uuid) | ID generation |
@@ -115,6 +117,7 @@ Repository: [git@github.com:mojoaar/atlascmdb.git](https://github.com/mojoaar/at
 - [React](https://react.dev)
 - [Knex.js](https://knexjs.org)
 - [better-sqlite3](https://github.com/WiseLibs/better-sqlite3)
+- [node-postgres (pg)](https://github.com/brianc/node-postgres)
 - [@xyflow/react](https://reactflow.dev)
 - [@dagrejs/dagre](https://github.com/dagrejs/dagre)
 - [recharts](https://recharts.org)
@@ -126,6 +129,7 @@ Repository: [git@github.com:mojoaar/atlascmdb.git](https://github.com/mojoaar/at
 - [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken)
 - [otpauth](https://github.com/hectorm/otpauth)
 - [bcryptjs](https://github.com/dcodeIO/bcrypt.js)
+- [qrcode](https://github.com/soldair/node-qrcode)
 - [uuid](https://github.com/uuidjs/uuid)
 - [Prism.js](https://prismjs.com)
 - [Catppuccin](https://catppuccin.com)

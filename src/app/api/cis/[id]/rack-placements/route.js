@@ -1,8 +1,7 @@
-import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import getDb from '../../../../../lib/db';
 import { requireAuth, requireEditor } from '../../../../../lib/rbac';
-import { handleApiError, success, created, notFound, badRequest } from '../../../../../lib/api-helpers';
+import { handleApiError, success, created, notFound, badRequest, guardResponse } from '../../../../../lib/api-helpers';
 import { logAudit } from '../../../../../lib/audit';
 
 async function getRackAndSize(rackId) {
@@ -27,7 +26,7 @@ function checkOverlap(placements, startU, occupiedUs, excludeId) {
 export async function GET(request, { params }) {
   try {
     const auth = await requireAuth()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const rackId = (await params).id;
@@ -54,7 +53,7 @@ export async function GET(request, { params }) {
 export async function POST(request, { params }) {
   try {
     const auth = await requireEditor()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const rackId = (await params).id;
@@ -111,7 +110,7 @@ export async function POST(request, { params }) {
 export async function PATCH(request, { params }) {
   try {
     const auth = await requireEditor()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const rackId = (await params).id;
@@ -157,7 +156,7 @@ export async function PATCH(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const auth = await requireEditor()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const rackId = (await params).id;

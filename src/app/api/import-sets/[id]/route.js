@@ -1,13 +1,13 @@
-import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import getDb from '../../../../lib/db';
-import { requireAuth } from '../../../../lib/rbac';
-import { handleApiError, notFound, success } from '../../../../lib/api-helpers';
+import { requireAuth, requireEditor } from '../../../../lib/rbac';
+import { handleApiError, notFound, success, guardResponse } from '../../../../lib/api-helpers';
+import { logAudit } from '../../../../lib/audit';
 
 export async function GET(request, { params }) {
   try {
     const auth = await requireAuth()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const { id } = await params;
     const db = getDb();
@@ -30,20 +30,35 @@ export async function GET(request, { params }) {
 
 export async function PATCH(request, { params }) {
   try {
-    const auth = await requireAuth()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    const auth = await requireEditor()(request);
+    if (!auth.authorized) return guardResponse(auth);
 
     const { id } = await params;
     const db = getDb();
-    const { name, status } = await request.json();
+    
+    const existing = await db('import_sets').where({ id }).first();
+    if (!existing) return notFound('Import Set');
 
-    await db('import_sets').where({ id }).update({
+    const { name, status } = await request.json();
+    const updates = {
       ...(name ? { name } : {}),
       ...(status ? { status } : {}),
       updatedAt: new Date().toISOString(),
-    });
+    };
+
+    await db('import_sets').where({ id }).update(updates);
 
     const updated = await db('import_sets').where({ id }).first();
+
+    await logAudit({
+      actorUserId: auth.user.id,
+      entityType: 'import',
+      entityId: id,
+      action: 'updated',
+      beforeData: existing,
+      afterData: updated,
+    });
+
     return success(updated);
   } catch (error) {
     return handleApiError(error);
@@ -52,8 +67,8 @@ export async function PATCH(request, { params }) {
 
 export async function POST(request, { params }) {
   try {
-    const auth = await requireAuth()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    const auth = await requireEditor()(request);
+    if (!auth.authorized) return guardResponse(auth);
 
     const { id } = await params;
     const db = getDb();
@@ -91,6 +106,19 @@ export async function POST(request, { params }) {
     await db('import_sets').where({ id }).update({
       status: 'uploaded',
       updatedAt: new Date().toISOString(),
+    });
+
+    await logAudit({
+      actorUserId: auth.user.id,
+      entityType: 'import',
+      entityId: id,
+      action: 'uploaded',
+      beforeData: importSet,
+      afterData: {
+        status: 'uploaded',
+        rowCount: rows?.length || 0,
+        mappingCount: mappings?.length || 0,
+      },
     });
 
     return success({ message: 'Data uploaded' });

@@ -1,15 +1,14 @@
-import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import getDb from '../../../../../lib/db';
 import { requireAdmin } from '../../../../../lib/rbac';
-import { handleApiError, success, notFound, badRequest } from '../../../../../lib/api-helpers';
+import { handleApiError, success, notFound, badRequest, guardResponse } from '../../../../../lib/api-helpers';
 import { logAudit } from '../../../../../lib/audit';
 import { getConnector } from '../../../../../lib/connectors';
 
 export async function POST(request, { params }) {
   try {
     const auth = await requireAdmin()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const { id } = await params;

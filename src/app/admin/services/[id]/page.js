@@ -42,7 +42,7 @@ export default function AdminServiceDetail() {
   useEffect(() => { if (message) { const t = setTimeout(() => setMessage(null), 5000); return () => clearTimeout(t); } }, [message]);
 
   useEffect(() => {
-    fetch('/api/teams?limit=100').then(r => r.json()).then(d => setTeams(unwrap(d)));
+    fetch('/api/teams?limit=100').then(r => r.json()).then(d => setTeams(unwrap(d))).catch(() => {});
     if (!isNew) {
       fetch(`/api/services/${id}`).then(r => r.json()).then(s => {
         if (s) {
@@ -62,6 +62,9 @@ export default function AdminServiceDetail() {
             serviceCategory: s.typeSpecific?.serviceCategory || '',
           });
         }
+        setLoading(false);
+      }).catch(err => {
+        console.error(err);
         setLoading(false);
       });
     }

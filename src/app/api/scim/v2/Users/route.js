@@ -93,7 +93,7 @@ export async function POST(request) {
       id,
       email: emailValue,
       displayName,
-      passwordHash: null,
+      passwordHash: '',
       status: body.active === false ? 'inactive' : 'active',
     });
 

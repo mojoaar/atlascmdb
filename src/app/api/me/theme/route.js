@@ -1,8 +1,7 @@
-import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import getDb from '../../../../lib/db';
 import { requireAuth } from '../../../../lib/rbac';
-import { handleApiError, success } from '../../../../lib/api-helpers';
+import { handleApiError, success, guardResponse } from '../../../../lib/api-helpers';
 
 async function loadAdminColumnDefaults(db) {
   const rows = await db('app_config').where('key', 'like', 'column_default_%').orWhere('key', 'row_limit_default').orWhere('key', 'attachment_allowed_types').select('key', 'value');
@@ -23,7 +22,7 @@ async function loadAdminColumnDefaults(db) {
 export async function GET(request) {
   try {
     const auth = await requireAuth()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const pref = await db('user_theme_preferences')
@@ -68,7 +67,7 @@ export async function GET(request) {
 export async function PUT(request) {
   try {
     const auth = await requireAuth()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const { themeId, modePreference, timezone, clockFormat, dateFormat, graphDepth, columnPrefs, rowLimit, notifOnCreate, notifOnUpdate, notifOnDelete } = await request.json();

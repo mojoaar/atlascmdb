@@ -1,14 +1,13 @@
-import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import getDb from '../../../../../lib/db';
 import { requireEditor } from '../../../../../lib/rbac';
-import { handleApiError, notFound, success } from '../../../../../lib/api-helpers';
+import { handleApiError, notFound, success, guardResponse } from '../../../../../lib/api-helpers';
 import { logAudit } from '../../../../../lib/audit';
 
 export async function POST(request, { params }) {
   try {
     const auth = await requireEditor()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const importSet = await db('import_sets').where({ id: (await params).id }).first();

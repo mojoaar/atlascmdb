@@ -1,13 +1,13 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Server, Layers, Database, Users, MapPin } from 'lucide-react';
+import { Server, Layers, Bolt, Users, MapPin } from 'lucide-react';
 import AdminEntityList from '../EntityList';
 
 const ICON_MAP = {
   service: Server,
   application: Layers,
-  ci: Database,
+  ci: Bolt,
   team: Users,
   location: MapPin,
 };

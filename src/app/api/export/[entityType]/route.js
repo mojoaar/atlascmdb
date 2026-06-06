@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import getDb from '../../../../lib/db';
 import { requireAuth } from '../../../../lib/rbac';
-import { handleApiError, success } from '../../../../lib/api-helpers';
+import { handleApiError, success, guardResponse, forbidden, badRequest } from '../../../../lib/api-helpers';
 
 export async function GET(request, { params }) {
   try {
     const auth = await requireAuth()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
   const tableMap = {
@@ -24,10 +24,10 @@ export async function GET(request, { params }) {
 
     const entityType = (await params).entityType;
     const table = tableMap[entityType];
-    if (!table) return NextResponse.json({ error: 'Unknown entity type' }, { status: 400 });
+    if (!table) return badRequest('Unknown entity type');
 
     if (entityType === 'users' && auth.effectiveRole !== 'admin') {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+      return forbidden();
     }
 
     let rows = await db(table).select('*');

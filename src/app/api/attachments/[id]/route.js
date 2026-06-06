@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import getDb from '../../../../lib/db';
 import { requireAuth } from '../../../../lib/rbac';
-import { handleApiError, notFound } from '../../../../lib/api-helpers';
+import { handleApiError, notFound, guardResponse } from '../../../../lib/api-helpers';
 
 // Mime types that browsers can execute/script in-origin. We never serve these with
 // their original type; they are forced to octet-stream so they download instead of render.
@@ -10,7 +10,7 @@ const DANGEROUS_MIME = /^(image\/svg|text\/html|application\/xhtml|text\/xml|app
 export async function GET(request, { params }) {
   try {
     const auth = await requireAuth()(request);
-    if (!auth.authorized) return NextResponse.json(auth.body, { status: auth.status });
+    if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
     const { id } = await params;

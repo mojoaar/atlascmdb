@@ -610,6 +610,78 @@ const endpoints = [
     }
   },
   {
+    "category": "Configuration Items",
+    "method": "GET",
+    "path": "/api/cis/{id}/rack-placements",
+    "description": "List all CIs placed in a rack. Returns placements with CI names/types, ordered top-to-bottom (descending startU).",
+    "auth": "any",
+    "response": {
+      "data": [
+        {
+          "id": "uuid",
+          "rackId": "uuid",
+          "ciId": "uuid",
+          "ciName": "web-01.example.com",
+          "ciType": "server",
+          "ciSerial": "SN-2024-0001",
+          "startU": 38,
+          "occupiedUs": 2,
+          "position": "front",
+          "label": "Web Node 1"
+        }
+      ]
+    }
+  },
+  {
+    "category": "Configuration Items",
+    "method": "POST",
+    "path": "/api/cis/{id}/rack-placements",
+    "description": "Place a CI in a rack slot. Validates: rack is ciType=rack, CI exists, startU >= 1, placement fits within rackSize, no slot overlaps. Auto-creates hosted_on relationship.",
+    "auth": "editor+",
+    "body": {
+      "ciId": "uuid",
+      "startU": 38,
+      "occupiedUs": 2,
+      "position": "front",
+      "label": "Web Node 1"
+    },
+    "response": {
+      "id": "uuid",
+      "rackId": "uuid",
+      "ciId": "uuid",
+      "startU": 38,
+      "occupiedUs": 2,
+      "position": "front",
+      "label": "Web Node 1"
+    }
+  },
+  {
+    "category": "Configuration Items",
+    "method": "PATCH",
+    "path": "/api/cis/{id}/rack-placements/{placementId}",
+    "description": "Update a rack placement (startU, occupiedUs, position, label). Re-validates slot overlap.",
+    "auth": "editor+",
+    "body": {
+      "startU": 36,
+      "occupiedUs": 1
+    },
+    "response": {
+      "id": "uuid",
+      "startU": 36,
+      "occupiedUs": 1
+    }
+  },
+  {
+    "category": "Configuration Items",
+    "method": "DELETE",
+    "path": "/api/cis/{id}/rack-placements/{placementId}",
+    "description": "Remove a CI from a rack. Also deletes the corresponding hosted_on relationship.",
+    "auth": "editor+",
+    "response": {
+      "message": "Placement removed"
+    }
+  },
+  {
     "category": "Export",
     "method": "GET",
     "path": "/api/export/{entityType}",
@@ -1269,80 +1341,8 @@ const endpoints = [
           "name": "Business",
           "value": 6,
           "color": "#003d7a"
-  },
-  {
-    "category": "Configuration Items",
-    "method": "GET",
-    "path": "/api/cis/{id}/rack-placements",
-    "description": "List all CIs placed in a rack. Returns placements with CI names/types, ordered top-to-bottom (descending startU).",
-    "auth": "any",
-    "response": {
-      "data": [
+        },
         {
-          "id": "uuid",
-          "rackId": "uuid",
-          "ciId": "uuid",
-          "ciName": "web-01.example.com",
-          "ciType": "server",
-          "ciSerial": "SN-2024-0001",
-          "startU": 38,
-          "occupiedUs": 2,
-          "position": "front",
-          "label": "Web Node 1"
-        }
-      ]
-    }
-  },
-  {
-    "category": "Configuration Items",
-    "method": "POST",
-    "path": "/api/cis/{id}/rack-placements",
-    "description": "Place a CI in a rack slot. Validates: rack is ciType=rack, CI exists, startU >= 1, placement fits within rackSize, no slot overlaps. Auto-creates hosted_on relationship.",
-    "auth": "editor+",
-    "body": {
-      "ciId": "uuid",
-      "startU": 38,
-      "occupiedUs": 2,
-      "position": "front",
-      "label": "Web Node 1"
-    },
-    "response": {
-      "id": "uuid",
-      "rackId": "uuid",
-      "ciId": "uuid",
-      "startU": 38,
-      "occupiedUs": 2,
-      "position": "front",
-      "label": "Web Node 1"
-    }
-  },
-  {
-    "category": "Configuration Items",
-    "method": "PATCH",
-    "path": "/api/cis/{id}/rack-placements/{placementId}",
-    "description": "Update a rack placement (startU, occupiedUs, position, label). Re-validates slot overlap.",
-    "auth": "editor+",
-    "body": {
-      "startU": 36,
-      "occupiedUs": 1
-    },
-    "response": {
-      "id": "uuid",
-      "startU": 36,
-      "occupiedUs": 1
-    }
-  },
-  {
-    "category": "Configuration Items",
-    "method": "DELETE",
-    "path": "/api/cis/{id}/rack-placements/{placementId}",
-    "description": "Remove a CI from a rack. Also deletes the corresponding hosted_on relationship.",
-    "auth": "editor+",
-    "response": {
-      "message": "Placement removed"
-    }
-  },
-  {
           "name": "Technical",
           "value": 6,
           "color": "#4d8cc7"
@@ -2438,6 +2438,27 @@ const endpoints = [
         "uuid-admin",
         "uuid-editor"
       ]
+    }
+  },
+  {
+    "category": "Admin",
+    "method": "GET",
+    "path": "/api/admin/demo-status",
+    "description": "Check if the demo database dataset is currently seeded.",
+    "auth": "admin",
+    "response": {
+      "isDemoSeeded": true
+    }
+  },
+  {
+    "category": "Admin",
+    "method": "POST",
+    "path": "/api/admin/reset-demo",
+    "description": "Reset the demo database to a pristine state (retains only Alice Admin, deletes all services, applications, CIs, relationships, assets, locations, teams, and other users).",
+    "auth": "admin",
+    "response": {
+      "success": true,
+      "message": "Demo data successfully reset. Only Alice Admin remains."
     }
   }
 ];

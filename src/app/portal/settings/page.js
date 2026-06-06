@@ -96,6 +96,18 @@ export default function PortalSettingsPage() {
     const tokenSet = isDark ? (theme.tokenSetDark || theme.tokenSetLight) : theme.tokenSetLight;
     if (!tokenSet) return;
     const tokens = typeof tokenSet === 'string' ? JSON.parse(tokenSet) : tokenSet;
+
+    const el = document.documentElement;
+    const remove = [];
+    for (let i = 0; i < el.style.length; i++) {
+      const name = el.style[i];
+      if (name.startsWith('--')) remove.push(name);
+    }
+    remove.forEach(n => el.style.removeProperty(n));
+    el.style.removeProperty('--radius');
+    el.style.removeProperty('--font-family');
+    el.style.removeProperty('--hover');
+
     if (tokens.colors) {
       Object.entries(tokens.colors).forEach(([k, v]) => {
         const cssVar = k.replace(/([A-Z])/g, '-$1').toLowerCase();
@@ -105,6 +117,8 @@ export default function PortalSettingsPage() {
     if (tokens.borderRadius) document.documentElement.style.setProperty('--radius', tokens.borderRadius);
     if (tokens.fontFamily) document.documentElement.style.setProperty('--font-family', tokens.fontFamily);
     if (tokens.hover) document.documentElement.style.setProperty('--hover', tokens.hover);
+
+    window.dispatchEvent(new CustomEvent('atlas-theme-changed', { detail: { theme } }));
   }
 
   async function startMfaSetup() {
@@ -280,11 +294,17 @@ export default function PortalSettingsPage() {
               <div style={{ marginBottom: '1rem' }}>
                 <div style={{ fontSize: '0.8125rem', fontWeight: 600, marginBottom: '0.5rem' }}>Scan this QR code with your authenticator app:</div>
                 <div style={{ background: '#fff', padding: '0.5rem', borderRadius: 'var(--radius)', display: 'inline-block' }}>
-                  <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(mfaSecret.otpauthUrl)}`}
-                    alt="QR code"
-                    style={{ display: 'block', width: 160, height: 160 }}
-                  />
+                  {mfaSecret.qrCode ? (
+                    <img
+                      src={mfaSecret.qrCode}
+                      alt="QR code"
+                      style={{ display: 'block', width: 160, height: 160 }}
+                    />
+                  ) : (
+                    <div style={{ width: 160, height: 160, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#ccc', color: '#333', fontSize: '0.8125rem' }}>
+                      QR Code Error
+                    </div>
+                  )}
                 </div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)', marginTop: '0.5rem', wordBreak: 'break-all', maxWidth: 320 }}>
                   Secret: {mfaSecret.secret}
@@ -380,43 +400,6 @@ export default function PortalSettingsPage() {
           <Button variant="secondary" size="small" onClick={handleSavePrefs}>Save Preferences</Button>
         </Card>
       </div>
-      <div className={styles.section}>
-        <div className={styles.sectionTitle}>Credits</div>
-        <Card>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '0.5rem', fontSize: '0.8125rem' }}>
-            <Credit name="Next.js" url="https://nextjs.org" />
-            <Credit name="React" url="https://react.dev" />
-            <Credit name="Knex.js" url="https://knexjs.org" />
-            <Credit name="better-sqlite3" url="https://github.com/WiseLibs/better-sqlite3" />
-            <Credit name="@xyflow/react" url="https://reactflow.dev" />
-            <Credit name="@dagrejs/dagre" url="https://github.com/dagrejs/dagre" />
-            <Credit name="recharts" url="https://recharts.org" />
-            <Credit name="react-leaflet" url="https://react-leaflet.js.org" />
-            <Credit name="Leaflet" url="https://leafletjs.com" />
-            <Credit name="OpenStreetMap" url="https://www.openstreetmap.org/about" />
-            <Credit name="lucide-react" url="https://lucide.dev" />
-            <Credit name="openid-client" url="https://github.com/panva/openid-client" />
-            <Credit name="jsonwebtoken" url="https://github.com/auth0/node-jsonwebtoken" />
-            <Credit name="otpauth" url="https://github.com/hectorm/otpauth" />
-            <Credit name="bcryptjs" url="https://github.com/dcodeIO/bcrypt.js" />
-            <Credit name="uuid" url="https://github.com/uuidjs/uuid" />
-            <Credit name="Prism.js" url="https://prismjs.com" />
-            <Credit name="Catppuccin" url="https://catppuccin.com" />
-            <Credit name="Nord" url="https://www.nordtheme.com" />
-            <Credit name="Dracula" url="https://draculatheme.com" />
-            <Credit name="Cyberpunk" url="https://www.media.io/color-palette/cyberpunk-color-palette.html" />
-          </div>
-        </Card>
-      </div>
     </div>
-  );
-}
-
-function Credit({ name, url }) {
-  return (
-    <a href={url} target="_blank" rel="noopener noreferrer"
-      style={{ color: 'var(--foreground)', textDecoration: 'none', padding: '0.25rem 0' }}>
-      {name}
-    </a>
   );
 }

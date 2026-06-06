@@ -29,6 +29,9 @@ export default function AdminRoleDetail() {
       fetch(`/api/roles/${id}`).then(r => r.json()).then(role => {
         if (role) setForm({ name: role.name || '', description: role.description || '' });
         setLoading(false);
+      }).catch(err => {
+        console.error(err);
+        setLoading(false);
       });
     }
   }, [id, isNew]);

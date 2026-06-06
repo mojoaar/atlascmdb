@@ -2,13 +2,14 @@ import { describe, it, expect, beforeAll, vi } from 'vitest';
 import { seedTestData } from '../setup';
 import crypto from 'crypto';
 
-let adminId, viewerId, adminToken, viewerToken, editorToken;
+let adminId, viewerId, editorId, adminToken, viewerToken, editorToken;
 let adminRoleId, editorRoleId, viewerRoleId, teamId, serviceId;
 
 beforeAll(async () => {
   const data = await seedTestData();
   adminId = data.userId;
   viewerId = data.viewerId;
+  editorId = data.editorId;
   adminRoleId = data.adminRoleId;
   editorRoleId = data.editorRoleId;
   viewerRoleId = data.viewerRoleId;
@@ -19,7 +20,7 @@ beforeAll(async () => {
   adminToken = generateAccessToken({ id: adminId, email: 'admin@test.local', displayName: 'Test Admin' });
   viewerToken = generateAccessToken({ id: viewerId, email: 'viewer@test.local', displayName: 'Test Viewer' });
   // Create an editor token
-  editorToken = generateAccessToken({ id: viewerId, email: 'editor@test.local', displayName: 'Test Editor' });
+  editorToken = generateAccessToken({ id: editorId, email: 'editor@test.local', displayName: 'Test Editor' });
 });
 
 async function makeRequest(token, url = 'http://localhost:3000', method = 'GET', body = null) {
@@ -344,17 +345,38 @@ describe('Security Hardening & Privilege Escalation Defenses', () => {
 
   describe('SSO callback returnUrl validation (Item E)', () => {
     it('redirects open-redirect attempts to /portal fallback', async () => {
-      const { GET } = await import('@/app/api/auth/sso/callback/route');
+      const { isSafeLocalUrl } = await import('@/app/api/auth/sso/callback/route');
       
-      // We can mock the discovery call or check that returnUrl is validated
-      // Let's check how cookies are retrieved. We can mock cookies with malicious sso_return_url.
-      // But since sso callback might fail early on state parameter mismatch, we can write a unit-test-like test
-      // by asserting the regex pattern /^\/(?![/\\])/ is used.
-      const isSafeLocalUrl = (url) => /^\/(?![/\\])/.test(url);
       expect(isSafeLocalUrl('/portal')).toBe(true);
       expect(isSafeLocalUrl('//evil.com')).toBe(false);
       expect(isSafeLocalUrl('\\/evil.com')).toBe(false);
       expect(isSafeLocalUrl('http://evil.com')).toBe(false);
+    });
+  });
+
+  describe('Login account lockout rate limiting', () => {
+    it('locks out account after 5 failed login attempts', async () => {
+      const { failedLoginLimiter } = await import('@/lib/rate-limit');
+      const email = `lockout-test-${Date.now()}@test.local`;
+
+      // 1. Initial check (not locked out)
+      const initialCheck = failedLoginLimiter(email, { checkOnly: true });
+      expect(initialCheck.allowed).toBe(true);
+
+      // 2. Perform 4 failures (not locked out yet)
+      for (let i = 0; i < 4; i++) {
+        const res = failedLoginLimiter(email);
+        expect(res.allowed).toBe(true);
+      }
+
+      // 3. 5th failure triggers lockout
+      const finalFailure = failedLoginLimiter(email);
+      expect(finalFailure.allowed).toBe(false);
+
+      // 4. lock check is active
+      const lockedCheck = failedLoginLimiter(email, { checkOnly: true });
+      expect(lockedCheck.allowed).toBe(false);
+      expect(lockedCheck.retryAfter).toBeGreaterThan(0);
     });
   });
 });
