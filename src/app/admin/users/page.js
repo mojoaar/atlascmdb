@@ -32,7 +32,7 @@ const filterFields = [
 
 export default function AdminUsersPage() {
   const router = useRouter();
-  const { alert } = useFeedback();
+  const { alert, confirm } = useFeedback();
 
   async function handleImpersonate(userId) {
     const res = await fetch('/api/admin/impersonate', {
@@ -48,19 +48,38 @@ export default function AdminUsersPage() {
     }
   }
 
+  async function handleDisable(userId) {
+    if (!await confirm('Disable this user?')) return;
+    const res = await fetch(`/api/users/${userId}`, { method: 'DELETE' });
+    if (res.ok) {
+      window.location.reload();
+    } else {
+      const data = await res.json();
+      await alert(data.error || 'Failed to disable user');
+    }
+  }
+
   const columns = [
     { key: 'displayName', header: 'Name' },
     { key: 'email', header: 'Email' },
     { key: 'managerName', header: 'Manager', render: (r) => r.managerName || '—' },
     { key: 'status', header: 'Status', render: (r) => STATUS_LABELS[r.status] || r.status || '—' },
     { key: 'roleNames', header: 'Roles', sortable: false, render: (r) => (r.roleNames || []).join(', ') || '—' },
-    { key: 'actions', header: '', sortable: false, width: 80, render: (r) => (
-      <button
-        onClick={(e) => { e.stopPropagation(); handleImpersonate(r.id); }}
-        style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', cursor: 'pointer', background: 'var(--warning)', color: '#fff', border: 'none', borderRadius: '4px' }}
-      >
-        Impersonate
-      </button>
+    { key: 'actions', header: '', sortable: false, width: 170, render: (r) => (
+      <div style={{ display: 'flex', gap: '0.3rem' }}>
+        <button
+          onClick={(e) => { e.stopPropagation(); handleImpersonate(r.id); }}
+          style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', cursor: 'pointer', background: 'var(--warning)', color: '#fff', border: 'none', borderRadius: '4px' }}
+        >
+          Impersonate
+        </button>
+        <button
+          onClick={(e) => { e.stopPropagation(); handleDisable(r.id); }}
+          style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', cursor: 'pointer', background: 'var(--danger)', color: '#fff', border: 'none', borderRadius: '4px' }}
+        >
+          Disable
+        </button>
+      </div>
     )},
   ];
 
@@ -75,6 +94,7 @@ export default function AdminUsersPage() {
       filterFields={filterFields}
       allColumns={allColumns}
       columnEntityType="users"
+      bulkEntityType="users"
     />
   );
 }
