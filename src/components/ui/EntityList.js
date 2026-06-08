@@ -239,8 +239,13 @@ export default function EntityList({
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           {selectable && selectedIds.size > 0 && (
-            <div style={{ fontSize: '0.8125rem', color: 'var(--muted-foreground)' }}>
-              {selectedIds.size} selected
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.8125rem', color: 'var(--muted-foreground)' }}>
+                {selectedIds.size} selected
+              </span>
+              <Button variant="danger" size="small" onClick={() => setShowDeleteConfirm(true)}>
+                {bulkActionLabel}
+              </Button>
             </div>
           )}
           {allColumns && (
