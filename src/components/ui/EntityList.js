@@ -39,6 +39,7 @@ export default function EntityList({
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [activeBulkActionLabel, setActiveBulkActionLabel] = useState(bulkActionLabel);
   const [showAdvFilter, setShowAdvFilter] = useState(false);
   const [showColumns, setShowColumns] = useState(false);
   const [sort, setSort] = useState('');
@@ -221,9 +222,30 @@ export default function EntityList({
         <h1 className={styles.title}>{title}</h1>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           {selectable && selectedIds.size > 0 && (
-            <Button variant="danger" size="small" onClick={() => setShowDeleteConfirm(true)}>
-              {bulkActionLabel} ({selectedIds.size})
-            </Button>
+            <>
+              {bulkActionLabel === 'Disable' && (
+                <Button
+                  variant="danger"
+                  size="small"
+                  onClick={() => {
+                    setActiveBulkActionLabel('Disable');
+                    setShowDeleteConfirm(true);
+                  }}
+                >
+                  Disable ({selectedIds.size})
+                </Button>
+              )}
+              <Button
+                variant="danger"
+                size="small"
+                onClick={() => {
+                  setActiveBulkActionLabel('Delete');
+                  setShowDeleteConfirm(true);
+                }}
+              >
+                Delete ({selectedIds.size})
+              </Button>
+            </>
           )}
           {onCreate && <Button variant="primary" onClick={onCreate}>Create</Button>}
         </div>
@@ -239,13 +261,8 @@ export default function EntityList({
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           {selectable && selectedIds.size > 0 && (
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.8125rem', color: 'var(--muted-foreground)' }}>
-                {selectedIds.size} selected
-              </span>
-              <Button variant="danger" size="small" onClick={() => setShowDeleteConfirm(true)}>
-                {bulkActionLabel}
-              </Button>
+            <div style={{ fontSize: '0.8125rem', color: 'var(--muted-foreground)' }}>
+              {selectedIds.size} selected
             </div>
           )}
           {allColumns && (
@@ -283,15 +300,15 @@ export default function EntityList({
 
       <Modal
         open={showDeleteConfirm}
-        title={bulkActionLabel === 'Delete' ? 'Confirm Deletion' : `Confirm ${bulkActionLabel}`}
+        title={activeBulkActionLabel === 'Delete' ? 'Confirm Deletion' : `Confirm ${activeBulkActionLabel}`}
         onClose={() => setShowDeleteConfirm(false)}
       >
         <div style={{ marginBottom: '1rem' }}>
-          {bulkActionLabel} {selectedIds.size} selected item{selectedIds.size > 1 ? 's' : ''}? This cannot be undone.
+          {activeBulkActionLabel} {selectedIds.size} selected item{selectedIds.size > 1 ? 's' : ''}? This cannot be undone.
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
           <Button variant="secondary" onClick={() => setShowDeleteConfirm(false)}>Cancel</Button>
-          <Button variant="danger" onClick={handleBulkDelete}>{bulkActionLabel}</Button>
+          <Button variant="danger" onClick={handleBulkDelete}>{activeBulkActionLabel}</Button>
         </div>
       </Modal>
 
