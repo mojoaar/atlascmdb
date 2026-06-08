@@ -77,7 +77,7 @@ export async function GET(request) {
         'updater.displayName as updatedByName'
       )
       .select(db.raw(db.client.config.client === 'pg' ? "string_agg(roles.name, ',') as roleNames" : "GROUP_CONCAT(roles.name) as roleNames"))
-      .groupBy('users.id');
+      .groupBy('users.id', 'manager.id', 'creator.id', 'updater.id');
     dataQuery = applyFilters(dataQuery);
 
     const [countResult] = await countQuery.countDistinct('users.id as total');
@@ -86,9 +86,9 @@ export async function GET(request) {
     
     let orderByQuery = dataQuery;
     if (sortCol === 'users.displayName') {
-      orderByQuery = orderByQuery.orderByRaw(`LOWER(users.displayName) ${sortOrder}`);
+      orderByQuery = orderByQuery.orderByRaw(`LOWER(??) ${sortOrder}`, ['users.displayName']);
     } else if (sortCol === 'users.email') {
-      orderByQuery = orderByQuery.orderByRaw(`LOWER(users.email) ${sortOrder}`);
+      orderByQuery = orderByQuery.orderByRaw(`LOWER(??) ${sortOrder}`, ['users.email']);
     } else {
       orderByQuery = orderByQuery.orderBy(sortCol, sortOrder);
     }
