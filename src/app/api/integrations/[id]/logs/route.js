@@ -29,7 +29,7 @@ export async function GET(request, { params }) {
 
     return success({
       data: logs,
-      total: countResult.total,
+      total: Number(countResult.total),
       limit,
       offset,
     });

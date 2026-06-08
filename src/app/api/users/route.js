@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
-import getDb from '../../../lib/db';
+import getDb, { likeOperator } from '../../../lib/db';
 import { requireAdmin } from '../../../lib/rbac';
 import { handleApiError, success, created, guardResponse, conflict, badRequest } from '../../../lib/api-helpers';
 import { hashPassword } from '../../../lib/auth';
@@ -34,11 +34,12 @@ export async function GET(request) {
     const filters = filterJson ? (() => { try { return JSON.parse(filterJson); } catch { return []; } })() : [];
 
     function applyFilters(q) {
+      const opLike = likeOperator(db);
       if (status) q = q.where('users.status', status);
       if (search) {
         q = q.where(function () {
-          this.where('users.displayName', 'like', `%${search}%`)
-            .orWhere('users.email', 'like', `%${search}%`);
+          this.where('users.displayName', opLike, `%${search}%`)
+            .orWhere('users.email', opLike, `%${search}%`);
         });
       }
       filters.forEach(({ field, op, value }) => {
@@ -47,8 +48,8 @@ export async function GET(request) {
         if (!col) return;
         if (op === 'eq') q = q.where(col, value);
         else if (op === 'neq') q = q.whereNot(col, value);
-        else if (op === 'contains') q = q.where(col, 'like', `%${value}%`);
-        else if (op === 'startsWith') q = q.where(col, 'like', `${value}%`);
+        else if (op === 'contains') q = q.where(col, opLike, `%${value}%`);
+        else if (op === 'startsWith') q = q.where(col, opLike, `${value}%`);
         else if (op === 'isEmpty') q = q.whereNull(col).orWhere(col, '');
       });
       return q;

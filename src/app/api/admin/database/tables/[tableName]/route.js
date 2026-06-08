@@ -1,4 +1,4 @@
-import getDb from '../../../../../../lib/db';
+import getDb, { likeOperator } from '../../../../../../lib/db';
 import { requireAdmin } from '../../../../../../lib/rbac';
 import { handleApiError, success, notFound, guardResponse } from '../../../../../../lib/api-helpers';
 import { logAudit } from '../../../../../../lib/audit';
@@ -44,6 +44,7 @@ export async function GET(request, { params }) {
 
     // If search keyword is provided, search across any text columns dynamically
     if (search) {
+      const opLike = likeOperator(db);
       query = query.where(function () {
         const columns = Object.keys(schemaInfo);
         let textColCount = 0;
@@ -52,9 +53,9 @@ export async function GET(request, { params }) {
           const isText = ['string', 'varchar', 'text', 'char', 'nvarchar'].some((t) => colType.includes(t));
           if (isText) {
             if (textColCount === 0) {
-              this.where(col, 'like', `%${search}%`);
+              this.where(col, opLike, `%${search}%`);
             } else {
-              this.orWhere(col, 'like', `%${search}%`);
+              this.orWhere(col, opLike, `%${search}%`);
             }
             textColCount++;
           }

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
-import getDb from '../../../lib/db';
+import getDb, { likeOperator } from '../../../lib/db';
 import { requireAuth, requireEditor } from '../../../lib/rbac';
 import { handleApiError, success, created, guardResponse } from '../../../lib/api-helpers';
 import { logAudit } from '../../../lib/audit';
@@ -11,6 +11,7 @@ export async function GET(request) {
     if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
+    const opLike = likeOperator(db);
     const { searchParams } = new URL(request.url);
     const sourceType = searchParams.get('sourceType');
     const sourceId = searchParams.get('sourceId');
@@ -35,8 +36,8 @@ export async function GET(request) {
 
     if (search) {
       query = query.where(function () {
-        this.where('relationships.relationshipType', 'like', `%${search}%`)
-          .orWhere('relationships.notes', 'like', `%${search}%`);
+        this.where('relationships.relationshipType', opLike, `%${search}%`)
+          .orWhere('relationships.notes', opLike, `%${search}%`);
       });
     }
 
@@ -59,8 +60,8 @@ export async function GET(request) {
           if (!col) return;
           if (op === 'eq') query = query.where(col, value);
           else if (op === 'neq') query = query.whereNot(col, value);
-          else if (op === 'contains') query = query.where(col, 'like', `%${value}%`);
-          else if (op === 'startsWith') query = query.where(col, 'like', `${value}%`);
+          else if (op === 'contains') query = query.where(col, opLike, `%${value}%`);
+          else if (op === 'startsWith') query = query.where(col, opLike, `${value}%`);
           else if (op === 'isEmpty') query = query.whereNull(col).orWhere(col, '');
         });
       } catch {}

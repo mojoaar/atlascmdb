@@ -26,4 +26,9 @@ export function resetDb() {
   knexInstance = null;
 }
 
+export function likeOperator(db) {
+  const client = db.client.config.client;
+  return (client === 'pg' || client === 'postgresql') ? 'ilike' : 'like';
+}
+
 export default getDb;

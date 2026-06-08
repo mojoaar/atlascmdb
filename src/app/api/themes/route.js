@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
-import getDb from '../../../lib/db';
+import getDb, { likeOperator } from '../../../lib/db';
 import { requireAuth, requireAdmin } from '../../../lib/rbac';
 import { handleApiError, success, created, guardResponse } from '../../../lib/api-helpers';
 import { logAudit } from '../../../lib/audit';
@@ -11,6 +11,7 @@ export async function GET(request) {
     if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
+    const opLike = likeOperator(db);
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search');
     const limit = parseInt(searchParams.get('limit') || '50');
@@ -25,7 +26,7 @@ export async function GET(request) {
       .leftJoin('users as creator', 'themes.createdBy', 'creator.id')
       .leftJoin('users as updater', 'themes.updatedBy', 'updater.id')
       .select('themes.*', 'creator.displayName as createdByName', 'updater.displayName as updatedByName');
-    if (search) query = query.where('name', 'like', `%${search}%`);
+    if (search) query = query.where('name', opLike, `%${search}%`);
     const [countResult] = await query.clone().clearSelect().count('* as total');
     const sortCol = ALLOWED_SORT[sort] || DEFAULT_SORT;
     const sortOrder = ['asc', 'desc'].includes(order) ? order : 'asc';

@@ -1,4 +1,4 @@
-import getDb from '../../../../lib/db';
+import getDb, { likeOperator } from '../../../../lib/db';
 import { requireAuth } from '../../../../lib/rbac';
 import { handleApiError, success, guardResponse } from '../../../../lib/api-helpers';
 
@@ -46,11 +46,12 @@ async function suggestFts(db, q, type, limit) {
 
 async function suggestLike(db, q, type, limit) {
   const suggestions = [];
+  const opLike = likeOperator(db);
 
   for (const entity of LIKE_ENTITIES) {
     if (type && entity.type !== type) continue;
     const rows = await db(entity.table)
-      .where('name', 'like', `%${q}%`)
+      .where('name', opLike, `%${q}%`)
       .select('id', 'name')
       .limit(limit);
 

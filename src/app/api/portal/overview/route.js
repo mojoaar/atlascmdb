@@ -19,15 +19,15 @@ export async function GET(request) {
     const [assetCount] = await db('assets').count('* as total');
 
     return success({
-      services: serviceCount.total,
-      applications: appCount.total,
-      cis: ciCount.total,
-      teams: teamCount.total,
-      locations: locationCount.total,
-      imports: importCount.total,
-      users: userCount.total,
-      roles: roleCount.total,
-      assets: assetCount.total,
+      services: Number(serviceCount.total),
+      applications: Number(appCount.total),
+      cis: Number(ciCount.total),
+      teams: Number(teamCount.total),
+      locations: Number(locationCount.total),
+      imports: Number(importCount.total),
+      users: Number(userCount.total),
+      roles: Number(roleCount.total),
+      assets: Number(assetCount.total),
     });
   } catch (error) {
     return handleApiError(error);

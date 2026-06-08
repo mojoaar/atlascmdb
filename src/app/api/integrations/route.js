@@ -10,6 +10,7 @@ const SECRET_KEYS = new Set(['apiKey']);
 const maskConnector = (c) => ({
   ...c,
   apiKey: c.apiKey ? c.apiKey.slice(0, 8) + '••••••••••••' : null,
+  enabled: !!c.enabled,
 });
 
 export async function GET(request) {
@@ -55,7 +56,7 @@ export async function POST(request) {
       baseUrl: baseUrl || null,
       apiKey: apiKey || null,
       conflictMode: conflictMode && ['overwrite', 'merge', 'skip'].includes(conflictMode) ? conflictMode : 'merge',
-      enabled: 0,
+      enabled: false,
       createdBy: auth.user.id,
       createdAt: now,
       updatedAt: now,

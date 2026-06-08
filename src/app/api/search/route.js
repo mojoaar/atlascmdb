@@ -1,4 +1,4 @@
-import getDb from '../../../lib/db';
+import getDb, { likeOperator } from '../../../lib/db';
 import { requireAuth } from '../../../lib/rbac';
 import { handleApiError, success, guardResponse } from '../../../lib/api-helpers';
 
@@ -52,12 +52,13 @@ async function searchFts(db, q, type, limit) {
 
 async function searchLike(db, q, type, limit) {
   const results = [];
+  const opLike = likeOperator(db);
 
   for (const entity of LIKE_ENTITIES) {
     if (type && type !== entity.type) continue;
 
     const rows = await db(entity.table)
-      .where('name', 'like', `%${q}%`)
+      .where('name', opLike, `%${q}%`)
       .select('id', 'name', 'description')
       .limit(limit);
 

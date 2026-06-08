@@ -1,4 +1,4 @@
-import getDb from '../../../lib/db';
+import getDb, { likeOperator } from '../../../lib/db';
 import { requireAdmin } from '../../../lib/rbac';
 import { handleApiError, success, guardResponse } from '../../../lib/api-helpers';
 
@@ -8,6 +8,7 @@ export async function GET(request) {
     if (!auth.authorized) return guardResponse(auth);
 
     const db = getDb();
+    const opLike = likeOperator(db);
     const { searchParams } = new URL(request.url);
     const entityType = searchParams.get('entityType');
     const entityId = searchParams.get('entityId');
@@ -37,8 +38,8 @@ export async function GET(request) {
 
     if (search) {
       query = query.where(function () {
-        this.where('users.displayName', 'like', `%${search}%`)
-          .orWhere('users.email', 'like', `%${search}%`);
+        this.where('users.displayName', opLike, `%${search}%`)
+          .orWhere('users.email', opLike, `%${search}%`);
       });
     }
 
@@ -48,8 +49,8 @@ export async function GET(request) {
       if (!col) return;
       if (op === 'eq') query = query.where(col, value);
       else if (op === 'neq') query = query.whereNot(col, value);
-      else if (op === 'contains') query = query.where(col, 'like', `%${value}%`);
-      else if (op === 'startsWith') query = query.where(col, 'like', `${value}%`);
+      else if (op === 'contains') query = query.where(col, opLike, `%${value}%`);
+      else if (op === 'startsWith') query = query.where(col, opLike, `${value}%`);
       else if (op === 'isEmpty') query = query.whereNull(col).orWhere(col, '');
     });
 

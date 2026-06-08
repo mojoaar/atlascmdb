@@ -84,9 +84,9 @@ export async function PUT(request) {
       if (graphDepth !== undefined) updates.graphDepth = parseInt(graphDepth);
       if (rowLimit !== undefined) updates.rowLimit = parseInt(rowLimit) || null;
       if (columnPrefs !== undefined) updates.columnPrefs = typeof columnPrefs === 'string' ? columnPrefs : JSON.stringify(columnPrefs);
-      if (notifOnCreate !== undefined) updates.notifOnCreate = notifOnCreate ? 1 : 0;
-      if (notifOnUpdate !== undefined) updates.notifOnUpdate = notifOnUpdate ? 1 : 0;
-      if (notifOnDelete !== undefined) updates.notifOnDelete = notifOnDelete ? 1 : 0;
+      if (notifOnCreate !== undefined) updates.notifOnCreate = !!notifOnCreate;
+      if (notifOnUpdate !== undefined) updates.notifOnUpdate = !!notifOnUpdate;
+      if (notifOnDelete !== undefined) updates.notifOnDelete = !!notifOnDelete;
       await db('user_theme_preferences').where({ userId: auth.user.id }).update(updates);
     } else {
       await db('user_theme_preferences').insert({
@@ -100,9 +100,9 @@ export async function PUT(request) {
         graphDepth: parseInt(graphDepth) || 3,
         rowLimit: rowLimit ? parseInt(rowLimit) : null,
         columnPrefs: columnPrefs ? (typeof columnPrefs === 'string' ? columnPrefs : JSON.stringify(columnPrefs)) : null,
-        notifOnCreate: notifOnCreate !== undefined ? (notifOnCreate ? 1 : 0) : 1,
-        notifOnUpdate: notifOnUpdate !== undefined ? (notifOnUpdate ? 1 : 0) : 1,
-        notifOnDelete: notifOnDelete !== undefined ? (notifOnDelete ? 1 : 0) : 1,
+        notifOnCreate: notifOnCreate !== undefined ? !!notifOnCreate : true,
+        notifOnUpdate: notifOnUpdate !== undefined ? !!notifOnUpdate : true,
+        notifOnDelete: notifOnDelete !== undefined ? !!notifOnDelete : true,
       });
     }
 

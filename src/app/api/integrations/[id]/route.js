@@ -10,6 +10,7 @@ const VALID_CONFLICT_MODES = ['overwrite', 'merge', 'skip'];
 const maskConnector = (c) => ({
   ...c,
   apiKey: c.apiKey ? c.apiKey.slice(0, 8) + '••••••••••••' : null,
+  enabled: !!c.enabled,
 });
 
 export async function GET(request, { params }) {
@@ -46,7 +47,7 @@ export async function PATCH(request, { params }) {
     if (body.name !== undefined) updates.name = body.name;
     if (body.baseUrl !== undefined) updates.baseUrl = body.baseUrl || null;
     if (body.apiKey !== undefined) updates.apiKey = body.apiKey || null;
-    if (body.enabled !== undefined) updates.enabled = body.enabled ? 1 : 0;
+    if (body.enabled !== undefined) updates.enabled = !!body.enabled;
     if (body.config !== undefined) {
       updates.config = typeof body.config === 'string' ? body.config : JSON.stringify(body.config);
     }
