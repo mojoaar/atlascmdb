@@ -51,8 +51,18 @@ export async function GET(request) {
     }
 
     const adminDefaults = await loadAdminColumnDefaults(db);
+    let parsedColumnPrefs = {};
+    if (pref.columnPrefs) {
+      try {
+        parsedColumnPrefs = typeof pref.columnPrefs === 'string' ? JSON.parse(pref.columnPrefs) : pref.columnPrefs;
+      } catch (err) {
+        console.error('Failed to parse columnPrefs:', err);
+      }
+    }
+
     const result = {
       ...pref,
+      columnPrefs: parsedColumnPrefs,
       notifOnCreate: pref.notifOnCreate !== undefined ? !!pref.notifOnCreate : true,
       notifOnUpdate: pref.notifOnUpdate !== undefined ? !!pref.notifOnUpdate : true,
       notifOnDelete: pref.notifOnDelete !== undefined ? !!pref.notifOnDelete : true,

@@ -40,6 +40,7 @@ export default function EntityList({
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [activeBulkActionLabel, setActiveBulkActionLabel] = useState(bulkActionLabel);
+  const [refreshVersion, setRefreshVersion] = useState(0);
   const [showAdvFilter, setShowAdvFilter] = useState(false);
   const [showColumns, setShowColumns] = useState(false);
   const [sort, setSort] = useState('');
@@ -173,7 +174,7 @@ export default function EntityList({
     return () => {
       controller.abort();
     };
-  }, [apiPath, page, debouncedSearch, sort, order, filterVersion, advFilter, rowLimit, apiParams]);
+  }, [apiPath, page, debouncedSearch, sort, order, filterVersion, advFilter, rowLimit, apiParams, refreshVersion]);
 
   const totalPages = Math.ceil(total / rowLimit);
 
@@ -213,6 +214,7 @@ export default function EntityList({
     if (res.ok) {
       setSelectedIds(new Set());
       setPage(1);
+      setRefreshVersion(prev => prev + 1);
     }
   }
 
