@@ -237,15 +237,15 @@ export default function EntityList({
           />
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          {allColumns && (
-            <Button variant="secondary" size="small" onClick={() => setShowColumns(true)}>
-              Columns
-            </Button>
-          )}
           {selectable && selectedIds.size > 0 && (
             <div style={{ fontSize: '0.8125rem', color: 'var(--muted-foreground)' }}>
               {selectedIds.size} selected
             </div>
+          )}
+          {allColumns && (
+            <Button variant="secondary" size="small" onClick={() => setShowColumns(true)}>
+              Columns
+            </Button>
           )}
           {filterFields && filterFields.length > 0 && (
             <Button variant="secondary" size="small" onClick={() => setShowAdvFilter(true)}>
