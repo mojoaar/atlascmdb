@@ -10,11 +10,45 @@ try {
   require('dotenv').config({ path: path.join(__dirname, '../.env') });
 } catch (e) {}
 
+// Safe path resolvers that handle Knex CLI switching working directory to db/
+function getDatabasePath(dbName) {
+  if (typeof __dirname !== 'undefined') {
+    return path.join(__dirname, '..', 'data', dbName);
+  }
+  const cwd = process.cwd();
+  if (cwd.endsWith('/db') || cwd.endsWith('\\db')) {
+    return path.join(cwd, '..', 'data', dbName);
+  }
+  return path.join(cwd, 'data', dbName);
+}
+
+function getMigrationsPath() {
+  if (typeof __dirname !== 'undefined') {
+    return path.join(__dirname, 'migrations');
+  }
+  const cwd = process.cwd();
+  if (cwd.endsWith('/db') || cwd.endsWith('\\db')) {
+    return path.join(cwd, 'migrations');
+  }
+  return path.join(cwd, 'db', 'migrations');
+}
+
+function getSeedsPath() {
+  if (typeof __dirname !== 'undefined') {
+    return path.join(__dirname, 'seeds');
+  }
+  const cwd = process.cwd();
+  if (cwd.endsWith('/db') || cwd.endsWith('\\db')) {
+    return path.join(cwd, 'seeds');
+  }
+  return path.join(cwd, 'db', 'seeds');
+}
+
 module.exports = {
   development: {
     client: 'better-sqlite3',
     connection: {
-      filename: path.join(process.cwd(), 'data', 'atlas.db'),
+      filename: getDatabasePath('atlas.db'),
     },
     useNullAsDefault: true,
     pool: {
@@ -27,16 +61,16 @@ module.exports = {
       },
     },
     migrations: {
-      directory: path.join(process.cwd(), 'db', 'migrations'),
+      directory: getMigrationsPath(),
     },
     seeds: {
-      directory: path.join(process.cwd(), 'db', 'seeds'),
+      directory: getSeedsPath(),
     },
   },
   test: {
     client: 'better-sqlite3',
     connection: {
-      filename: path.join(process.cwd(), 'data', 'test.db'),
+      filename: getDatabasePath('test.db'),
     },
     useNullAsDefault: true,
     pool: {
@@ -47,10 +81,10 @@ module.exports = {
       },
     },
     migrations: {
-      directory: path.join(process.cwd(), 'db', 'migrations'),
+      directory: getMigrationsPath(),
     },
     seeds: {
-      directory: path.join(process.cwd(), 'db', 'seeds'),
+      directory: getSeedsPath(),
     },
   },
   production: {
@@ -58,10 +92,10 @@ module.exports = {
     connection: process.env.DATABASE_URL,
     useNullAsDefault: true,
     migrations: {
-      directory: path.join(process.cwd(), 'db', 'migrations'),
+      directory: getMigrationsPath(),
     },
     seeds: {
-      directory: path.join(process.cwd(), 'db', 'seeds'),
+      directory: getSeedsPath(),
     },
   },
 };
