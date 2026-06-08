@@ -1,5 +1,14 @@
-require('dotenv').config();
 const path = require('path');
+
+// Safe dotenv loading supporting all cwd situations (including Knex CLI directory switching)
+require('dotenv').config();
+const cwd = process.cwd();
+if (cwd.endsWith('/db') || cwd.endsWith('\\db')) {
+  require('dotenv').config({ path: path.join(cwd, '../.env') });
+}
+try {
+  require('dotenv').config({ path: path.join(__dirname, '../.env') });
+} catch (e) {}
 
 module.exports = {
   development: {
