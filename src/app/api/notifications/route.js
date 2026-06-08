@@ -20,10 +20,10 @@ export async function GET(request) {
     let query = db('notifications').where({ userId: auth.user.id });
     if (unread === '1') query = query.where({ read: false });
 
-    const [countResult] = await query.clone().count('* as total');
+    const [countResult] = await query.clone().clearSelect().count('* as total');
     const rows = await query.orderBy('createdAt', 'desc').limit(limit).offset(offset);
 
-    return NextResponse.json({ data: rows, total: countResult.total, limit, offset });
+    return NextResponse.json({ data: rows, total: Number(countResult.total), limit, offset });
   } catch (error) {
     return handleApiError(error);
   }

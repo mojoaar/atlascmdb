@@ -65,7 +65,7 @@ const ALLOWED_FIELDS = new Set(['name', 'description', 'type', 'status', 'parent
       } catch {}
     }
 
-    const [countResult] = await query.clone().count('* as total');
+    const [countResult] = await query.clone().clearSelect().count('* as total');
     const sortCol = ALLOWED_SORT[sort] || DEFAULT_SORT;
     const sortOrder = ['asc','desc'].includes(order) ? order : 'asc';
     
@@ -77,7 +77,7 @@ const ALLOWED_FIELDS = new Set(['name', 'description', 'type', 'status', 'parent
     }
     const rows = await orderByQuery.limit(limit).offset(offset);
 
-    return success({ data: rows, total: countResult.total, limit, offset });
+    return success({ data: rows, total: Number(countResult.total), limit, offset });
   } catch (error) {
     return handleApiError(error, 'Failed to fetch locations');
   }

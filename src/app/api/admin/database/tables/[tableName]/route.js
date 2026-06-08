@@ -63,8 +63,8 @@ export async function GET(request, { params }) {
     }
 
     // Clone query for total count
-    const [countResult] = await query.clone().count('* as total');
-    const total = countResult ? countResult.total : 0;
+    const [countResult] = await query.clone().clearSelect().count('* as total');
+    const total = countResult ? Number(countResult.total) : 0;
 
     // Apply sorting
     if (sort && schemaInfo[sort]) {

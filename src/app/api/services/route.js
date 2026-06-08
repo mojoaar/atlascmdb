@@ -95,7 +95,7 @@ export async function GET(request) {
       } catch {}
     }
 
-    const [countResult] = await query.clone().count('* as total');
+    const [countResult] = await query.clone().clearSelect().count('* as total');
     const sortCol = ALLOWED_SORT[sort] || DEFAULT_SORT;
     const sortOrder = ['asc','desc'].includes(order) ? order : 'desc';
     
@@ -139,7 +139,7 @@ export async function GET(request) {
       return service;
     });
 
-    return success({ data: services, total: countResult.total, limit, offset });
+    return success({ data: services, total: Number(countResult.total), limit, offset });
   } catch (error) {
     return handleApiError(error, 'Failed to fetch services');
   }

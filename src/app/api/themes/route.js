@@ -26,12 +26,12 @@ export async function GET(request) {
       .leftJoin('users as updater', 'themes.updatedBy', 'updater.id')
       .select('themes.*', 'creator.displayName as createdByName', 'updater.displayName as updatedByName');
     if (search) query = query.where('name', 'like', `%${search}%`);
-    const [countResult] = await query.clone().count('* as total');
+    const [countResult] = await query.clone().clearSelect().count('* as total');
     const sortCol = ALLOWED_SORT[sort] || DEFAULT_SORT;
     const sortOrder = ['asc', 'desc'].includes(order) ? order : 'asc';
     const themes = await query.orderBy(sortCol, sortOrder).limit(limit).offset(offset);
 
-    return success({ data: themes, total: countResult.total, limit, offset });
+    return success({ data: themes, total: Number(countResult.total), limit, offset });
   } catch (error) {
     return handleApiError(error);
   }

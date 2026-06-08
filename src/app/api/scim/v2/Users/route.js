@@ -50,12 +50,12 @@ export async function GET(request) {
       }
     }
 
-    const [totalResult] = await query.clone().count('* as total');
+    const [totalResult] = await query.clone().clearSelect().count('* as total');
     const users = await query.offset(startIndex - 1).limit(count);
 
     return NextResponse.json({
       schemas: ['urn:ietf:params:scim:api:messages:2.0:ListResponse'],
-      totalResults: totalResult.total,
+      totalResults: Number(totalResult.total),
       startIndex,
       itemsPerPage: count,
       Resources: users.map(toScimUser),

@@ -53,12 +53,12 @@ export async function GET(request) {
       else if (op === 'isEmpty') query = query.whereNull(col).orWhere(col, '');
     });
 
-    const [countResult] = await query.clone().count('* as total');
+    const [countResult] = await query.clone().clearSelect().count('* as total');
     const sortCol = ALLOWED_SORT[sort] || DEFAULT_SORT;
     const sortOrder = ['asc','desc'].includes(order) ? order : 'desc';
     const events = await query.orderBy(sortCol, sortOrder).limit(limit).offset(offset);
 
-    return success({ data: events, total: countResult.total, limit, offset });
+    return success({ data: events, total: Number(countResult.total), limit, offset });
   } catch (error) {
     return handleApiError(error);
   }
