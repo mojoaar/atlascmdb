@@ -46,7 +46,7 @@ export async function POST(request) {
             actorUserId: auth.user.id,
             entityType: 'user',
             entityId: record.id,
-            action: 'deleted',
+            action: 'disabled',
             beforeData: { email: record.email },
           });
         }

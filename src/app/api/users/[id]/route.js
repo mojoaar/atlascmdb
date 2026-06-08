@@ -140,7 +140,7 @@ export async function DELETE(request, { params }) {
 
     await logAudit({
       actorUserId: auth.user.id,
-      entityType: 'user', entityId: id, action: 'deleted',
+      entityType: 'user', entityId: id, action: 'disabled',
       beforeData: { email: user.email },
     });
 
