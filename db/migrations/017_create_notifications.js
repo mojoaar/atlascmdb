@@ -11,8 +11,10 @@ exports.up = async function (knex) {
     t.timestamp('createdAt').defaultTo(knex.fn.now());
   });
 
-  await knex.schema.raw('CREATE INDEX idx_notifications_user_read ON notifications(userId, read)');
-  await knex.schema.raw('CREATE INDEX idx_notifications_created ON notifications(createdAt)');
+  await knex.schema.alterTable('notifications', (t) => {
+    t.index(['userId', 'read'], 'idx_notifications_user_read');
+    t.index(['createdAt'], 'idx_notifications_created');
+  });
 };
 
 exports.down = async function (knex) {
