@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useFeedback } from '@/components/ui/FeedbackProvider';
 import AdminEntityList from '../EntityList';
 
-const STATUS_LABELS = { active: 'Active', inactive: 'Inactive', suspended: 'Suspended' };
+const STATUS_LABELS = { active: 'Active', inactive: 'Inactive', suspended: 'Suspended', disabled: 'Disabled' };
 
 const allColumns = [
   { key: 'displayName', header: 'Name', always: true },
@@ -12,6 +12,7 @@ const allColumns = [
   { key: 'managerName', header: 'Manager', render: (r) => r.managerName || '—' },
   { key: 'status', header: 'Status', render: (r) => STATUS_LABELS[r.status] || r.status || '—' },
   { key: 'roleNames', header: 'Roles', sortable: false, render: (r) => (r.roleNames || []).join(', ') || '—' },
+  { key: 'disabled', header: 'Disabled', default: false, render: (r) => r.status === 'disabled' ? 'Yes' : 'No' },
   { key: 'mfaEnabled', header: 'MFA', default: false, render: (r) => r.mfaEnabled ? 'Yes' : 'No' },
   { key: 'createdAt', header: 'Created', default: false, render: (r) => r.createdAt ? new Date(r.createdAt).toLocaleDateString() : '—' },
   { key: 'updatedAt', header: 'Updated', default: false, render: (r) => r.updatedAt ? new Date(r.updatedAt).toLocaleDateString() : '—' },
