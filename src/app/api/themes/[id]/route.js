@@ -52,7 +52,7 @@ export async function PATCH(request, { params }) {
 
     await logAudit({
       actorUserId: auth.user.id, entityType: 'theme', entityId: (await params).id,
-      action: 'updated', beforeData: theme, afterData: updates,
+      action: 'updated', beforeData: theme, afterData: { ...updates, ...(updates.updatedBy && { updatedBy: auth.user.displayName || auth.user.email }) },
     });
 
     const updated = await db('themes').where({ id: (await params).id }).first();

@@ -37,7 +37,7 @@ export async function PATCH(request, { params }) {
     await db('roles').where({ id: (await params).id }).update(updates);
     await logAudit({
       actorUserId: auth.user.id, entityType: 'role', entityId: (await params).id,
-      action: 'updated', beforeData: role, afterData: updates,
+      action: 'updated', beforeData: role, afterData: { ...updates, ...(updates.updatedBy && { updatedBy: auth.user.displayName || auth.user.email }) },
     });
     return success({ ...role, ...updates });
   } catch (error) {

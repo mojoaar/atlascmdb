@@ -63,7 +63,7 @@ export async function PATCH(request, { params }) {
 
     await logAudit({
       actorUserId: auth.user.id, entityType: 'asset', entityId: (await params).id,
-      action: 'updated', beforeData: existing, afterData: updates,
+      action: 'updated', beforeData: existing, afterData: { ...updates, ...(updates.updatedBy && { updatedBy: auth.user.displayName || auth.user.email }) },
     });
 
     const updated = await db('assets').where({ id: (await params).id }).first();

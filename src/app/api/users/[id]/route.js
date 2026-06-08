@@ -111,7 +111,7 @@ export async function PATCH(request, { params }) {
       actorUserId: auth.user.id,
       entityType: 'user', entityId: id, action: 'updated',
       beforeData: { email: user.email, displayName: user.displayName, ...(roleChange && { roleIds: roleChange.before }) },
-      afterData: { ...updates, ...(roleChange && { roleIds: roleChange.after }) },
+      afterData: { ...updates, ...(updates.updatedBy && { updatedBy: auth.user.displayName || auth.user.email }), ...(roleChange && { roleIds: roleChange.after }) },
     });
 
     const updated = await db('users').where({ id }).first();
