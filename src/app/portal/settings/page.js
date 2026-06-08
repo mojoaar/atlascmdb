@@ -12,7 +12,7 @@ import { TIMEZONE_OPTIONS, CLOCK_OPTIONS, DATE_OPTIONS, ROW_LIMIT_OPTIONS, DEPTH
 import { unwrap } from '@/lib/unwrap';
 
 export default function PortalSettingsPage() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { refresh } = useFormat();
   const [themes, setThemes] = useState([]);
   const [currentThemeId, setCurrentThemeId] = useState(null);
@@ -35,6 +35,12 @@ export default function PortalSettingsPage() {
   const [mfaCode, setMfaCode] = useState('');
   const [mfaEnabled, setMfaEnabled] = useState(false);
   const [mfaError, setMfaError] = useState(null);
+
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [pwError, setPwError] = useState(null);
+  const [pwChanging, setPwChanging] = useState(false);
 
   useEffect(() => {
     fetch('/api/me/theme').then(r => r.json()).then(t => {
@@ -207,6 +213,58 @@ export default function PortalSettingsPage() {
     }
   }
 
+  async function handleChangePassword(e) {
+    if (e) e.preventDefault();
+    setPwError(null);
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setPwError('All fields are required');
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setPwError('New password must be at least 8 characters');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPwError('Passwords do not match');
+      return;
+    }
+
+    setPwChanging(true);
+    try {
+      const res = await fetch('/api/users/' + user.id, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentPassword,
+          password: newPassword,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setPwError(data.error || 'Failed to update password');
+        setPwChanging(false);
+        return;
+      }
+
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      
+      await fetch('/api/auth/logout', { method: 'POST' });
+      localStorage.removeItem('atlas_access');
+      localStorage.removeItem('atlas_refresh');
+      logout();
+      window.location.href = '/login?expired=true';
+    } catch (err) {
+      setPwError('Connection error');
+      setPwChanging(false);
+    }
+  }
+
   return (
     <div className={styles.page}>
       <h1 className={styles.title} style={{ marginBottom: '1.5rem' }}>User Settings</h1>
@@ -335,6 +393,46 @@ export default function PortalSettingsPage() {
               <Button variant="secondary" size="small" onClick={startMfaSetup}>Set Up MFA</Button>
             </div>
           )}
+        </Card>
+      </div>
+
+      <div className={styles.section}>
+        <div className={styles.sectionTitle}>Change Password</div>
+        <Card>
+          <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '320px' }}>
+            <Input
+              label="Current Password"
+              type="password"
+              value={currentPassword}
+              onChange={e => setCurrentPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+            />
+            <Input
+              label="New Password"
+              type="password"
+              value={newPassword}
+              onChange={e => setNewPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+            />
+            <Input
+              label="Confirm New Password"
+              type="password"
+              value={confirmPassword}
+              onChange={e => setConfirmPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+            />
+            {pwError && (
+              <div style={{ color: 'var(--danger)', fontSize: '0.8125rem' }}>{pwError}</div>
+            )}
+            <div>
+              <Button type="submit" disabled={pwChanging} size="small">
+                {pwChanging ? 'Changing...' : 'Change Password'}
+              </Button>
+            </div>
+          </form>
         </Card>
       </div>
 

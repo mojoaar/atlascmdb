@@ -76,7 +76,7 @@ export async function GET(request) {
         'creator.displayName as createdByName',
         'updater.displayName as updatedByName'
       )
-      .select(db.raw("GROUP_CONCAT(roles.name) as roleNames"))
+      .select(db.raw(db.client.config.client === 'pg' ? "string_agg(roles.name, ',') as roleNames" : "GROUP_CONCAT(roles.name) as roleNames"))
       .groupBy('users.id');
     dataQuery = applyFilters(dataQuery);
 
@@ -98,7 +98,7 @@ export async function GET(request) {
       roleNames: u.roleNames ? u.roleNames.split(',') : [],
     }));
 
-    return success({ data: formatted, total: countResult.total || 0, limit, offset });
+    return success({ data: formatted, total: countResult ? Number(countResult.total) : 0, limit, offset });
   } catch (error) {
     return handleApiError(error, 'Failed to fetch users');
   }
