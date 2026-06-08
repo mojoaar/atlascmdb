@@ -27,6 +27,7 @@ export default function EntityList({
   columnEntityType,
   selectable = !!bulkEntityType,
   apiParams,
+  bulkActionLabel = 'Delete',
 }) {
   const router = useRouter();
   const { user } = useAuth();
@@ -221,7 +222,7 @@ export default function EntityList({
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           {selectable && selectedIds.size > 0 && (
             <Button variant="danger" size="small" onClick={() => setShowDeleteConfirm(true)}>
-              Delete ({selectedIds.size})
+              {bulkActionLabel} ({selectedIds.size})
             </Button>
           )}
           {onCreate && <Button variant="primary" onClick={onCreate}>Create</Button>}
@@ -277,15 +278,15 @@ export default function EntityList({
 
       <Modal
         open={showDeleteConfirm}
-        title="Confirm Deletion"
+        title={bulkActionLabel === 'Delete' ? 'Confirm Deletion' : `Confirm ${bulkActionLabel}`}
         onClose={() => setShowDeleteConfirm(false)}
       >
         <div style={{ marginBottom: '1rem' }}>
-          Delete {selectedIds.size} selected item{selectedIds.size > 1 ? 's' : ''}? This cannot be undone.
+          {bulkActionLabel} {selectedIds.size} selected item{selectedIds.size > 1 ? 's' : ''}? This cannot be undone.
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
           <Button variant="secondary" onClick={() => setShowDeleteConfirm(false)}>Cancel</Button>
-          <Button variant="danger" onClick={handleBulkDelete}>Delete</Button>
+          <Button variant="danger" onClick={handleBulkDelete}>{bulkActionLabel}</Button>
         </div>
       </Modal>
 

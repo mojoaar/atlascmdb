@@ -96,6 +96,7 @@ export default function AdminUsersPage() {
       allColumns={allColumns}
       columnEntityType="users"
       bulkEntityType="users"
+      bulkActionLabel="Disable"
     />
   );
 }
