@@ -77,7 +77,7 @@ export async function GET(request) {
         'creator.displayName as createdByName',
         'updater.displayName as updatedByName'
       )
-      .select(db.raw(db.client.config.client === 'pg' ? "string_agg(roles.name, ',') as roleNames" : "GROUP_CONCAT(roles.name) as roleNames"))
+      .select(db.raw(db.client.config.client === 'pg' ? 'string_agg(roles.name, \',\') as "roleNames"' : 'GROUP_CONCAT(roles.name) as "roleNames"'))
       .groupBy('users.id', 'manager.id', 'creator.id', 'updater.id');
     dataQuery = applyFilters(dataQuery);
 
