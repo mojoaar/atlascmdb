@@ -17,6 +17,7 @@ const SECTIONS = [
   { id: 'overview', label: 'Overview' },
   { id: 'features', label: 'Features' },
   { id: 'user-management', label: 'User Management' },
+  { id: 'org-chart', label: 'Organisation Chart', indent: true },
   { id: 'portal-admin', label: 'Portal vs Admin' },
   { id: 'themes', label: 'Themes & Dark Mode' },
   { id: 'audit-trail', label: 'Audit Trail' },
@@ -56,6 +57,11 @@ const SEARCH_INDEX = [
     id: 'user-management',
     label: 'User Management',
     content: 'managing accounts creating new user email status active inactive suspended disable password reset bcryptjs manager hierarchy managerid multi-factor authentication mfa totp setup qr code verification code authenticator google authenticator microsoft authenticator 1password recovery admin revocation reset mfa device avatars personalization color swatches 14 colors custom photo upload 2mb limit file format png jpg jpeg gif webp binary blob database storage'
+  },
+  {
+    id: 'org-chart',
+    label: 'Organisation Chart',
+    content: 'organisation chart hierarchy tree visualization direct reports manager managers user detail xyflow react dagrejs canvas navigation click navigate compact full org chart view full org chart api users id orgchart'
   },
   {
     id: 'portal-admin',
@@ -577,12 +583,51 @@ npm run lint     — Run linter`}</CodeBlock>
             </ul>
 
             <h2>Avatars and Personalization</h2>
-            <p>
-              Users can personalize their visual presence with custom avatars:
-            </p>
             <ul>
               <li><strong>Colour Swatches:</strong> Users can choose from a grid of 14 built-in system colors (representing various dark and light options) to render automated initials-based avatars.</li>
               <li><strong>Photo Upload:</strong> Users can upload their own custom avatar image file (JPG, PNG, GIF, or WebP). Uploaded files are strictly checked against a 2MB size limit and stored directly in the database as binary data (blobs) for simplified environment-independent deployment.</li>
+            </ul>
+          </>
+        )}
+
+        {/* ORGANISATION CHART */}
+        {active === 'org-chart' && (
+          <>
+            <h1>Organisation Chart</h1>
+            <p>
+              Atlas includes an interactive, graphical <strong>Organisation Chart</strong> visualising the reporting lines of users.
+              This helps teams understand hierarchy, team structures, and reporting relationships at a glance.
+            </p>
+
+            <h2>Visualising the Tree</h2>
+            <p>
+              When viewing an existing user's details page in <strong>Admin → Users</strong> (in view mode), an <strong>Organisation</strong> 
+              section displays the current user as the highlighted focal node in the chart:
+            </p>
+            <ul>
+              <li><strong>Managers:</strong> Displayed above the focal user (up to 3 levels up).</li>
+              <li><strong>Direct Reports:</strong> Displayed below the focal user (up to 3 levels down).</li>
+              <li><strong>Interactive Navigation:</strong> Clicking on any user card within the org chart instantly navigates to that user's detail page, re-centering the org chart on them.</li>
+            </ul>
+
+            <h2>Full Page Organisation Chart</h2>
+            <p>
+              For wider visibility and full-screen navigation of complex organizational structures:
+            </p>
+            <ul>
+              <li>Click the <strong>"View Full Org Chart &rarr;"</strong> link in the bottom-right corner of the compact detail view.</li>
+              <li>This loads a dedicated full-page canvas rendering the organisation chart at full height (<code>calc(100vh - 160px)</code>) with back navigation.</li>
+              <li>Just like the detail view, all cards remain fully interactive, supporting fluid vertical click-navigation.</li>
+            </ul>
+
+            <h2>Technical Design</h2>
+            <p>
+              The organisation chart is powered by a high-performance tree traversal API:
+            </p>
+            <ul>
+              <li><strong>API Endpoint:</strong> <code>GET /api/users/[id]/orgchart</code></li>
+              <li><strong>Implementation:</strong> Uses iterative, dialect-agnostic flat queries to recursively fetch 3 levels of managers (ancestors) and 3 levels of reports (descendants), bypassing recursive CTE database dialect dependencies.</li>
+              <li><strong>Layout & Rendering:</strong> Built using <code>@xyflow/react</code> for canvas interactions (zoom, pan) and <code>@dagrejs/dagre</code> for automated hierarchical layout computation. Node dragging, connection editing, and element selections are disabled to guarantee a robust, read-only visualisation experience.</li>
             </ul>
           </>
         )}

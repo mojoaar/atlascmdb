@@ -11,6 +11,7 @@ Open-source CMDB for modern IT teams — services, applications, CIs, assets, an
 - **Entity management** — services (business & technical), applications, configuration items (CIs), assets, teams, locations, and users
 - **Rack management** — visual 42U/48U rack layouts with side-by-side front/back columns, multi-U placement, hover tooltips, colour-coded CI type badges, and a dedicated full-screen layout viewer
 - **Relationship graph** — interactive dependency graphs with BFS depth control (1–6 hops) and Dagre auto-layout
+- **Organisation chart** — interactive graphical organisation chart on user profile pages with manager (up to 3 levels up) and direct reports (up to 3 levels down) traversal, node click navigation, and full-page canvas views
 - **Geographic maps** — location-aware asset/CI mapping via Leaflet + OpenStreetMap
 - **Import / Export** — CSV import with field mapping, preview, and conflict resolution; CSV/JSON export per entity type
 - **SSO / SCIM** — OpenID Connect (PKCE S256) single sign-on and SCIM 2.0 provisioning, configured via admin UI

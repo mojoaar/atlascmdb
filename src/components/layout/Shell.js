@@ -38,18 +38,28 @@ import { useAuth } from '@/components/auth/AuthProvider';
 import { unwrap } from '@/lib/unwrap';
 
 const PORTAL_NAV = [
-  { label: 'Home', href: '/portal', icon: Home },
-  { label: 'Search', href: '/portal/search', icon: Search },
-  { label: 'Services', href: '/portal/services', icon: Box },
-  { label: 'Applications', href: '/portal/applications', icon: Layers },
-  { label: 'CIs', href: '/portal/cis', icon: Bolt },
-  { label: 'Assets', href: '/portal/assets', icon: Monitor },
-  { label: 'Teams', href: '/portal/teams', icon: Users },
-  { label: 'Locations', href: '/portal/locations', icon: MapPin },
-  { label: 'Imports', href: '/portal/imports', icon: Upload },
-  { label: 'Settings', href: '/portal/settings', icon: UserCog },
-  { label: 'Docs', href: '/docs', icon: BookOpenText, external: true },
-  { label: 'API Docs', href: '/apidocs', icon: FileCode, external: true },
+  {
+    label: 'Portal',
+    items: [
+      { label: 'Home', href: '/portal', icon: Home },
+      { label: 'Search', href: '/portal/search', icon: Search },
+      { label: 'Services', href: '/portal/services', icon: Box },
+      { label: 'Applications', href: '/portal/applications', icon: Layers },
+      { label: 'CIs', href: '/portal/cis', icon: Bolt },
+      { label: 'Assets', href: '/portal/assets', icon: Monitor },
+      { label: 'Teams', href: '/portal/teams', icon: Users },
+      { label: 'Locations', href: '/portal/locations', icon: MapPin },
+      { label: 'Imports', href: '/portal/imports', icon: Upload },
+      { label: 'Settings', href: '/portal/settings', icon: UserCog },
+    ],
+  },
+  {
+    label: 'Documentation',
+    items: [
+      { label: 'Docs', href: '/docs', icon: BookOpenText, external: true },
+      { label: 'API Docs', href: '/apidocs', icon: FileCode, external: true },
+    ],
+  },
 ];
 
 const ADMIN_NAV = [
@@ -68,8 +78,6 @@ const ADMIN_NAV = [
       { label: 'Teams', href: '/admin/teams', icon: Users },
       { label: 'Roles', href: '/admin/roles', icon: Shield },
       { label: 'Audit Events', href: '/admin/audit', icon: History },
-      { label: 'Docs', href: '/docs', icon: BookOpenText, external: true },
-      { label: 'API Docs', href: '/apidocs', icon: FileCode, external: true },
     ],
   },
   {
@@ -80,6 +88,13 @@ const ADMIN_NAV = [
       { label: 'Table Explorer', href: '/admin/database', icon: Database },
       { label: 'Themes', href: '/admin/themes', icon: Palette },
       { label: 'Settings', href: '/admin/settings', icon: Settings },
+    ],
+  },
+  {
+    label: 'DOCUMENTATION',
+    items: [
+      { label: 'Docs', href: '/docs', icon: BookOpenText, external: true },
+      { label: 'API Docs', href: '/apidocs', icon: FileCode, external: true },
     ],
   },
 ];
@@ -167,28 +182,32 @@ export default function Shell({ children, user, activeRoute, mode = 'portal', on
                   })}
                 </div>
               ))
-            : <div className={styles.sectionGroup}>
-                <div className={styles.sectionLabel}>Portal</div>
-                {PORTAL_NAV.filter(item => liveUser?.roles?.includes('admin') || item.label !== 'Imports').map(item => {
-                const Icon = item.icon;
-                const linkProps = item.external
-                  ? { target: '_blank', rel: 'noopener noreferrer' }
-                  : {};
-                return (
-                  <a
-                    key={item.href}
-                    href={item.href}
-                    className={`${styles.navItem} ${activeRoute === item.href ? styles.navItemActive : ''}`}
-                    onClick={item.external ? undefined : (e) => { e.preventDefault(); handleNavigate(item.href); }}
-                    title={collapsed ? item.label : ''}
-                    {...linkProps}
-                  >
-                    <Icon size={18} />
-                    <span className={styles.navLabel}>{item.label}</span>
-                  </a>
-                );
-              })}
-              </div>}
+            : PORTAL_NAV.map(group => (
+                <div key={group.label} className={styles.sectionGroup}>
+                  <div className={styles.sectionLabel}>{group.label}</div>
+                  {group.items
+                    .filter(item => liveUser?.roles?.includes('admin') || item.label !== 'Imports')
+                    .map(item => {
+                    const Icon = item.icon;
+                    const linkProps = item.external
+                      ? { target: '_blank', rel: 'noopener noreferrer' }
+                      : {};
+                    return (
+                      <a
+                        key={item.href}
+                        href={item.href}
+                        className={`${styles.navItem} ${activeRoute === item.href ? styles.navItemActive : ''}`}
+                        onClick={item.external ? undefined : (e) => { e.preventDefault(); handleNavigate(item.href); }}
+                        title={collapsed ? item.label : ''}
+                        {...linkProps}
+                      >
+                        <Icon size={18} />
+                        <span className={styles.navLabel}>{item.label}</span>
+                      </a>
+                    );
+                  })}
+                </div>
+              ))}
         </nav>
         <button
           className={styles.collapseBtn}

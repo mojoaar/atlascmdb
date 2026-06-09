@@ -2441,6 +2441,50 @@ const endpoints = [
     }
   },
   {
+    "category": "Users",
+    "method": "GET",
+    "path": "/api/users/{id}/orgchart",
+    "description": "Fetch the organizational hierarchy for a user, walking up to 3 levels of managers (upwards) and up to 3 levels of direct reports (downwards).",
+    "auth": "admin",
+    "response": {
+      "nodes": [
+        {
+          "id": "c1f2b467-33a7-4df3-8cfb-608f51a43a0e",
+          "name": "Alice Admin",
+          "email": "alice@atlas.local",
+          "level": 0,
+          "isCenter": true
+        },
+        {
+          "id": "97e682d3-1a22-44df-9cb9-47bb99d63c5a",
+          "name": "Bob Boss",
+          "email": "bob@atlas.local",
+          "level": -1,
+          "isCenter": false
+        },
+        {
+          "id": "6df8d9e2-e1e4-4d87-9bb3-7c8bb5df4421",
+          "name": "Charlie Clerk",
+          "email": "charlie@atlas.local",
+          "level": 1,
+          "isCenter": false
+        }
+      ],
+      "edges": [
+        {
+          "source": "97e682d3-1a22-44df-9cb9-47bb99d63c5a",
+          "target": "c1f2b467-33a7-4df3-8cfb-608f51a43a0e",
+          "type": "reports_to"
+        },
+        {
+          "source": "c1f2b467-33a7-4df3-8cfb-608f51a43a0e",
+          "target": "6df8d9e2-e1e4-4d87-9bb3-7c8bb5df4421",
+          "type": "reports_to"
+        }
+      ]
+    }
+  },
+  {
     "category": "Admin",
     "method": "GET",
     "path": "/api/admin/demo-status",
