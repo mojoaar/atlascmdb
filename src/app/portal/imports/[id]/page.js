@@ -13,7 +13,7 @@ export default function ImportDetail() {
   const [importSet, setImportSet] = useState(null);
 
   useEffect(() => {
-    fetch(`/api/import-sets/${id}`).then(r => r.json()).then(s => setImportSet(s));
+    fetch(`/api/import-sets/${id}`).then(r => r.json()).then(s => setImportSet(s)).catch(() => {});
   }, [id]);
 
   if (!importSet) return <LoadingState />;

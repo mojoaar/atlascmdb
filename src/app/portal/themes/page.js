@@ -11,7 +11,7 @@ export default function ThemesPage() {
   const router = useRouter();
 
   useEffect(() => {
-    fetch('/api/themes').then(r => r.json()).then(d => setThemes(unwrap(d)));
+    fetch('/api/themes').then(r => r.json()).then(d => setThemes(unwrap(d))).catch(() => {});
   }, []);
 
   return (

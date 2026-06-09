@@ -110,7 +110,7 @@ export function AuthProvider({ children, seededUser }) {
           isRefreshing = false;
           
           // Log out user cleanly and redirect to login
-          originalFetch('/api/auth/logout', { method: 'POST' });
+          originalFetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
           localStorage.removeItem('atlas_access');
           localStorage.removeItem('atlas_refresh');
           window.location.href = '/login?expired=true';
@@ -127,7 +127,7 @@ export function AuthProvider({ children, seededUser }) {
   }, []);
 
   function logout() {
-    fetch('/api/auth/logout', { method: 'POST' });
+    fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
     localStorage.removeItem('atlas_access');
     localStorage.removeItem('atlas_refresh');
     setUser(null);

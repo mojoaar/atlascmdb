@@ -66,14 +66,16 @@ export default function RelationshipEditor({ entityType, entityId }) {
     }
     clearTimeout(timeout.current);
     timeout.current = setTimeout(async () => {
-      const params = new URLSearchParams({ q: newTargetQuery });
-      if (newTargetType) params.set('type', newTargetType);
-      const res = await fetch(`/api/portal/suggest?${params}`);
-      if (res.ok) {
-        const data = await res.json();
-        setSuggestions(data.suggestions || []);
-        setShowSuggestions(true);
-      }
+      try {
+        const params = new URLSearchParams({ q: newTargetQuery });
+        if (newTargetType) params.set('type', newTargetType);
+        const res = await fetch(`/api/portal/suggest?${params}`);
+        if (res.ok) {
+          const data = await res.json();
+          setSuggestions(data.suggestions || []);
+          setShowSuggestions(true);
+        }
+      } catch {}
     }, 200);
   }, [newTargetQuery, newTargetType]);
 

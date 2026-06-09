@@ -92,7 +92,7 @@ export default function AdminAssetDetail() {
         try { setFormLayout(JSON.parse(raw)); } catch {}
       }
     }
-    loadLayout();
+    loadLayout().catch(() => {});
   }, [isNew, loading]);
 
   function update(key, value) { setForm(f => ({ ...f, [key]: value })); }

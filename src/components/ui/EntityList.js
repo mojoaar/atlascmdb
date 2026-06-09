@@ -107,7 +107,7 @@ export default function EntityList({
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ columnPrefs: JSON.stringify({ [columnEntityType]: keys }) }),
-    }).then(() => refresh());
+    }).then(() => refresh()).catch(() => {});
     setShowColumns(false);
   }
 

@@ -124,12 +124,12 @@ export default function AdminSettingsPage() {
   };
 
   useEffect(() => {
-    fetch('/api/auth/me').then(r => r.json()).then(u => setUser(u));
+    fetch('/api/auth/me').then(r => r.json()).then(u => setUser(u)).catch(() => {});
     fetch('/api/admin/demo-status').then(r => r.json()).then(res => {
       if (res && res.isDemoSeeded) {
         setIsDemoSeeded(true);
       }
-    });
+    }).catch(() => {});
     fetch('/api/me/theme').then(r => r.json()).then(t => {
       if (t) {
         setTheme(t.modePreference || '');
@@ -138,7 +138,7 @@ export default function AdminSettingsPage() {
         setDateFormat(t.dateFormat || 'DD/MM/YYYY');
         setGraphDepth(t.graphDepth ?? 3);
       }
-    });
+    }).catch(() => {});
     fetch('/api/config').then(r => r.json()).then(c => {
       if (c && !c.error) {
         const defaults = {};
@@ -152,7 +152,7 @@ export default function AdminSettingsPage() {
         if (c.attachment_allowed_types) setAttachmentTypes(c.attachment_allowed_types);
         if (c.hasOwnProperty('login_ascii_logo')) setLoginAsciiLogo(c.login_ascii_logo === 'true');
       }
-    });
+    }).catch(() => {});
   }, []);
 
   async function handleSaveTheme() {

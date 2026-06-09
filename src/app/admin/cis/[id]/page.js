@@ -92,7 +92,7 @@ export default function AdminCiDetail() {
         try { setFormLayout(JSON.parse(raw)); } catch {}
       }
     }
-    loadLayout();
+    loadLayout().catch(() => {});
   }, [loading, form.ciType]);
 
   function update(key, value) { setForm(f => ({ ...f, [key]: value })); }

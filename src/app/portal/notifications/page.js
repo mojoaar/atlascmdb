@@ -44,11 +44,11 @@ export default function NotificationsPage() {
       }
       setLoading(false);
     }
-    load();
+    load().catch(() => {});
   }, [page]);
 
   useEffect(() => {
-    fetch('/api/notifications?unread=1&limit=1').then(r => r.json()).then(d => setUnreadCount(d.total || 0));
+    fetch('/api/notifications?unread=1&limit=1').then(r => r.json()).then(d => setUnreadCount(d.total || 0)).catch(() => {});
   }, [notifications]);
 
   async function markRead(id) {

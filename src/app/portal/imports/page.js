@@ -13,7 +13,7 @@ export default function ImportsPage() {
   const [sets, setSets] = useState([]);
 
   useEffect(() => {
-    fetch('/api/import-sets').then(r => r.json()).then(setSets);
+    fetch('/api/import-sets').then(r => r.json()).then(setSets).catch(() => {});
   }, []);
 
   const columns = [

@@ -55,8 +55,8 @@ export default function PortalSettingsPage() {
         setNotifOnUpdate(t.notifOnUpdate !== undefined ? !!t.notifOnUpdate : true);
         setNotifOnDelete(t.notifOnDelete !== undefined ? !!t.notifOnDelete : true);
       }
-    });
-    fetch('/api/themes').then(r => r.json()).then(d => setThemes(unwrap(d)));
+    }).catch(() => {});
+    fetch('/api/themes').then(r => r.json()).then(d => setThemes(unwrap(d))).catch(() => {});
   }, []);
 
   useEffect(() => {

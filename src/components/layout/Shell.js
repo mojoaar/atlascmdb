@@ -270,7 +270,9 @@ export default function Shell({ children, user, activeRoute, mode = 'portal', on
             <span>Impersonating <strong>{liveUser.displayName}</strong> ({liveUser.email})</span>
             <button
               onClick={async () => {
-                await fetch('/api/admin/unimpersonate', { method: 'POST' });
+                try {
+                  await fetch('/api/admin/unimpersonate', { method: 'POST' });
+                } catch {}
                 window.location.href = '/admin/users';
               }}
               style={{
@@ -430,7 +432,7 @@ function ThemeToggle() {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ modePreference: next ? 'dark' : 'light' }),
-    });
+    }).catch(() => {});
   }
 
   return (
