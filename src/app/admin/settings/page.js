@@ -103,7 +103,7 @@ export default function AdminSettingsPage() {
       { key: 'createdAt', header: 'Created', default: false }, { key: 'updatedAt', header: 'Updated', default: false },
     ],
     themes: [
-      { key: 'name', header: 'Name', always: true }, { key: 'isActive', header: 'Active' },
+      { key: 'name', header: 'Name', always: true },
       { key: 'isDefault', header: 'Default' },
       { key: 'createdByName', header: 'Created By', default: false }, { key: 'updatedByName', header: 'Updated By', default: false },
       { key: 'createdAt', header: 'Created', default: false }, { key: 'updatedAt', header: 'Updated', default: false },

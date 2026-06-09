@@ -2196,7 +2196,6 @@ const endpoints = [
         {
           "id": "uuid",
           "name": "Default Light",
-          "isActive": true,
           "isDefault": true,
           "description": "Default light theme"
         }
@@ -2227,7 +2226,6 @@ const endpoints = [
     "response": {
       "id": "uuid",
       "name": "Dark Blue",
-      "isActive": false,
       "isDefault": false
     }
   },
@@ -2244,7 +2242,6 @@ const endpoints = [
       "tokens": {
         "--primary": "#003d7a"
       },
-      "isActive": true,
       "isDefault": true
     }
   },
