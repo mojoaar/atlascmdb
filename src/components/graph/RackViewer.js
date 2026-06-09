@@ -106,12 +106,19 @@ export default function RackViewer({ rackId, rackSize = 42, rackName, locationNa
     setAssignPosition(placement.position || 'front');
     setAssignLabel(placement.label || '');
     setSaveError(null);
+    setSearchTerm(placement.ciName || '');
+    setSearchResults([]);
     setModalOpen(true);
   }
 
   async function handleSave() {
     setSaving(true);
     setSaveError(null);
+    if (!assignCiId) {
+      setSaveError('Please select a CI to place');
+      setSaving(false);
+      return;
+    }
     try {
       if (editingPlacement) {
         const res = await fetch(`/api/cis/${rackId}/rack-placements`, {
@@ -119,6 +126,7 @@ export default function RackViewer({ rackId, rackSize = 42, rackName, locationNa
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             id: editingPlacement.id,
+            ciId: assignCiId,
             startU: parseInt(assignStartU),
             occupiedUs: parseInt(assignOccupied),
             position: assignPosition,
@@ -336,44 +344,42 @@ export default function RackViewer({ rackId, rackSize = 42, rackName, locationNa
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editingPlacement ? 'Edit Placement' : `Assign CI — U${selectedSlot}`}>
         <div className={styles.modalBody}>
-          {!editingPlacement && (
-            <div className={styles.fieldGroup}>
-              <label className={styles.fieldLabel}>Search CI</label>
-              <Input
-                value={searchTerm}
-                onChange={e => {
-                  setSearchTerm(e.target.value);
-                  if (assignCiId) {
-                    setAssignCiId('');
-                  }
-                }}
-                placeholder="Type to search..."
-              />
-              {searching && <span className={styles.searching}>Searching...</span>}
-              {searchResults.length > 0 && (
-                <div className={styles.searchResults}>
-                  {searchResults.map(r => (
-                    <div
-                      key={r.id}
-                      className={`${styles.searchItem} ${assignCiId === r.id ? styles.selected : ''}`}
-                      onClick={() => { setAssignCiId(r.id); setSearchTerm(r.name); setSearchResults([]); }}
-                    >
-                      <span className={styles.searchName}>{r.name}</span>
-                      <span className={styles.searchType}>{r.type}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {!searching && debouncedSearch.length >= 2 && searchResults.length === 0 && !assignCiId && (
-                <span className={styles.noResults}>No CIs found</span>
-              )}
-              {assignCiId && (
-                <div className={styles.selectedCi}>
-                  Selected CI: {assignCiId}
-                </div>
-              )}
-            </div>
-          )}
+          <div className={styles.fieldGroup}>
+            <label className={styles.fieldLabel}>Search CI</label>
+            <Input
+              value={searchTerm}
+              onChange={e => {
+                setSearchTerm(e.target.value);
+                if (assignCiId) {
+                  setAssignCiId('');
+                }
+              }}
+              placeholder="Type to search..."
+            />
+            {searching && <span className={styles.searching}>Searching...</span>}
+            {searchResults.length > 0 && (
+              <div className={styles.searchResults}>
+                {searchResults.map(r => (
+                  <div
+                    key={r.id}
+                    className={`${styles.searchItem} ${assignCiId === r.id ? styles.selected : ''}`}
+                    onClick={() => { setAssignCiId(r.id); setSearchTerm(r.name); setSearchResults([]); }}
+                  >
+                    <span className={styles.searchName}>{r.name}</span>
+                    <span className={styles.searchType}>{r.type}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            {!searching && debouncedSearch.length >= 2 && searchResults.length === 0 && !assignCiId && (
+              <span className={styles.noResults}>No CIs found</span>
+            )}
+            {assignCiId && (
+              <div className={styles.selectedCi}>
+                Selected CI: {assignCiId}
+              </div>
+            )}
+          </div>
 
           <div className={styles.row}>
             <div className={styles.fieldGroup}>

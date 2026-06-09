@@ -7,6 +7,8 @@ import 'prismjs/components/prism-bash';
 import 'prismjs/components/prism-json';
 import 'prismjs/components/prism-yaml';
 import 'prismjs/components/prism-javascript';
+import 'prismjs/components/prism-python';
+import 'prismjs/components/prism-powershell';
 import styles from './CodeBlock.module.css';
 
 export default function CodeBlock({ children, language, copyable }) {

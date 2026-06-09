@@ -6,7 +6,7 @@ import CodeBlock from '@/components/ui/CodeBlock';
 import endpoints from './endpoints';
 import styles from './page.module.css';
 
-const LANG_TO_PRISM = { curl: 'bash', javascript: 'javascript', python: 'python' };
+const LANG_TO_PRISM = { curl: 'bash', javascript: 'javascript', python: 'python', powershell: 'powershell' };
 
 const CATEGORIES = [...new Set(endpoints.map(e => e.category))];
 

@@ -114,7 +114,7 @@ export async function PATCH(request, { params }) {
 
     const db = getDb();
     const rackId = (await params).id;
-    const { id, startU, occupiedUs, position, label } = await request.json();
+    const { id, ciId, startU, occupiedUs, position, label } = await request.json();
 
     if (!id) return badRequest('Placement id is required');
 
@@ -134,11 +134,37 @@ export async function PATCH(request, { params }) {
       return badRequest('Placement overlaps with an existing rack placement');
     }
 
+    if (ciId && ciId !== placement.ciId) {
+      if (ciId === rackId) return badRequest('Cannot place a rack into itself');
+      const ci = await db('ci_base').where({ id: ciId }).first();
+      if (!ci) return notFound('CI');
+    }
+
     const updates = { updatedAt: new Date().toISOString() };
     if (startU !== undefined) updates.startU = startU;
     if (occupiedUs !== undefined) updates.occupiedUs = occupiedUs;
     if (position !== undefined) updates.position = position;
     if (label !== undefined) updates.label = label || null;
+
+    if (ciId && ciId !== placement.ciId) {
+      updates.ciId = ciId;
+
+      // Update hosted_on relationships
+      try {
+        await db('relationships')
+          .where({ sourceType: 'ci', sourceId: rackId, targetType: 'ci', targetId: placement.ciId, relationshipType: 'hosted_on' })
+          .del();
+      } catch {}
+
+      try {
+        await db('relationships').insert({
+          id: uuidv4(),
+          sourceType: 'ci', sourceId: rackId,
+          targetType: 'ci', targetId: ciId,
+          relationshipType: 'hosted_on', direction: 'outbound',
+        });
+      } catch {}
+    }
 
     await db('rack_placements').where({ id }).update(updates);
 
