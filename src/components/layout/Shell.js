@@ -302,10 +302,14 @@ function NotificationBell({ onNavigate }) {
 
   useEffect(() => {
     async function load() {
-      const res = await fetch('/api/notifications?unread=1&limit=1');
-      if (res.ok) {
-        const data = await res.json();
-        setUnread(data.total || 0);
+      try {
+        const res = await fetch('/api/notifications?unread=1&limit=1');
+        if (res.ok) {
+          const data = await res.json();
+          setUnread(data.total || 0);
+        }
+      } catch (err) {
+        // Ignored silently to prevent unhandled promise rejections in background
       }
     }
     load();
@@ -331,16 +335,20 @@ function NotificationBell({ onNavigate }) {
 }
 
 function applyTokens(tokenSet) {
-  if (!tokenSet) return;
-  const parsed = typeof tokenSet === 'string' ? JSON.parse(tokenSet) : tokenSet;
-  if (!parsed?.colors) return;
-  for (const [key, value] of Object.entries(parsed.colors)) {
-    const cssVar = key.replace(/([A-Z])/g, '-$1').toLowerCase();
-    document.documentElement.style.setProperty(`--${cssVar}`, value);
+  try {
+    if (!tokenSet) return;
+    const parsed = typeof tokenSet === 'string' ? JSON.parse(tokenSet) : tokenSet;
+    if (!parsed?.colors) return;
+    for (const [key, value] of Object.entries(parsed.colors)) {
+      const cssVar = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+      document.documentElement.style.setProperty(`--${cssVar}`, value);
+    }
+    if (parsed.borderRadius) document.documentElement.style.setProperty('--radius', parsed.borderRadius);
+    if (parsed.fontFamily) document.documentElement.style.setProperty('--font-family', parsed.fontFamily);
+    if (parsed.hover) document.documentElement.style.setProperty('--hover', parsed.hover);
+  } catch (err) {
+    console.error('Failed to apply theme tokens:', err);
   }
-  if (parsed.borderRadius) document.documentElement.style.setProperty('--radius', parsed.borderRadius);
-  if (parsed.fontFamily) document.documentElement.style.setProperty('--font-family', parsed.fontFamily);
-  if (parsed.hover) document.documentElement.style.setProperty('--hover', parsed.hover);
 }
 
 function ThemeToggle() {
@@ -350,22 +358,26 @@ function ThemeToggle() {
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      const tr = await fetch('/api/me/theme');
-      if (!tr.ok || cancelled) return;
-      const prefs = await tr.json();
-      if (!prefs?.themeId || cancelled) return;
-      const r = await fetch(`/api/themes/${prefs.themeId}`);
-      if (!r.ok || cancelled) return;
-      const theme = await r.json();
-      if (!theme || cancelled) return;
-      setThemeTokens(theme);
-      const modePref = prefs.modePreference || 'light';
-      const isDark = modePref === 'dark';
-      document.documentElement.setAttribute('data-theme', isDark ? 'dark' : '');
-      setDark(isDark);
-      localStorage.setItem('atlas-theme-mode', isDark ? 'dark' : 'light');
-      const tokens = isDark ? (theme.tokenSetDark || theme.tokenSetLight) : theme.tokenSetLight;
-      applyTokens(tokens);
+      try {
+        const tr = await fetch('/api/me/theme');
+        if (!tr.ok || cancelled) return;
+        const prefs = await tr.json();
+        if (!prefs?.themeId || cancelled) return;
+        const r = await fetch(`/api/themes/${prefs.themeId}`);
+        if (!r.ok || cancelled) return;
+        const theme = await r.json();
+        if (!theme || cancelled) return;
+        setThemeTokens(theme);
+        const modePref = prefs.modePreference || 'light';
+        const isDark = modePref === 'dark';
+        document.documentElement.setAttribute('data-theme', isDark ? 'dark' : '');
+        setDark(isDark);
+        localStorage.setItem('atlas-theme-mode', isDark ? 'dark' : 'light');
+        const tokens = isDark ? (theme.tokenSetDark || theme.tokenSetLight) : theme.tokenSetLight;
+        applyTokens(tokens);
+      } catch (err) {
+        // Ignored silently to prevent unhandled promise rejections in background
+      }
     }
     load();
     return () => { cancelled = true; };
