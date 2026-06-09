@@ -2,8 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import AdminEntityList from '../EntityList';
-
-const cap = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+import { cap } from '@/lib/formatters';
 
 const columns = [
   { key: 'name', header: 'Name', always: true },

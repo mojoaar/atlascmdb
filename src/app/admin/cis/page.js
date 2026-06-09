@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import AdminEntityList from '../EntityList';
+import { cap } from '@/lib/formatters';
 
 const ciTypeLabels = {
   server: 'Server', network_device: 'Network Device',
@@ -9,7 +10,6 @@ const ciTypeLabels = {
   container: 'Container', rack: 'Rack', other: 'Other',
 };
 const renderCiType = (r) => ciTypeLabels[r.ciType] || r.ciType;
-const cap = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 
 const columns = [
   { key: 'name', header: 'Name', always: true },

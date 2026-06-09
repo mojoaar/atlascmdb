@@ -2,12 +2,13 @@
 
 import { useRouter } from 'next/navigation';
 import AdminEntityList from '../EntityList';
+import { cap } from '@/lib/formatters';
 
 const columns = [
   { key: 'name', header: 'Name' },
   { key: 'city', header: 'City' },
   { key: 'type', header: 'Type' },
-  { key: 'status', header: 'Status' },
+  { key: 'status', header: 'Status', render: (r) => cap(r.status) },
   { key: 'parentLocationName', header: 'Parent' },
 ];
 
@@ -15,7 +16,7 @@ const allColumns = [
   { key: 'name', header: 'Name', always: true },
   { key: 'city', header: 'City' },
   { key: 'type', header: 'Type' },
-  { key: 'status', header: 'Status' },
+  { key: 'status', header: 'Status', render: (r) => cap(r.status) },
   { key: 'parentLocationName', header: 'Parent' },
   { key: 'country', header: 'Country', default: false },
   { key: 'streetAddress', header: 'Street Address', default: false },

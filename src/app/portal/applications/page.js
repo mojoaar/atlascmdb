@@ -1,13 +1,14 @@
 'use client';
 
 import EntityList from '../EntityList';
+import { cap } from '@/lib/formatters';
 
 const columns = [
   { key: 'name', header: 'Name' },
   { key: 'vendor', header: 'Vendor' },
   { key: 'version', header: 'Version' },
   { key: 'ownerTeamName', header: 'Team' },
-  { key: 'lifecycleStatus', header: 'Status' },
+  { key: 'lifecycleStatus', header: 'Status', render: (r) => cap(r.lifecycleStatus) },
 ];
 
 export default function AppsPage() {
