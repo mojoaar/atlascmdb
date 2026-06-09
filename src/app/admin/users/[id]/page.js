@@ -12,6 +12,7 @@ import styles from '@/styles/entity.module.css';
 import LoadingState from '@/components/ui/LoadingState';
 import { unwrap } from '@/lib/unwrap';
 import { useFeedback } from '@/components/ui/FeedbackProvider';
+import OrgChartViewer from '@/components/graph/OrgChartViewer';
 
 const STATUS_OPTIONS = [
   { value: 'active', label: 'Active' },
@@ -221,6 +222,13 @@ export default function AdminUserDetail() {
           )}
         </Card>
       </div>
+
+      {!isNew && viewMode && (
+        <div className={styles.section}>
+          <div className={styles.sectionTitle}>Organisation</div>
+          <OrgChartViewer userId={id} />
+        </div>
+      )}
 
       {!isNew && viewMode && (
         <div className={styles.section}>
