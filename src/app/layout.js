@@ -24,19 +24,6 @@ export default function RootLayout({ children }) {
             `,
           }}
         />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.addEventListener('unhandledrejection', function(event) {
-                console.error('UNHANDLED REJECTION:', event.reason);
-                if (event.reason && event.reason.stack) {
-                  console.error('Stack:', event.reason.stack);
-                }
-                console.error('Promise:', event.promise);
-              });
-            `,
-          }}
-        />
       </head>
       <body>{children}</body>
     </html>
