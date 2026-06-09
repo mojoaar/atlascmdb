@@ -327,7 +327,9 @@ export default function PortalSettingsPage() {
                 }}
               >
                 <div style={{ fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.25rem', color: 'var(--card-foreground)' }}>{t.name}</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)' }}>Light &amp; Dark</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)' }}>
+                  {t.tokenSetLight && t.tokenSetDark ? 'Light & Dark' : t.tokenSetLight ? 'Light' : 'Dark'}
+                </div>
               </button>
             ))}
           </div>

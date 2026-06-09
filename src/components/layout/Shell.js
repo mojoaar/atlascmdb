@@ -15,6 +15,7 @@ import {
   LayoutDashboard,
   GitBranch,
   Shield,
+  History,
   Palette,
   Settings,
   UserCog,
@@ -34,6 +35,7 @@ import {
 import styles from './Shell.module.css';
 import Avatar from '@/components/ui/Avatar';
 import { useAuth } from '@/components/auth/AuthProvider';
+import { unwrap } from '@/lib/unwrap';
 
 const PORTAL_NAV = [
   { label: 'Home', href: '/portal', icon: Home },
@@ -65,6 +67,7 @@ const ADMIN_NAV = [
       { label: 'Users', href: '/admin/users', icon: UserCircle },
       { label: 'Teams', href: '/admin/teams', icon: Users },
       { label: 'Roles', href: '/admin/roles', icon: Shield },
+      { label: 'Audit Events', href: '/admin/audit', icon: History },
       { label: 'Docs', href: '/docs', icon: BookOpenText, external: true },
       { label: 'API Docs', href: '/apidocs', icon: FileCode, external: true },
     ],
@@ -142,7 +145,7 @@ export default function Shell({ children, user, activeRoute, mode = 'portal', on
                 <div key={group.label} className={styles.sectionGroup}>
                   <div className={styles.sectionLabel}>{group.label}</div>
                   {group.items
-                    .filter(item => liveUser?.roles?.includes('admin') || !['Users', 'Roles'].includes(item.label))
+                    .filter(item => liveUser?.roles?.includes('admin') || !['Users', 'Roles', 'Audit Events'].includes(item.label))
                     .map(item => {
                     const Icon = item.icon;
                     const linkProps = item.external
@@ -353,14 +356,44 @@ function applyTokens(tokenSet) {
   }
 }
 
+function getEffectiveTokens(theme, isDark, allThemes = []) {
+  if (!theme) return null;
+  if (isDark) {
+    if (theme.tokenSetDark) return theme.tokenSetDark;
+    const prefix = theme.name.split(' ')[0];
+    const sibling = allThemes.find(t => t.name.startsWith(prefix) && t.tokenSetDark);
+    if (sibling) return sibling.tokenSetDark;
+    const blueLine = allThemes.find(t => t.name === 'Blue Line');
+    if (blueLine) return blueLine.tokenSetDark;
+    return theme.tokenSetLight;
+  } else {
+    if (theme.tokenSetLight) return theme.tokenSetLight;
+    const prefix = theme.name.split(' ')[0];
+    const sibling = allThemes.find(t => t.name.startsWith(prefix) && t.tokenSetLight);
+    if (sibling) return sibling.tokenSetLight;
+    const blueLine = allThemes.find(t => t.name === 'Blue Line');
+    if (blueLine) return blueLine.tokenSetLight;
+    return theme.tokenSetDark;
+  }
+}
+
 function ThemeToggle() {
   const [dark, setDark] = useState(typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'dark');
   const [themeTokens, setThemeTokens] = useState(null);
+  const [allThemes, setAllThemes] = useState([]);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       try {
+        let listThemes = [];
+        const listRes = await fetch('/api/themes');
+        if (listRes.ok && !cancelled) {
+          const listData = await listRes.json();
+          listThemes = unwrap(listData, []);
+          setAllThemes(listThemes);
+        }
+
         const tr = await fetch('/api/me/theme');
         if (!tr.ok || cancelled) return;
         const prefs = await tr.json();
@@ -375,7 +408,7 @@ function ThemeToggle() {
         document.documentElement.setAttribute('data-theme', isDark ? 'dark' : '');
         setDark(isDark);
         localStorage.setItem('atlas-theme-mode', isDark ? 'dark' : 'light');
-        const tokens = isDark ? (theme.tokenSetDark || theme.tokenSetLight) : theme.tokenSetLight;
+        const tokens = getEffectiveTokens(theme, isDark, listThemes);
         applyTokens(tokens);
       } catch (err) {
         // Ignored silently to prevent unhandled promise rejections in background
@@ -391,7 +424,7 @@ function ThemeToggle() {
       if (theme) {
         setThemeTokens(theme);
         const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-        const tokens = isDark ? (theme.tokenSetDark || theme.tokenSetLight) : theme.tokenSetLight;
+        const tokens = getEffectiveTokens(theme, isDark, allThemes);
         applyTokens(tokens);
       }
     }
@@ -399,7 +432,7 @@ function ThemeToggle() {
     return () => {
       window.removeEventListener('atlas-theme-changed', handleThemeChanged);
     };
-  }, []);
+  }, [allThemes]);
 
   function clearTokens() {
     const el = document.documentElement;
@@ -420,7 +453,7 @@ function ThemeToggle() {
     document.documentElement.setAttribute('data-theme', next ? 'dark' : '');
     localStorage.setItem('atlas-theme-mode', next ? 'dark' : 'light');
     if (themeTokens) {
-      const tokens = next ? (themeTokens.tokenSetDark || themeTokens.tokenSetLight) : themeTokens.tokenSetLight;
+      const tokens = getEffectiveTokens(themeTokens, next, allThemes);
       if (tokens) {
         clearTokens();
         applyTokens(tokens);

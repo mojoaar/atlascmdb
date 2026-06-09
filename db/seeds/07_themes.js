@@ -124,10 +124,10 @@ exports.seed = async function (knex) {
 
   await knex('themes').insert([
     { id: uuidv4(), name: 'Blue Line', tokenSetLight: JYSK_LIGHT, tokenSetDark: JYSK_DARK, isDefault: true, isSystem: true, status: 'active' },
-    { id: uuidv4(), name: 'Catppuccin Latte',   tokenSetLight: t(CTPS.latte, '8px'), tokenSetDark: t(CTPS.mocha, '8px'), isDefault: false, isSystem: true, status: 'active' },
-    { id: uuidv4(), name: 'Catppuccin Frappé',   tokenSetLight: t(CTPS.latte, '8px'), tokenSetDark: t(CTPS.frappe, '8px'), isDefault: false, isSystem: true, status: 'active' },
-    { id: uuidv4(), name: 'Catppuccin Macchiato', tokenSetLight: t(CTPS.latte, '8px'), tokenSetDark: t(CTPS.macchiato, '8px'), isDefault: false, isSystem: true, status: 'active' },
-    { id: uuidv4(), name: 'Catppuccin Mocha',    tokenSetLight: t(CTPS.latte, '8px'), tokenSetDark: t(CTPS.mocha, '8px'), isDefault: false, isSystem: true, status: 'active' },
+    { id: uuidv4(), name: 'Catppuccin Latte',   tokenSetLight: t(CTPS.latte, '8px'), tokenSetDark: null, isDefault: false, isSystem: true, status: 'active' },
+    { id: uuidv4(), name: 'Catppuccin Frappé',   tokenSetLight: null, tokenSetDark: t(CTPS.frappe, '8px'), isDefault: false, isSystem: true, status: 'active' },
+    { id: uuidv4(), name: 'Catppuccin Macchiato', tokenSetLight: null, tokenSetDark: t(CTPS.macchiato, '8px'), isDefault: false, isSystem: true, status: 'active' },
+    { id: uuidv4(), name: 'Catppuccin Mocha',    tokenSetLight: null, tokenSetDark: t(CTPS.mocha, '8px'), isDefault: false, isSystem: true, status: 'active' },
     { id: uuidv4(), name: 'Nord',               tokenSetLight: NORD_LIGHT, tokenSetDark: NORD_DARK, isDefault: false, isSystem: true, status: 'active' },
     { id: uuidv4(), name: 'Dracula',             tokenSetLight: DRACULA_LIGHT, tokenSetDark: DRACULA_DARK, isDefault: false, isSystem: true, status: 'active' },
     { id: uuidv4(), name: 'Cyberpunk',           tokenSetLight: CYBERPUNK_LIGHT, tokenSetDark: CYBERPUNK_DARK, isDefault: false, isSystem: true, status: 'active' },
