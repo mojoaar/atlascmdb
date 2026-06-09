@@ -171,6 +171,9 @@ export default function OrgChartViewer({ userId }) {
         onEdgesChange={onEdgesChange}
         onNodeClick={onNodeClickHandler}
         nodeTypes={nodeTypes}
+        nodesDraggable={false}
+        nodesConnectable={false}
+        elementsSelectable={false}
         fitView
         fitViewOptions={{ padding: 0.2 }}
         minZoom={0.5}
