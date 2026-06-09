@@ -24,6 +24,18 @@ export default function RootLayout({ children }) {
             `,
           }}
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.addEventListener('error', function(event) {
+                var src = event.filename || '';
+                if (src.indexOf('moz-extension://') === 0 || src.indexOf('chrome-extension://') === 0) {
+                  event.stopImmediatePropagation();
+                }
+              }, true);
+            `,
+          }}
+        />
       </head>
       <body>{children}</body>
     </html>
