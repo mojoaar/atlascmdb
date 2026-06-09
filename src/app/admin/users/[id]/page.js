@@ -146,10 +146,10 @@ export default function AdminUserDetail() {
           {!isNew && viewMode && (
             <Button variant="primary" onClick={() => setViewMode(false)}>Edit</Button>
           )}
-          {(!isNew && !viewMode) && (
+          {!viewMode && (
             <>
               <Button variant="primary" onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : 'Save'}</Button>
-              <Button variant="secondary" onClick={() => { setViewMode(true); }}>Cancel</Button>
+              <Button variant="secondary" onClick={() => { if (isNew) { router.push('/admin/users'); } else { setViewMode(true); } }}>Cancel</Button>
             </>
           )}
         </div>
