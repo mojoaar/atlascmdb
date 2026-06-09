@@ -71,7 +71,7 @@ src/
 
 `db/knexfile.js` sets `pool: { min: 1, max: 1 }` in development. This is **intentional** — multiple WAL connections would read stale snapshots. Do NOT increase the pool size without understanding this.
 
-The DB file lives at `data/atlas.db`. Use `process.cwd()` (not `__dirname`) to construct paths — `__dirname` is module-resolved to a different directory.
+The DB file lives at `data/atlas.db`. Use `process.cwd()` (not `__dirname`) to construct paths — `__dirname` is module-resolved to a different, synthetic directory by Next.js/Turbopack bundlers and will cause SQLite path resolution/write exceptions. Always use `process.cwd()` for absolute paths.
 
 ### Migrations & Seeds
 

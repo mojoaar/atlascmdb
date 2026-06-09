@@ -12,9 +12,6 @@ try {
 
 // Safe path resolvers that handle Knex CLI switching working directory to db/
 function getDatabasePath(dbName) {
-  if (typeof __dirname !== 'undefined') {
-    return path.join(__dirname, '..', 'data', dbName);
-  }
   const cwd = process.cwd();
   if (cwd.endsWith('/db') || cwd.endsWith('\\db')) {
     return path.join(cwd, '..', 'data', dbName);
@@ -23,9 +20,6 @@ function getDatabasePath(dbName) {
 }
 
 function getMigrationsPath() {
-  if (typeof __dirname !== 'undefined') {
-    return path.join(__dirname, 'migrations');
-  }
   const cwd = process.cwd();
   if (cwd.endsWith('/db') || cwd.endsWith('\\db')) {
     return path.join(cwd, 'migrations');
@@ -34,9 +28,6 @@ function getMigrationsPath() {
 }
 
 function getSeedsPath() {
-  if (typeof __dirname !== 'undefined') {
-    return path.join(__dirname, 'seeds');
-  }
   const cwd = process.cwd();
   if (cwd.endsWith('/db') || cwd.endsWith('\\db')) {
     return path.join(cwd, 'seeds');
