@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { unwrap } from '@/lib/unwrap';
 import {
   ReactFlow,
   MiniMap,
@@ -97,11 +98,8 @@ export default function OrgChartViewer({ userId }) {
     fetch(`/api/users/${userId}/orgchart`)
       .then(r => r.json())
       .then(res => {
-        if (res.data) {
-          setData(res.data);
-        } else {
-          setData(null);
-        }
+        const d = unwrap(res);
+        setData(d || null);
         setLoading(false);
       })
       .catch(() => {
