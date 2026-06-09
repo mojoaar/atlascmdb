@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import knexBuilder from 'knex';
 import config from '../../db/knexfile';
 
@@ -17,6 +19,12 @@ let knexInstance = null;
 
 function getDb() {
   if (!knexInstance) {
+    if (typeof window === 'undefined') {
+      const dataDir = path.join(process.cwd(), 'data');
+      if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir, { recursive: true });
+      }
+    }
     knexInstance = knexBuilder(config[env]);
   }
   return knexInstance;
