@@ -33,6 +33,14 @@ export default function RootLayout({ children }) {
                   event.stopImmediatePropagation();
                 }
               }, true);
+              window.addEventListener('unhandledrejection', function(event) {
+                var reason = event.reason;
+                var stack = (reason && reason.stack) || '';
+                if (stack.indexOf('moz-extension://') !== -1 || stack.indexOf('chrome-extension://') !== -1) {
+                  event.stopImmediatePropagation();
+                  event.preventDefault();
+                }
+              }, true);
             `,
           }}
         />
