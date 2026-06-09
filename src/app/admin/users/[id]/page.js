@@ -226,7 +226,9 @@ export default function AdminUserDetail() {
       {!isNew && viewMode && (
         <div className={styles.section}>
           <div className={styles.sectionTitle}>Organisation</div>
-          <OrgChartViewer userId={id} />
+          <Card>
+            <OrgChartViewer userId={id} compact={true} basePath="/admin" />
+          </Card>
         </div>
       )}
 

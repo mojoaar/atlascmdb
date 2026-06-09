@@ -85,7 +85,7 @@ function CustomNode({ data }) {
 
 const nodeTypes = { custom: CustomNode };
 
-export default function OrgChartViewer({ userId }) {
+export default function OrgChartViewer({ userId, compact = false, basePath = '/admin', height }) {
   const router = useRouter();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -143,8 +143,8 @@ export default function OrgChartViewer({ userId }) {
   }, [data, setNodes, setEdges]);
 
   const onNodeClickHandler = useCallback((event, node) => {
-    router.push(`/admin/users/${node.id}`);
-  }, [router]);
+    router.push(`${basePath}/users/${node.id}`);
+  }, [router, basePath]);
 
   if (loading) {
     return (
@@ -162,28 +162,46 @@ export default function OrgChartViewer({ userId }) {
     );
   }
 
+  const containerHeight = height || (compact ? 300 : 'calc(100vh - 160px)');
+
   return (
-    <div className={styles.container}>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onNodeClick={onNodeClickHandler}
-        nodeTypes={nodeTypes}
-        nodesDraggable={false}
-        nodesConnectable={false}
-        elementsSelectable={false}
-        fitView
-        fitViewOptions={{ padding: 0.2 }}
-        minZoom={0.5}
-        maxZoom={2}
-        attributionPosition="bottom-left"
-        proOptions={{ hideAttribution: true }}
-      >
-        <Controls showInteractive={false} />
-        <Background color="var(--border, #ccc)" gap={15} />
-      </ReactFlow>
+    <div>
+      <div className={styles.container} style={{ height: containerHeight }}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onNodeClick={onNodeClickHandler}
+          nodeTypes={nodeTypes}
+          nodesDraggable={false}
+          nodesConnectable={false}
+          elementsSelectable={false}
+          fitView
+          fitViewOptions={{ padding: 0.2 }}
+          minZoom={0.5}
+          maxZoom={2}
+          attributionPosition="bottom-left"
+          proOptions={{ hideAttribution: true }}
+        >
+          <Controls showInteractive={false} />
+          <Background color="var(--border, #ccc)" gap={15} />
+        </ReactFlow>
+      </div>
+      {compact && (
+        <div style={{ marginTop: '0.5rem', textAlign: 'right' }}>
+          <a
+            href={`${basePath}/orgchart/${userId}`}
+            onClick={(e) => {
+              e.preventDefault();
+              router.push(`${basePath}/orgchart/${userId}`);
+            }}
+            style={{ fontSize: '0.8125rem', color: 'var(--primary)', textDecoration: 'none', fontWeight: 600 }}
+          >
+            View Full Org Chart &rarr;
+          </a>
+        </div>
+      )}
     </div>
   );
 }
